@@ -22,7 +22,26 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'telefono',
+        'rol',
+        'estado',
+        'avatar',
     ];
+
+    public function isAdmin(): bool
+    {
+        return $this->rol === 'admin';
+    }
+
+    public function isEmpresa(): bool
+    {
+        return $this->rol === 'empresa';
+    }
+
+    public function reservas()
+    {
+        return $this->hasMany(\App\Models\Reserva::class, 'usuario_id');
+    }
 
     /**
      * The attributes that should be hidden for serialization.

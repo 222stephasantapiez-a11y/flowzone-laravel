@@ -4,18 +4,20 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
+use App\Models\NotificacionAdmin;
 use Illuminate\Http\Request;
 
 class EmpresaController extends Controller
 {
     public function index()
     {
-        // Cargamos el usuario relacionado para mostrar nombre y correo
-        $empresas = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
-        return view('admin.empresas', compact('empresas'));
+        $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
+        $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
+        $notifCount     = $notificaciones->count();
+
+        return view('admin.empresas', compact('empresas', 'notificaciones', 'notifCount'));
     }
 
-    // Aprobar empresa
     public function aprobar(Empresa $empresa)
     {
         $empresa->update(['aprobado' => true]);
@@ -23,7 +25,6 @@ class EmpresaController extends Controller
                          ->with('success', "Empresa \"{$empresa->nombre}\" aprobada.");
     }
 
-    // Rechazar / eliminar empresa
     public function rechazar(Empresa $empresa)
     {
         $nombre = $empresa->nombre;
@@ -32,11 +33,13 @@ class EmpresaController extends Controller
                          ->with('success', "Empresa \"{$nombre}\" rechazada y eliminada.");
     }
 
-    // Editar datos de la empresa (nombre, teléfono, dirección)
     public function edit(Empresa $empresa)
     {
-        $empresas = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
-        return view('admin.empresas', compact('empresas', 'empresa'));
+        $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
+        $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
+        $notifCount     = $notificaciones->count();
+
+        return view('admin.empresas', compact('empresas', 'empresa', 'notificaciones', 'notifCount'));
     }
 
     public function update(Request $request, Empresa $empresa)
@@ -58,5 +61,19 @@ class EmpresaController extends Controller
         $empresa->delete();
         return redirect()->route('admin.empresas.index')
                          ->with('success', 'Empresa eliminada correctamente.');
+    }
+
+    // Marcar notificación como leída
+    public function marcarLeida(NotificacionAdmin $notificacion)
+    {
+        $notificacion->update(['leido' => true]);
+        return back()->with('success', 'Notificación marcada como leída.');
+    }
+
+    // Marcar todas como leídas
+    public function marcarTodasLeidas()
+    {
+        NotificacionAdmin::where('leido', false)->update(['leido' => true]);
+        return back()->with('success', 'Todas las notificaciones marcadas como leídas.');
     }
 }

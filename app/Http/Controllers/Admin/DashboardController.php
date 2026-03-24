@@ -9,6 +9,7 @@ use App\Models\Evento;
 use App\Models\Empresa;
 use App\Models\Reserva;
 use App\Models\User;
+use App\Models\NotificacionAdmin;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -24,6 +25,10 @@ class DashboardController extends Controller
         $totalEventos   = Evento::count();
         $totalReservas  = Reserva::count();
         $reservasPend   = Reserva::where('estado', 'pendiente')->count();
+
+        // Notificaciones pendientes de empresas
+        $notificaciones     = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
+        $notifCount         = $notificaciones->count();
 
         // Últimas 5 reservas para la tabla
         $ultimasReservas = Reserva::with(['hotel', 'usuario'])
@@ -53,7 +58,8 @@ $estadoData = $reservasPorEstado->values();
             'ultimasReservas',
             'chartLabels', 'chartData',
             'reservasPorEstado',
-            'estadoLabels', 'estadoData' 
+            'estadoLabels', 'estadoData',
+            'notificaciones', 'notifCount'
         ));
     }
 }

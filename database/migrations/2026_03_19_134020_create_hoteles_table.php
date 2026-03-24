@@ -17,8 +17,8 @@ return new class extends Migration
     $table->text('descripcion')->nullable();
     $table->decimal('precio', 10, 2);
     $table->string('ubicacion', 200)->nullable();
-    $table->decimal('latitud', 10, 8)->nullable();
-    $table->decimal('longitud', 11, 8)->nullable();
+    $table->decimal('latitud', 9, 6)->nullable();
+    $table->decimal('longitud', 9, 6)->nullable();
     $table->string('imagen')->nullable();
     $table->text('servicios')->nullable();
     $table->integer('capacidad')->nullable();

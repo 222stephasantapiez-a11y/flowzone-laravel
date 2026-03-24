@@ -4,36 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlowZone — Ingresar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --verde:      #1a5c35;
+            --verde:      #1e5c2d;
             --verde-med:  #2d7a3e;
             --verde-claro:#4a9d5f;
-            --dorado:     #c9922a;
-            --dorado-clr: #e8b84b;
-            --crema:      #f5f0e8;
-            --oscuro:     #0f1f14;
+            --crema:      #f7f5f0;
+            --oscuro:     #111a14;
             --gris:       #6b7a6e;
+            --gris-lt:    #c8d4cb;
+            --borde:      #dde5df;
         }
 
         html, body { height: 100%; }
 
         body {
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             background: var(--oscuro);
             display: flex;
             min-height: 100vh;
-            overflow: hidden;
         }
 
-        /* ── Panel izquierdo — imagen/marca ── */
+        /* ── Panel izquierdo ── */
         .panel-izq {
-            flex: 1.1;
+            flex: 1.2;
             position: relative;
-            background: var(--verde);
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -45,9 +43,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background:
-                url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=900&q=80') center/cover no-repeat;
-            opacity: 0.35;
+            background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80') center/cover no-repeat;
         }
 
         .panel-izq::after {
@@ -55,121 +51,119 @@
             position: absolute;
             inset: 0;
             background: linear-gradient(
-                170deg,
-                transparent 30%,
-                rgba(10,30,16,0.85) 70%,
-                rgba(10,30,16,0.98) 100%
+                to bottom,
+                rgba(10, 28, 14, 0.3) 0%,
+                rgba(10, 28, 14, 0.7) 55%,
+                rgba(10, 28, 14, 0.95) 100%
             );
         }
 
         .marca {
             position: relative;
             z-index: 2;
+            margin-bottom: 2.5rem;
         }
 
-        .marca-icono {
-            font-size: 3rem;
-            display: block;
-            margin-bottom: 1rem;
-            animation: flotar 3s ease-in-out infinite;
-        }
-
-        @keyframes flotar {
-            0%, 100% { transform: translateY(0); }
-            50%       { transform: translateY(-8px); }
+        .marca-logo {
+            display: inline-block;
+            width: 48px;
+            height: 48px;
+            background: var(--verde-med);
+            border-radius: 12px;
+            margin-bottom: 1.2rem;
         }
 
         .marca h1 {
             font-family: 'Playfair Display', serif;
-            font-size: 3.5rem;
+            font-size: 3.2rem;
             font-weight: 900;
             color: #fff;
             line-height: 1;
-            margin-bottom: 0.5rem;
+            margin-bottom: .5rem;
             letter-spacing: -1px;
         }
 
-        .marca h1 span { color: var(--dorado-clr); }
+        .marca h1 span { color: #a8d5b5; }
 
         .marca p {
-            color: rgba(255,255,255,0.65);
-            font-size: 1rem;
-            font-weight: 300;
-            letter-spacing: 0.08em;
+            color: rgba(255,255,255,.55);
+            font-size: .85rem;
+            font-weight: 400;
+            letter-spacing: .12em;
             text-transform: uppercase;
-            margin-bottom: 2.5rem;
         }
 
         .pilares {
-            display: flex;
-            gap: 1.5rem;
             position: relative;
             z-index: 2;
+            display: flex;
+            gap: 1rem;
         }
 
         .pilar {
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 12px;
-            padding: 1rem 1.2rem;
-            backdrop-filter: blur(10px);
             flex: 1;
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 10px;
+            padding: .9rem 1rem;
+            backdrop-filter: blur(8px);
         }
 
-        .pilar .icono { font-size: 1.4rem; margin-bottom: 0.3rem; }
-        .pilar .titulo { font-size: 0.75rem; font-weight: 500; color: var(--dorado-clr); text-transform: uppercase; letter-spacing: 0.06em; }
-        .pilar .desc   { font-size: 0.82rem; color: rgba(255,255,255,0.55); margin-top: 0.2rem; }
+        .pilar-titulo {
+            font-size: .7rem;
+            font-weight: 600;
+            color: #a8d5b5;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            margin-bottom: .2rem;
+        }
 
-        /* ── Panel derecho — formulario ── */
+        .pilar-desc {
+            font-size: .8rem;
+            color: rgba(255,255,255,.5);
+        }
+
+        /* ── Panel derecho ── */
         .panel-der {
-            width: 480px;
+            width: 460px;
             flex-shrink: 0;
             background: var(--crema);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 3rem 3.5rem;
-            position: relative;
+            padding: 3rem 3rem;
             overflow-y: auto;
         }
 
-        .panel-der::before {
-            content: '';
-            position: absolute;
-            top: -80px; right: -80px;
-            width: 250px; height: 250px;
-            border-radius: 50%;
-            background: radial-gradient(circle, rgba(45,122,62,0.12), transparent 70%);
-            pointer-events: none;
-        }
+        .form-encabezado { margin-bottom: 2rem; }
 
-        .form-encabezado { margin-bottom: 2.5rem; }
-
-        .bienvenida {
-            font-size: 0.8rem;
-            font-weight: 500;
+        .etiqueta-top {
+            font-size: .72rem;
+            font-weight: 600;
             color: var(--verde-med);
             text-transform: uppercase;
-            letter-spacing: 0.12em;
-            margin-bottom: 0.5rem;
+            letter-spacing: .14em;
+            margin-bottom: .6rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: .5rem;
         }
 
-        .bienvenida::before {
+        .etiqueta-top::before {
             content: '';
             display: inline-block;
-            width: 20px; height: 2px;
+            width: 18px;
+            height: 2px;
             background: var(--verde-med);
+            border-radius: 1px;
         }
 
         .form-encabezado h2 {
             font-family: 'Playfair Display', serif;
-            font-size: 2.2rem;
+            font-size: 2rem;
             font-weight: 700;
             color: var(--oscuro);
-            line-height: 1.15;
+            line-height: 1.2;
         }
 
         .form-encabezado h2 em {
@@ -180,187 +174,231 @@
         /* Tabs de rol */
         .rol-tabs {
             display: flex;
-            gap: 0.5rem;
-            margin-bottom: 2rem;
-            background: #e8e2d8;
-            border-radius: 10px;
-            padding: 4px;
+            gap: 3px;
+            background: #e8ede9;
+            border-radius: 9px;
+            padding: 3px;
+            margin-bottom: 1.5rem;
         }
 
         .rol-tab {
             flex: 1;
-            padding: 0.6rem 0.5rem;
+            padding: .55rem .4rem;
             border: none;
             border-radius: 7px;
             background: transparent;
             color: var(--gris);
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.82rem;
+            font-family: 'Inter', sans-serif;
+            font-size: .8rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.25s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.3rem;
+            transition: all .2s;
+            text-align: center;
         }
 
         .rol-tab.activo {
             background: #fff;
             color: var(--verde);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-weight: 600;
+            box-shadow: 0 1px 6px rgba(0,0,0,.1);
+        }
+
+        /* Badge de rol activo */
+        .rol-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            background: rgba(45,122,62,.08);
+            border: 1px solid rgba(45,122,62,.18);
+            color: var(--verde-med);
+            border-radius: 20px;
+            padding: .28rem .75rem;
+            font-size: .75rem;
+            font-weight: 500;
+            margin-bottom: 1.2rem;
+        }
+
+        .rol-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--verde-claro);
         }
 
         /* Campos */
-        .campo {
-            margin-bottom: 1.3rem;
-            position: relative;
-        }
+        .campo { margin-bottom: 1.1rem; }
 
         .campo label {
             display: block;
-            font-size: 0.78rem;
-            font-weight: 500;
+            font-size: .75rem;
+            font-weight: 600;
             color: var(--gris);
             text-transform: uppercase;
-            letter-spacing: 0.08em;
-            margin-bottom: 0.5rem;
+            letter-spacing: .08em;
+            margin-bottom: .45rem;
         }
 
-        .campo-input {
-            position: relative;
-        }
+        .campo-input { position: relative; }
 
         .campo-input .icono-campo {
             position: absolute;
-            left: 1rem;
+            left: .9rem;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 1rem;
+            color: var(--gris-lt);
+            font-size: .85rem;
             pointer-events: none;
+            font-style: normal;
         }
 
         .campo input {
             width: 100%;
-            padding: 0.85rem 1rem 0.85rem 2.8rem;
+            padding: .8rem 1rem .8rem 2.5rem;
             background: #fff;
-            border: 1.5px solid #ddd6ca;
-            border-radius: 10px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.95rem;
+            border: 1.5px solid var(--borde);
+            border-radius: 9px;
+            font-family: 'Inter', sans-serif;
+            font-size: .92rem;
             color: var(--oscuro);
-            transition: border-color 0.2s, box-shadow 0.2s;
+            transition: border-color .2s, box-shadow .2s;
             outline: none;
         }
 
         .campo input:focus {
             border-color: var(--verde-med);
-            box-shadow: 0 0 0 3px rgba(45,122,62,0.12);
+            box-shadow: 0 0 0 3px rgba(45,122,62,.1);
         }
 
-        .campo input::placeholder { color: #b5aca0; }
+        .campo input::placeholder { color: #b8c4ba; }
 
-        /* Error */
+        /* Alerta */
         .alerta-error {
             background: #fef2f2;
             border: 1px solid #fecaca;
             border-left: 3px solid #ef4444;
-            color: #dc2626;
-            padding: 0.8rem 1rem;
+            color: #c0392b;
+            padding: .75rem 1rem;
             border-radius: 8px;
-            font-size: 0.88rem;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            font-size: .85rem;
+            margin-bottom: 1.2rem;
+            font-weight: 500;
         }
 
-        /* Botón */
+        /* Botón principal */
         .btn-ingresar {
             width: 100%;
-            padding: 1rem;
-            background: var(--verde);
+            padding: .9rem 1rem;
+            background: var(--verde-med);
             color: #fff;
             border: none;
-            border-radius: 10px;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 1rem;
-            font-weight: 500;
+            border-radius: 9px;
+            font-family: 'Inter', sans-serif;
+            font-size: .95rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 0.03em;
-            margin-top: 0.5rem;
+            transition: background .2s, transform .15s, box-shadow .2s;
+            margin-top: .5rem;
+            letter-spacing: .02em;
         }
 
         .btn-ingresar:hover {
             background: var(--verde-claro);
             transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(45,122,62,0.35);
+            box-shadow: 0 5px 18px rgba(45,122,62,.3);
         }
 
         .btn-ingresar:active { transform: translateY(0); }
-
-        .btn-ingresar::after {
-            content: '→';
-            position: absolute;
-            right: 1.5rem;
-            top: 50%;
-            transform: translateY(-50%);
-            transition: right 0.2s;
-        }
-
-        .btn-ingresar:hover::after { right: 1.2rem; }
 
         /* Links */
         .enlaces {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 1.5rem;
-            font-size: 0.85rem;
+            margin-top: 1.4rem;
+            font-size: .82rem;
         }
 
         .enlaces a {
             color: var(--verde-med);
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.2s;
+            transition: color .2s;
         }
 
-        .enlaces a:hover { color: var(--verde); }
+        .enlaces a:hover { color: var(--verde); text-decoration: underline; }
 
+        /* Divisor */
         .divisor {
             display: flex;
             align-items: center;
-            gap: 1rem;
-            margin: 1.5rem 0;
-            color: #c5bdb3;
-            font-size: 0.8rem;
+            gap: .8rem;
+            margin: 1.4rem 0;
+            color: var(--gris-lt);
+            font-size: .75rem;
+            text-transform: uppercase;
+            letter-spacing: .08em;
         }
 
         .divisor::before, .divisor::after {
             content: '';
             flex: 1;
             height: 1px;
-            background: #e0d9d0;
+            background: var(--borde);
         }
 
-        .hint-credenciales {
-            background: rgba(45,122,62,0.06);
-            border: 1px solid rgba(45,122,62,0.15);
-            border-radius: 8px;
-            padding: 0.8rem 1rem;
-            font-size: 0.78rem;
+        /* Acceso rápido */
+        .acceso-rapido {
+            border: 1px solid var(--borde);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .acceso-rapido-titulo {
+            background: #eef2ef;
+            padding: .5rem 1rem;
+            font-size: .7rem;
+            font-weight: 600;
             color: var(--gris);
-            margin-top: 1rem;
+            text-transform: uppercase;
+            letter-spacing: .1em;
         }
 
-        .hint-credenciales strong { color: var(--verde); }
+        .hint-row {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+            padding: .65rem 1rem;
+            cursor: pointer;
+            border-top: 1px solid var(--borde);
+            transition: background .15s;
+            font-size: .82rem;
+            color: var(--oscuro);
+        }
 
-        /* Responsive */
-        @media (max-width: 900px) {
+        .hint-row:hover { background: #f0f5f1; }
+
+        .hint-row-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            color: #fff;
+        }
+
+        .icon-usuario { background: var(--verde-claro); }
+        .icon-empresa { background: #3b82f6; }
+        .icon-admin   { background: #8b5cf6; }
+
+        .hint-row strong { color: var(--oscuro); font-weight: 600; }
+        .hint-row span.cred { color: var(--gris); font-size: .78rem; }
+
+        @media (max-width: 860px) {
             .panel-izq { display: none; }
             .panel-der { width: 100%; padding: 2rem 1.5rem; }
         }
@@ -368,96 +406,134 @@
 </head>
 <body>
 
-    <!-- Panel izquierdo -->
-    <div class="panel-izq">
-        <div class="marca">
-            <span class="marca-icono"></span>
-            <h1>Flow<span>Zone</span></h1>
-            <p>Turismo · Ortega, Tolima</p>
+{{-- Panel izquierdo --}}
+<div class="panel-izq">
+    <div class="marca">
+        <div class="marca-logo"></div>
+        <h1>Flow<span>Zone</span></h1>
+        <p>Turismo · Ortega, Tolima</p>
+    </div>
+    <div class="pilares">
+        <div class="pilar">
+            <div class="pilar-titulo">Naturaleza</div>
+            <div class="pilar-desc">Cascadas y miradores</div>
         </div>
-        <div class="pilares">
-            <div class="pilar">
-                <div class="icono">🏔️</div>
-                <div class="titulo">Naturaleza</div>
-                <div class="desc">Cascadas y miradores</div>
+        <div class="pilar">
+            <div class="pilar-titulo">Gastronomía</div>
+            <div class="pilar-desc">Sabores del Tolima</div>
+        </div>
+        <div class="pilar">
+            <div class="pilar-titulo">Hospedaje</div>
+            <div class="pilar-desc">Hoteles y posadas</div>
+        </div>
+    </div>
+</div>
+
+{{-- Panel derecho --}}
+<div class="panel-der">
+    <div class="form-encabezado">
+        <div class="etiqueta-top">Bienvenido de vuelta</div>
+        <h2>Ingresa a tu<br><em>cuenta</em></h2>
+    </div>
+
+    {{-- Tabs de rol --}}
+    <div class="rol-tabs">
+        <button type="button" class="rol-tab activo" onclick="selRol(this,'usuario')" id="tab-usuario">
+            Visitante
+        </button>
+        <button type="button" class="rol-tab" onclick="selRol(this,'empresa')" id="tab-empresa">
+            Empresa
+        </button>
+        <button type="button" class="rol-tab" onclick="selRol(this,'admin')" id="tab-admin">
+            Administrador
+        </button>
+    </div>
+
+    <div class="rol-badge" id="rol-badge">Ingresando como Visitante</div>
+
+    @if($errors->any())
+        <div class="alerta-error">{{ $errors->first() }}</div>
+    @endif
+
+    <form method="POST" action="{{ route('login') }}">
+        @csrf
+        <div class="campo">
+            <label>Correo electrónico</label>
+            <div class="campo-input">
+                <i class="icono-campo">@</i>
+                <input type="email" name="correo" id="campo-correo" required
+                       autocomplete="email" placeholder="tu@correo.com"
+                       value="{{ old('correo') }}">
             </div>
-            <div class="pilar">
-                <div class="icono">🍽️</div>
-                <div class="titulo">Gastronomía</div>
-                <div class="desc">Sabores del Tolima</div>
+        </div>
+        <div class="campo">
+            <label>Contraseña</label>
+            <div class="campo-input">
+                <i class="icono-campo">*</i>
+                <input type="password" name="password" id="campo-password" required
+                       autocomplete="current-password" placeholder="••••••••">
             </div>
-            <div class="pilar">
-                <div class="icono">🏨</div>
-                <div class="titulo">Hospedaje</div>
-                <div class="desc">Hoteles y posadas</div>
+        </div>
+        <button type="submit" class="btn-ingresar">Ingresar</button>
+    </form>
+
+    <div class="enlaces">
+        <a href="{{ route('registro') }}">No tienes cuenta? Regístrate</a>
+        <a href="{{ route('home') }}">Volver al inicio</a>
+    </div>
+
+    <div class="divisor">acceso rápido</div>
+
+    <div class="acceso-rapido">
+        <div class="acceso-rapido-titulo">Credenciales de prueba</div>
+        <div class="hint-row" onclick="llenar('juan@example.com','admin123','usuario')">
+            <div class="hint-row-icon icon-usuario">V</div>
+            <div>
+                <strong>Visitante</strong>
+                <span class="cred"> — juan@example.com / admin123</span>
+            </div>
+        </div>
+        <div class="hint-row" onclick="llenar('empresa@example.com','admin123','empresa')">
+            <div class="hint-row-icon icon-empresa">E</div>
+            <div>
+                <strong>Empresa</strong>
+                <span class="cred"> — empresa@example.com / admin123</span>
+            </div>
+        </div>
+        <div class="hint-row" onclick="llenar('admin@flowzone.com','admin123','admin')">
+            <div class="hint-row-icon icon-admin">A</div>
+            <div>
+                <strong>Administrador</strong>
+                <span class="cred"> — admin@flowzone.com / admin123</span>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Panel derecho -->
-    <div class="panel-der">
+<script>
+const badges = {
+    usuario: 'Ingresando como Visitante',
+    empresa: 'Ingresando como Empresa',
+    admin:   'Ingresando como Administrador',
+};
 
-        <div class="form-encabezado">
-            <div class="bienvenida">Bienvenido de vuelta</div>
-            <h2>Ingresa a tu<br><em>cuenta</em></h2>
-        </div>
+function selRol(btn, rol) {
+    document.querySelectorAll('.rol-tab').forEach(t => t.classList.remove('activo'));
+    btn.classList.add('activo');
+    document.getElementById('rol-badge').textContent = badges[rol];
+}
 
-        <!-- Tabs de rol informativo -->
-        <div class="rol-tabs">
-            <button type="button" class="rol-tab activo" onclick="selRol(this,'usuario')">
-                👤 Visitante
-            </button>
-            <button type="button" class="rol-tab" onclick="selRol(this,'empresa')">
-                🏢 Empresa
-            </button>
-            <button type="button" class="rol-tab" onclick="selRol(this,'admin')">
-                ⚙️ Admin
-            </button>
-        </div>
+function llenar(correo, pass, rol) {
+    document.getElementById('campo-correo').value   = correo;
+    document.getElementById('campo-password').value = pass;
+    document.querySelectorAll('.rol-tab').forEach(t => t.classList.remove('activo'));
+    document.getElementById('tab-' + rol).classList.add('activo');
+    document.getElementById('rol-badge').textContent = badges[rol];
+}
 
-    
-            <div class="alerta-error">
-                <span>⚠️</span>
-          
-            </div>
-       
-
-        <form method="POST" action="">
-            <div class="campo">
-                <label>Correo electrónico</label>
-                <div class="campo-input">
-                    <span class="icono-campo">✉️</span>
-                    <input type="email" name="correo" id="campo-correo" required autocomplete="email"
-                           placeholder="tu@correo.com"
-                           value="">
-                </div>
-            </div>
-
-            <div class="campo">
-                <label>Contraseña</label>
-                <div class="campo-input">
-                    <span class="icono-campo">🔒</span>
-                    <input type="password" name="password" required autocomplete="current-password"
-                           placeholder="••••••••">
-                </div>
-            </div>
-
-            <button type="submit" class="btn-ingresar">Ingresar</button>
-        </form>
-
-        <div class="enlaces">
-            <a href="registrophp">¿No tienes cuenta? Regístrate</a>
-            <a href="indexphp">← Inicio</a>
-        </div>
-
-        <div class="divisor">credenciales de prueba</div>
-
-        <div class="hint-credenciales">
-            <strong>Admin:</strong> admin@flowzone.com / admin123<br>
-            <strong>Usuario:</strong> juan@example.com / admin123<br>
-            <strong>Empresa:</strong> empresa@example.com / admin123
-        </div>
-
-    </div>
+const correoActual = document.getElementById('campo-correo').value;
+if (correoActual.includes('admin@'))    { document.getElementById('tab-admin').classList.add('activo');   document.getElementById('tab-usuario').classList.remove('activo'); document.getElementById('rol-badge').textContent = badges['admin']; }
+else if (correoActual.includes('empresa')) { document.getElementById('tab-empresa').classList.add('activo'); document.getElementById('tab-usuario').classList.remove('activo'); document.getElementById('rol-badge').textContent = badges['empresa']; }
+</script>
 </body>
 </html>

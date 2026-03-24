@@ -1,3 +1,5 @@
+@include('partials.header')
+
 <section class="page-header">
     <div class="container">
         <h1>Hoteles en Ortega</h1>
@@ -6,47 +8,70 @@
 </section>
 
 <section class="container section">
+
     <div class="filters">
-        <form method="GET" action="" class="filter-form">
+        <form method="GET" action="{{ route('hoteles') }}" class="filter-form">
             <input type="text" name="busqueda" placeholder="Buscar hoteles..."
-                   value="<?= htmlspecialchars($busqueda, ENT_QUOTES, 'UTF-8') ?>">
+                   value="{{ $busqueda }}">
             <input type="number" name="precio_max" placeholder="Precio máximo COP"
-                   value="<?= htmlspecialchars($precio_max, ENT_QUOTES, 'UTF-8') ?>">
+                   value="{{ $precio_max }}">
             <button type="submit" class="btn btn-primary">Filtrar</button>
-            <a href="/FLOWZONE/hoteles.php" class="btn btn-secondary">Limpiar</a>
+            <a href="{{ route('hoteles') }}" class="btn btn-secondary">Limpiar</a>
         </form>
     </div>
 
     <div class="grid">
-        <?php if (empty($hoteles)): ?>
-            <p class="no-results">No se encontraron hoteles disponibles.</p>
-        <?php else: ?>
-            <?php foreach ($hoteles as $hotel): ?>
-                <div class="card animate-on-scroll">
-                    <img src="<?= htmlspecialchars($hotel['imagen'], ENT_QUOTES, 'UTF-8') ?>"
-                         alt="<?= htmlspecialchars($hotel['nombre'], ENT_QUOTES, 'UTF-8') ?>">
-                    <div class="card-content">
-                        <h3><?= htmlspecialchars($hotel['nombre'], ENT_QUOTES, 'UTF-8') ?></h3>
-                        <p class="precio">$<?= number_format($hotel['precio'], 0, ',', '.') ?> COP / noche</p>
-                        <p class="ubicacion">📍 <?= htmlspecialchars($hotel['ubicacion'], ENT_QUOTES, 'UTF-8') ?></p>
-                        <p><?= htmlspecialchars(substr($hotel['descripcion'], 0, 110), ENT_QUOTES, 'UTF-8') ?>...</p>
+        @forelse($hoteles as $hotel)
+            <div class="card animate-on-scroll">
+                @if($hotel->imagen)
+                    <img src="{{ $hotel->imagen }}"
+                         alt="{{ $hotel->nombre }}"
+                         onerror="this.src='https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80'">
+                @else
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80"
+                         alt="{{ $hotel->nombre }}">
+                @endif
 
-                        <div class="card-actions">
-                            <a href="/FLOWZONE/detalle_hotel.php?id=<?= $hotel['id'] ?>"
-                               class="btn btn-secondary">Ver Detalles</a>
+                <div class="card-content">
+                    <h3>{{ $hotel->nombre }}</h3>
+                    <p class="precio">${{ number_format($hotel->precio, 0, ',', '.') }} COP / noche</p>
 
-                            <?php if (estaAutenticado()): ?>
-                                <a href="/FLOWZONE/reservar.php?hotel_id=<?= $hotel['id'] ?>"
-                                   class="btn btn-primary">🛒 Reservar</a>
-                            <?php else: ?>
-                                <a href="/FLOWZONE/login.php"
-                                   class="btn btn-primary"
-                                   title="Inicia sesión para reservar">🔒 Reservar</a>
-                            <?php endif; ?>
-                        </div>
+                    @if($hotel->ubicacion)
+                        <p class="ubicacion">{{ $hotel->ubicacion }}</p>
+                    @endif
+
+                    @if($hotel->capacidad)
+                        <p style="font-size:.85rem;color:var(--gray);margin:.2rem 0;">
+                            Capacidad: {{ $hotel->capacidad }} personas
+                        </p>
+                    @endif
+
+                    <p style="margin:.6rem 0;font-size:.9rem;color:var(--dark-soft);">
+                        {{ Str::limit($hotel->descripcion, 110) }}
+                    </p>
+
+                    <div class="card-actions">
+                        <a href="{{ route('hoteles.detalle', $hotel) }}"
+                           class="btn btn-secondary">Ver Detalles</a>
+
+                        @auth
+                            <a href="{{ route('reservar', ['hotel_id' => $hotel->id]) }}"
+                               class="btn btn-primary">Reservar</a>
+                        @else
+                            <a href="{{ route('login') }}"
+                               class="btn btn-primary"
+                               title="Inicia sesión para reservar">Reservar</a>
+                        @endauth
                     </div>
                 </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
+            </div>
+        @empty
+            <div style="grid-column:1/-1;">
+                <p class="no-results">No se encontraron hoteles disponibles.</p>
+            </div>
+        @endforelse
     </div>
+
 </section>
+
+@include('partials.footer')

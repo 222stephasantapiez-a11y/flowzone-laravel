@@ -38,6 +38,43 @@
             </div>
         @endif
 
+        {{-- ── Notificaciones pendientes ── --}}
+        @if($notifCount > 0)
+        <div class="admin-section" style="border-left:4px solid #f59e0b;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                <h2 style="margin:0;">🔔 Solicitudes pendientes de empresas
+                    <span style="background:#f59e0b;color:#fff;border-radius:20px;padding:2px 10px;font-size:.8rem;margin-left:8px;">{{ $notifCount }}</span>
+                </h2>
+                <form method="POST" action="{{ route('admin.notificaciones.leer-todas') }}">
+                    @csrf
+                    <button type="submit" class="btn-small btn-edit">Marcar todas como leídas</button>
+                </form>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>Empresa</th><th>Solicitud</th><th>Fecha</th><th>Acción</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach($notificaciones as $notif)
+                        <tr style="background:#fffbeb;">
+                            <td><strong>{{ $notif->empresa->nombre ?? '—' }}</strong></td>
+                            <td style="max-width:500px;white-space:pre-wrap;font-size:.9rem;">{{ $notif->mensaje }}</td>
+                            <td style="white-space:nowrap;">{{ $notif->created_at->format('d/m/Y H:i') }}</td>
+                            <td>
+                                <form method="POST" action="{{ route('admin.notificaciones.leer', $notif) }}" style="display:inline">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" class="btn-small btn-success">✓ Marcar leída</button>
+                                </form>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @endif
+
         {{-- Formulario de edición (solo aparece al hacer click en Editar) --}}
         @isset($empresa)
         <div class="admin-section">

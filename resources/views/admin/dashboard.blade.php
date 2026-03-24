@@ -41,10 +41,21 @@
             </a>
             <a href="{{ route('admin.empresas.index') }}">
                 <i class="fa-solid fa-building"></i> Empresas
-                @if($empresasPend > 0)
-                    <span class="admin-notif-badge">{{ $empresasPend }}</span>
+                @if($empresasPend > 0 || $notifCount > 0)
+                    <span class="admin-notif-badge">{{ $empresasPend + $notifCount }}</span>
                 @endif
             </a>
+
+            <div class="nav-section-label" style="margin-top:auto;padding-top:1.5rem;">Sesión</div>
+            <a href="{{ route('home') }}">
+                <i class="fa-solid fa-globe"></i> Ver sitio
+            </a>
+            <form method="POST" action="{{ route('logout') }}" style="margin:0">
+                @csrf
+                <button type="submit" class="sidebar-logout-btn">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
+                </button>
+            </form>
         </nav>
     </aside>
 
@@ -146,6 +157,46 @@
                     @endif
                 </div>
             </div>
+
+            {{-- ── Notificaciones de empresas ── --}}
+            @if($notifCount > 0)
+            <div class="dash-card" style="border-left:4px solid #f59e0b;">
+                <div class="dash-card-header">
+                    <h2><i class="fa-solid fa-bell" style="color:#f59e0b;margin-right:6px"></i>
+                        Solicitudes de empresas
+                        <span style="background:#f59e0b;color:#fff;border-radius:20px;padding:2px 10px;font-size:.8rem;margin-left:8px;">{{ $notifCount }}</span>
+                    </h2>
+                    <form method="POST" action="{{ route('admin.notificaciones.leer-todas') }}" style="display:inline">
+                        @csrf
+                        <button type="submit" style="background:none;border:none;color:var(--primary);cursor:pointer;font-size:.85rem;text-decoration:underline;">
+                            Marcar todas como leídas
+                        </button>
+                    </form>
+                </div>
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr><th>Empresa</th><th>Solicitud</th><th>Fecha</th><th>Acción</th></tr>
+                        </thead>
+                        <tbody>
+                            @foreach($notificaciones as $notif)
+                            <tr>
+                                <td><strong>{{ $notif->empresa->nombre ?? '—' }}</strong></td>
+                                <td style="max-width:400px;white-space:pre-wrap;">{{ $notif->mensaje }}</td>
+                                <td style="white-space:nowrap;">{{ $notif->created_at->format('d/m/Y H:i') }}</td>
+                                <td>
+                                    <form method="POST" action="{{ route('admin.notificaciones.leer', $notif) }}" style="display:inline">
+                                        @csrf @method('PATCH')
+                                        <button type="submit" class="btn-small btn-success">✓ Leída</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @endif
 
             {{-- ── Últimas reservas ── --}}
             <div class="dash-card">

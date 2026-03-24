@@ -21,4 +21,9 @@ class Empresa extends Model
     {
         return $this->belongsTo(User::class, 'usuario_id');
     }
+
+    public function notificaciones()
+    {
+        return $this->hasMany(NotificacionAdmin::class, 'empresa_id');
+    }
 }
