@@ -9,14 +9,14 @@
 <body>
 <div class="admin-layout">
     <aside class="admin-sidebar">
-        <div class="admin-brand"><h2>🌄 FlowZone Admin</h2></div>
+        <div class="admin-brand"><h2>FlowZone Admin</h2></div>
         <nav class="admin-nav">
-            <a href="#">📊 Dashboard</a>
+            <a href="{{ route('admin.dashboard') }}">📊 Dashboard</a>
             <a href="{{ route('admin.lugares.index') }}" class="active">📍 Lugares</a>
             <a href="{{ route('admin.hoteles.index') }}">🏨 Hoteles</a>
             <a href="{{ route('admin.eventos.index') }}">📅 Eventos</a>
-            <a href="#">🏢 Empresas</a>
-            <a href="#">📋 Reservas</a>
+            <a href="{{ route('admin.empresas.index') }}">🏢 Empresas</a>
+            <a href="{{ route('admin.reservas.index') }}" >📋 Reservas</a>
         </nav>
     </aside>
 

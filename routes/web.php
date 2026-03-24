@@ -4,13 +4,18 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\HotelController;
 use App\Http\Controllers\Admin\LugarController;
 use App\Http\Controllers\Admin\EventoController;
+use App\Http\Controllers\Admin\EmpresaController;
+use App\Http\Controllers\Admin\ReservaController;
+use App\Http\Controllers\Admin\DashboardController;
 
 Route::get('/', function () {
-    return view('admin.dashboard');
+    return redirect()->route('admin.dashboard');
 });
 
 // Rutas del panel admin - Hoteles
 Route::prefix('admin')->name('admin.')->group(function () {
+
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/hoteles',              [HotelController::class, 'index'])->name('hoteles.index');
     Route::post('/hoteles',             [HotelController::class, 'store'])->name('hoteles.store');
@@ -29,5 +34,18 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/eventos/{evento}/edit', [EventoController::class, 'edit'])->name('eventos.edit');
     Route::put('/eventos/{evento}',      [EventoController::class, 'update'])->name('eventos.update');
     Route::delete('/eventos/{evento}',   [EventoController::class, 'destroy'])->name('eventos.destroy');
+
+    Route::get('/empresas',                      [EmpresaController::class, 'index'])->name('empresas.index');
+    Route::get('/empresas/{empresa}/edit',       [EmpresaController::class, 'edit'])->name('empresas.edit');
+    Route::put('/empresas/{empresa}',            [EmpresaController::class, 'update'])->name('empresas.update');
+    Route::patch('/empresas/{empresa}/aprobar',  [EmpresaController::class, 'aprobar'])->name('empresas.aprobar');
+    Route::patch('/empresas/{empresa}/rechazar', [EmpresaController::class, 'rechazar'])->name('empresas.rechazar');
+    Route::delete('/empresas/{empresa}',         [EmpresaController::class, 'destroy'])->name('empresas.destroy');
+
+    Route::get('/reservas',               [ReservaController::class, 'index'])->name('reservas.index');
+    Route::post('/reservas',              [ReservaController::class, 'store'])->name('reservas.store');
+    Route::get('/reservas/{reserva}/edit',[ReservaController::class, 'edit'])->name('reservas.edit');
+    Route::put('/reservas/{reserva}',     [ReservaController::class, 'update'])->name('reservas.update');
+    Route::delete('/reservas/{reserva}',  [ReservaController::class, 'destroy'])->name('reservas.destroy');
 
 });

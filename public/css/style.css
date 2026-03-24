@@ -741,3 +741,290 @@ body {
     0%, 100% { transform: scale(1); }
     50%       { transform: scale(1.15); }
 }
+
+/* ── Dashboard mejorado ── */
+
+/* Sidebar mejorado */
+.admin-sidebar {
+    width: 260px;
+    background: linear-gradient(180deg, #1a252f 0%, var(--dark) 100%);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.admin-brand {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 0.5rem;
+}
+
+.admin-brand h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: 0.5px;
+}
+
+.admin-brand span {
+    font-size: 0.75rem;
+    color: var(--gray);
+    display: block;
+    margin-top: 2px;
+}
+
+.nav-section-label {
+    padding: 0.8rem 1.5rem 0.3rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+}
+
+.admin-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.5rem;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-left: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.admin-nav a:hover {
+    background: rgba(255,255,255,0.06);
+    color: var(--white);
+    border-left-color: var(--secondary);
+}
+
+.admin-nav a.active {
+    background: rgba(45,122,62,0.2);
+    color: var(--white);
+    border-left-color: var(--primary);
+    font-weight: 600;
+}
+
+.admin-notif-badge {
+    margin-left: auto;
+    background: var(--danger);
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+}
+
+/* Topbar */
+.admin-topbar {
+    background: var(--white);
+    padding: 1rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e9ecef;
+    margin-bottom: 2rem;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.topbar-title h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0;
+}
+
+.topbar-title p {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin: 0;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.topbar-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fff3cd;
+    color: #856404;
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.topbar-badge:hover { background: #ffeaa7; }
+
+/* Stat cards mejoradas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    border-left: 4px solid transparent;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    top: -10px;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    opacity: 0.06;
+    background: currentColor;
+}
+
+.stat-card.green  { border-left-color: var(--primary); }
+.stat-card.orange { border-left-color: var(--accent); }
+.stat-card.blue   { border-left-color: #3b82f6; }
+.stat-card.purple { border-left-color: #8b5cf6; }
+.stat-card.red    { border-left-color: var(--danger); }
+.stat-card.teal   { border-left-color: #06b6d4; }
+
+.stat-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+
+.stat-card.green  .stat-icon-wrap { background: rgba(45,122,62,0.12); }
+.stat-card.orange .stat-icon-wrap { background: rgba(243,156,18,0.12); }
+.stat-card.blue   .stat-icon-wrap { background: rgba(59,130,246,0.12); }
+.stat-card.purple .stat-icon-wrap { background: rgba(139,92,246,0.12); }
+.stat-card.red    .stat-icon-wrap { background: rgba(231,76,60,0.12); }
+.stat-card.teal   .stat-icon-wrap { background: rgba(6,182,212,0.12); }
+
+.stat-info h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1;
+    margin-bottom: 2px;
+}
+
+.stat-info p {
+    font-size: 0.8rem;
+    color: var(--gray);
+    margin: 0;
+}
+
+.stat-sub {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 8px;
+    margin-top: 3px;
+    display: inline-block;
+}
+
+.stat-sub.warn { background: #fff3cd; color: #856404; }
+.stat-sub.ok   { background: #d4edda; color: #155724; }
+
+/* Charts grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+    .charts-grid { grid-template-columns: 1fr; }
+}
+
+/* Section card */
+.dash-card {
+    background: var(--white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+
+.dash-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.dash-card-header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 0;
+}
+
+.dash-card-header a {
+    font-size: 0.8rem;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.dash-card-header a:hover { text-decoration: underline; }
+
+/* Estado badges en tabla */
+.estado-badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.estado-pendiente  { background: #fff3cd; color: #856404; }
+.estado-confirmada { background: #d4edda; color: #155724; }
+.estado-cancelada  { background: #f8d7da; color: #721c24; }
+
+/* Admin main padding */
+.admin-main {
+    flex: 1;
+    padding: 0;
+    background: #f4f6f9;
+    overflow-y: auto;
+}
+
+.admin-main-inner {
+    padding: 0 2rem 2rem;
+}
