@@ -5,102 +5,130 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Hotel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class HotelController extends Controller
 {
-    // Reglas de validación compartidas
-    private function rules(): array
+    private function handleImageUpload(Request $request, ?string $currentImage = null): string
     {
+        // Opción B: archivo subido
+        if ($request->hasFile('imagen_file')) {
+            if ($currentImage && !str_starts_with($currentImage, 'http')) {
+                Storage::disk('public')->delete($currentImage);
+            }
+            $path = $request->file('imagen_file')->store('uploads/hoteles', 'public');
+            return $path;
+        }
+
+        // Opción A: URL
+        if ($request->filled('imagen_url')) {
+            if ($currentImage && !str_starts_with($currentImage, 'http')) {
+                Storage::disk('public')->delete($currentImage);
+            }
+            return $request->imagen_url;
+        }
+
+        return $currentImage ?? '';
+    }
+
+    private function rules(bool $isUpdate = false): array
+    {
+        $imgRequired = $isUpdate ? 'nullable' : 'required_without:imagen_file';
         return [
-            'nombre'      => 'required|string|max:150',
-            'precio'      => 'required|numeric|min:0',
-            'descripcion' => 'required|string',
-            'imagen'      => 'required|url',
-            'ubicacion'   => 'nullable|string|max:200',
-            'capacidad'   => 'nullable|integer|min:1',
-            'servicios'   => 'nullable|string',
-            'telefono'    => 'nullable|string|max:20',
-            'email'       => 'nullable|email|max:150',
-            'latitud'     => 'nullable|numeric|between:-90,90',
-            'longitud'    => 'nullable|numeric|between:-180,180',
+            'nombre'       => 'required|string|max:150',
+            'precio'       => 'required|numeric|min:0',
+            'descripcion'  => 'required|string',
+            'imagen_url'   => "$imgRequired|nullable|url",
+            'imagen_file'  => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
+            'ubicacion'    => 'nullable|string|max:200',
+            'capacidad'    => 'nullable|integer|min:1',
+            'servicios'    => 'nullable|string',
+            'telefono'     => 'nullable|string|max:20',
+            'email'        => 'nullable|email|max:150',
+            'latitud'      => 'nullable|numeric|between:-90,90',
+            'longitud'     => 'nullable|numeric|between:-180,180',
         ];
     }
 
     private function messages(): array
     {
         return [
-            'latitud.between'  => 'La latitud debe estar entre -90 y 90 (ej: 4.711000).',
-            'longitud.between' => 'La longitud debe estar entre -180 y 180 (ej: -74.072100).',
-            'imagen.url'       => 'La imagen debe ser una URL válida (https://...).',
-            'precio.min'       => 'El precio no puede ser negativo.',
+            'latitud.between'          => 'La latitud debe estar entre -90 y 90.',
+            'longitud.between'         => 'La longitud debe estar entre -180 y 180.',
+            'imagen_url.url'           => 'La URL de imagen debe ser válida (https://...).',
+            'imagen_file.mimes'        => 'Solo se permiten imágenes JPG, PNG o WebP.',
+            'imagen_file.max'          => 'La imagen no puede superar 4 MB.',
+            'imagen_url.required_without' => 'Debes ingresar una URL o subir una imagen.',
         ];
     }
 
-    // Listar todos los hoteles
     public function index()
     {
         $hoteles = Hotel::orderBy('id', 'desc')->get();
         return view('admin.hoteles', compact('hoteles'));
     }
 
-    // Guardar nuevo hotel
     public function store(Request $request)
     {
         $request->validate($this->rules(), $this->messages());
 
+        $imagen = $this->handleImageUpload($request);
+
         Hotel::create([
-            'nombre'        => $request->nombre,
-            'descripcion'   => $request->descripcion,
-            'precio'        => $request->precio,
-            'ubicacion'     => $request->ubicacion ?: null,
-            'latitud'       => $request->filled('latitud') ? $request->latitud : null,
-            'longitud'      => $request->filled('longitud') ? $request->longitud : null,
-            'imagen'        => $request->imagen,
-            'servicios'     => $request->servicios ?: null,
-            'capacidad'     => $request->capacidad ?: null,
-            'disponibilidad'=> $request->has('disponibilidad'),
-            'telefono'      => $request->telefono ?: null,
-            'email'         => $request->email ?: null,
+            'nombre'         => $request->nombre,
+            'descripcion'    => $request->descripcion,
+            'precio'         => $request->precio,
+            'ubicacion'      => $request->ubicacion ?: null,
+            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
+            'imagen'         => $imagen,
+            'servicios'      => $request->servicios ?: null,
+            'capacidad'      => $request->capacidad ?: null,
+            'disponibilidad' => $request->has('disponibilidad'),
+            'telefono'       => $request->telefono ?: null,
+            'email'          => $request->email ?: null,
         ]);
 
         return redirect()->route('admin.hoteles.index')
                          ->with('success', 'Hotel creado correctamente.');
     }
 
-    // Mostrar formulario de edición
     public function edit(Hotel $hotel)
     {
         $hoteles = Hotel::orderBy('id', 'desc')->get();
         return view('admin.hoteles', compact('hoteles', 'hotel'));
     }
 
-    // Actualizar hotel existente
     public function update(Request $request, Hotel $hotel)
     {
-        $request->validate($this->rules(), $this->messages());
+        $request->validate($this->rules(true), $this->messages());
+
+        $imagen = $this->handleImageUpload($request, $hotel->imagen);
 
         $hotel->update([
-            'nombre'        => $request->nombre,
-            'descripcion'   => $request->descripcion,
-            'precio'        => $request->precio,
-            'ubicacion'     => $request->ubicacion ?: null,
-            'latitud'       => $request->filled('latitud') ? $request->latitud : null,
-            'longitud'      => $request->filled('longitud') ? $request->longitud : null,
-            'imagen'        => $request->imagen,
-            'servicios'     => $request->servicios ?: null,
-            'capacidad'     => $request->capacidad ?: null,
-            'disponibilidad'=> $request->has('disponibilidad'),
-            'telefono'      => $request->telefono ?: null,
-            'email'         => $request->email ?: null,
+            'nombre'         => $request->nombre,
+            'descripcion'    => $request->descripcion,
+            'precio'         => $request->precio,
+            'ubicacion'      => $request->ubicacion ?: null,
+            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
+            'imagen'         => $imagen,
+            'servicios'      => $request->servicios ?: null,
+            'capacidad'      => $request->capacidad ?: null,
+            'disponibilidad' => $request->has('disponibilidad'),
+            'telefono'       => $request->telefono ?: null,
+            'email'          => $request->email ?: null,
         ]);
 
         return redirect()->route('admin.hoteles.index')
                          ->with('success', 'Hotel actualizado correctamente.');
     }
 
-    // Eliminar hotel
     public function destroy(Hotel $hotel)
     {
+        if ($hotel->imagen && !str_starts_with($hotel->imagen, 'http')) {
+            Storage::disk('public')->delete($hotel->imagen);
+        }
         $hotel->delete();
         return redirect()->route('admin.hoteles.index')
                          ->with('success', 'Hotel eliminado correctamente.');

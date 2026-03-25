@@ -3,13 +3,20 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\CalificacionController;
+use App\Http\Controllers\FavoritoController;
 use App\Http\Controllers\EmpresaDashboardController;
+use App\Http\Controllers\Empresa\BlogEmpresaController;
+use App\Http\Controllers\Empresa\GastronomiaEmpresaController;
 use App\Http\Controllers\Admin\HotelController;
 use App\Http\Controllers\Admin\LugarController;
 use App\Http\Controllers\Admin\EventoController;
 use App\Http\Controllers\Admin\EmpresaController;
 use App\Http\Controllers\Admin\ReservaController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GastronomiaController;
+use App\Http\Controllers\Admin\BlogController;
+use App\Http\Controllers\Admin\ImagenController;
 
 // ── Páginas públicas ─────────────────────────────────────────
 Route::get('/', [PageController::class, 'home'])->name('home');
@@ -19,7 +26,11 @@ Route::get('/lugares', [PageController::class, 'lugares'])->name('lugares');
 Route::get('/lugares/{lugar}', [PageController::class, 'detalleLugar'])->name('lugares.detalle');
 Route::get('/eventos', [PageController::class, 'eventos'])->name('eventos');
 Route::get('/gastronomia', [PageController::class, 'gastronomia'])->name('gastronomia');
+Route::get('/blog', [PageController::class, 'blog'])->name('blog');
+Route::get('/blog/{post:slug}', [PageController::class, 'blogPost'])->name('blog.post');
 Route::get('/contacto', [PageController::class, 'contacto'])->name('contacto');
+Route::get('/maps', [PageController::class, 'maps'])->name('maps');
+Route::get('/maps/buscar', [PageController::class, 'mapsBuscar'])->name('maps.buscar');
 
 // ── Autenticación ────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -37,16 +48,32 @@ Route::middleware('auth')->group(function () {
     Route::post('/reservar', [PageController::class, 'reservaStore'])->name('reservar.store');
     Route::get('/mis-reservas', [PageController::class, 'misReservas'])->name('mis-reservas');
     Route::get('/favoritos', [PageController::class, 'favoritos'])->name('favoritos');
+    Route::post('/favoritos/toggle', [FavoritoController::class, 'toggle'])->name('favoritos.toggle');
+    Route::post('/calificaciones', [CalificacionController::class, 'store'])->name('calificaciones.store');
 });
 
 // ── Panel empresa ────────────────────────────────────────────
-Route::middleware(['auth'])->prefix('empresa')->name('empresa.')->group(function () {
+Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->group(function () {
     Route::get('/dashboard', [EmpresaDashboardController::class, 'index'])->name('dashboard');
     Route::post('/solicitud', [EmpresaDashboardController::class, 'enviarSolicitud'])->name('solicitud');
+
+    // Blog empresa
+    Route::get('/blog', [BlogEmpresaController::class, 'index'])->name('blog.index');
+    Route::post('/blog', [BlogEmpresaController::class, 'store'])->name('blog.store');
+    Route::get('/blog/{post}/edit', [BlogEmpresaController::class, 'edit'])->name('blog.edit');
+    Route::put('/blog/{post}', [BlogEmpresaController::class, 'update'])->name('blog.update');
+    Route::delete('/blog/{post}', [BlogEmpresaController::class, 'destroy'])->name('blog.destroy');
+
+    // Gastronomía empresa
+    Route::get('/gastronomia', [GastronomiaEmpresaController::class, 'index'])->name('gastronomia.index');
+    Route::post('/gastronomia', [GastronomiaEmpresaController::class, 'store'])->name('gastronomia.store');
+    Route::get('/gastronomia/{gastronomium}/edit', [GastronomiaEmpresaController::class, 'edit'])->name('gastronomia.edit');
+    Route::put('/gastronomia/{gastronomium}', [GastronomiaEmpresaController::class, 'update'])->name('gastronomia.update');
+    Route::delete('/gastronomia/{gastronomium}', [GastronomiaEmpresaController::class, 'destroy'])->name('gastronomia.destroy');
 });
 
 // ── Panel admin ──────────────────────────────────────────────
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/hoteles', [HotelController::class, 'index'])->name('hoteles.index');
@@ -81,4 +108,26 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('/reservas/{reserva}/edit', [ReservaController::class, 'edit'])->name('reservas.edit');
     Route::put('/reservas/{reserva}', [ReservaController::class, 'update'])->name('reservas.update');
     Route::delete('/reservas/{reserva}', [ReservaController::class, 'destroy'])->name('reservas.destroy');
+
+    // Gastronomía admin
+    Route::get('/gastronomia', [GastronomiaController::class, 'index'])->name('gastronomia.index');
+    Route::post('/gastronomia', [GastronomiaController::class, 'store'])->name('gastronomia.store');
+    Route::get('/gastronomia/{gastronomium}/edit', [GastronomiaController::class, 'edit'])->name('gastronomia.edit');
+    Route::put('/gastronomia/{gastronomium}', [GastronomiaController::class, 'update'])->name('gastronomia.update');
+    Route::delete('/gastronomia/{gastronomium}', [GastronomiaController::class, 'destroy'])->name('gastronomia.destroy');
+
+    // Blog admin
+    Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+    Route::post('/blog', [BlogController::class, 'store'])->name('blog.store');
+    Route::get('/blog/{blog}/edit', [BlogController::class, 'edit'])->name('blog.edit');
+    Route::put('/blog/{blog}', [BlogController::class, 'update'])->name('blog.update');
+    Route::delete('/blog/{blog}', [BlogController::class, 'destroy'])->name('blog.destroy');
+    Route::patch('/blog/{blog}/publicar', [BlogController::class, 'togglePublicado'])->name('blog.publicar');
+
+    // Gestión de imágenes hero/galería
+    Route::get('/imagenes', [ImagenController::class, 'index'])->name('imagenes.index');
+    Route::post('/imagenes', [ImagenController::class, 'store'])->name('imagenes.store');
+    Route::patch('/imagenes/{imagen}/toggle', [ImagenController::class, 'toggleActiva'])->name('imagenes.toggle');
+    Route::post('/imagenes/orden', [ImagenController::class, 'orden'])->name('imagenes.orden');
+    Route::delete('/imagenes/{imagen}', [ImagenController::class, 'destroy'])->name('imagenes.destroy');
 });

@@ -10,10 +10,16 @@ class Gastronomia extends Model
 
     protected $fillable = [
         'nombre', 'descripcion', 'tipo', 'precio_promedio',
-        'restaurante', 'direccion', 'telefono', 'imagen', 'ingredientes',
+        'restaurante', 'direccion', 'telefono', 'imagen',
+        'ingredientes', 'empresa_id', 'ubicacion',
     ];
 
     protected $casts = [
         'precio_promedio' => 'decimal:2',
     ];
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class, 'empresa_id');
+    }
 }

@@ -9,7 +9,7 @@ class Hotel extends Model
     protected $table = "hoteles";
 
     protected $fillable = [
-        'nombre', 'descripcion', 'precio', 'ubicacion',
+        'empresa_id', 'nombre', 'descripcion', 'precio', 'ubicacion',
         'latitud', 'longitud', 'imagen', 'servicios',
         'capacidad', 'disponibilidad', 'telefono', 'email',
     ];
@@ -18,4 +18,9 @@ class Hotel extends Model
         'disponibilidad' => 'boolean',
         'precio' => 'decimal:2',
     ];
+
+    public function empresa()
+    {
+        return $this->belongsTo(\App\Models\Empresa::class, 'empresa_id');
+    }
 }

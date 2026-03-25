@@ -21,6 +21,12 @@ class EmpresaController extends Controller
     public function aprobar(Empresa $empresa)
     {
         $empresa->update(['aprobado' => true]);
+
+        // Activar el usuario asociado para que pueda iniciar sesión
+        if ($empresa->usuario) {
+            $empresa->usuario->update(['estado' => 'activo']);
+        }
+
         return redirect()->route('admin.empresas.index')
                          ->with('success', "Empresa \"{$empresa->nombre}\" aprobada.");
     }
@@ -28,6 +34,12 @@ class EmpresaController extends Controller
     public function rechazar(Empresa $empresa)
     {
         $nombre = $empresa->nombre;
+
+        // Bloquear el usuario asociado
+        if ($empresa->usuario) {
+            $empresa->usuario->update(['estado' => 'bloqueado']);
+        }
+
         $empresa->delete();
         return redirect()->route('admin.empresas.index')
                          ->with('success', "Empresa \"{$nombre}\" rechazada y eliminada.");

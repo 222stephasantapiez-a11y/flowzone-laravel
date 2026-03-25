@@ -4,32 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlowZone — Ingresar</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --verde:      #1e5c2d;
-            --verde-med:  #2d7a3e;
-            --verde-claro:#4a9d5f;
-            --crema:      #f7f5f0;
-            --oscuro:     #111a14;
-            --gris:       #6b7a6e;
-            --gris-lt:    #c8d4cb;
-            --borde:      #dde5df;
-        }
-
-        html, body { height: 100%; }
+        html, body { height: 100%; margin: 0; padding: 0; }
 
         body {
-            font-family: 'Inter', system-ui, sans-serif;
-            background: var(--oscuro);
+            font-family: var(--font-body);
+            background: var(--green-900);
             display: flex;
             min-height: 100vh;
         }
 
         /* ── Panel izquierdo ── */
-        .panel-izq {
+        .auth-panel-left {
             flex: 1.2;
             position: relative;
             overflow: hidden;
@@ -39,53 +28,53 @@
             padding: 3rem;
         }
 
-        .panel-izq::before {
+        .auth-panel-left::before {
             content: '';
             position: absolute;
             inset: 0;
             background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80') center/cover no-repeat;
         }
 
-        .panel-izq::after {
+        .auth-panel-left::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(
-                to bottom,
-                rgba(10, 28, 14, 0.3) 0%,
-                rgba(10, 28, 14, 0.7) 55%,
-                rgba(10, 28, 14, 0.95) 100%
-            );
+            background: linear-gradient(to bottom, rgba(27,67,50,.55) 0%, rgba(27,67,50,.88) 100%);
         }
 
-        .marca {
+        .auth-brand {
             position: relative;
             z-index: 2;
             margin-bottom: 2.5rem;
         }
 
-        .marca-logo {
-            display: inline-block;
-            width: 48px;
-            height: 48px;
-            background: var(--verde-med);
-            border-radius: 12px;
+        .auth-brand-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--green-700), var(--green-600));
+            border-radius: var(--radius-md);
             margin-bottom: 1.2rem;
+            font-size: 1.4rem;
+            color: var(--white);
+            box-shadow: 0 8px 24px rgba(64,145,108,.4);
         }
 
-        .marca h1 {
-            font-family: 'Playfair Display', serif;
+        .auth-brand h1 {
+            font-family: var(--font-display);
             font-size: 3.2rem;
             font-weight: 900;
-            color: #fff;
+            color: var(--white);
             line-height: 1;
             margin-bottom: .5rem;
             letter-spacing: -1px;
         }
 
-        .marca h1 span { color: #a8d5b5; }
+        .auth-brand h1 span { color: var(--green-200); }
 
-        .marca p {
+        .auth-brand p {
             color: rgba(255,255,255,.55);
             font-size: .85rem;
             font-weight: 400;
@@ -93,54 +82,54 @@
             text-transform: uppercase;
         }
 
-        .pilares {
+        .auth-pillars {
             position: relative;
             z-index: 2;
             display: flex;
             gap: 1rem;
         }
 
-        .pilar {
+        .auth-pillar {
             flex: 1;
             background: rgba(255,255,255,.07);
             border: 1px solid rgba(255,255,255,.1);
-            border-radius: 10px;
+            border-radius: var(--radius-md);
             padding: .9rem 1rem;
             backdrop-filter: blur(8px);
         }
 
-        .pilar-titulo {
+        .auth-pillar-title {
             font-size: .7rem;
             font-weight: 600;
-            color: #a8d5b5;
+            color: var(--green-200);
             text-transform: uppercase;
             letter-spacing: .08em;
             margin-bottom: .2rem;
         }
 
-        .pilar-desc {
+        .auth-pillar-desc {
             font-size: .8rem;
             color: rgba(255,255,255,.5);
         }
 
         /* ── Panel derecho ── */
-        .panel-der {
+        .auth-panel-right {
             width: 460px;
             flex-shrink: 0;
-            background: var(--crema);
+            background: var(--gray-50);
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 3rem 3rem;
+            padding: 3rem;
             overflow-y: auto;
         }
 
-        .form-encabezado { margin-bottom: 2rem; }
+        .auth-heading { margin-bottom: 2rem; }
 
-        .etiqueta-top {
+        .auth-eyebrow {
             font-size: .72rem;
             font-weight: 600;
-            color: var(--verde-med);
+            color: var(--green-700);
             text-transform: uppercase;
             letter-spacing: .14em;
             margin-bottom: .6rem;
@@ -149,169 +138,170 @@
             gap: .5rem;
         }
 
-        .etiqueta-top::before {
+        .auth-eyebrow::before {
             content: '';
             display: inline-block;
             width: 18px;
             height: 2px;
-            background: var(--verde-med);
+            background: var(--green-700);
             border-radius: 1px;
         }
 
-        .form-encabezado h2 {
-            font-family: 'Playfair Display', serif;
+        .auth-heading h2 {
+            font-family: var(--font-display);
             font-size: 2rem;
             font-weight: 700;
-            color: var(--oscuro);
+            color: var(--gray-900);
             line-height: 1.2;
         }
 
-        .form-encabezado h2 em {
+        .auth-heading h2 em {
             font-style: normal;
-            color: var(--verde-med);
+            color: var(--green-700);
         }
 
         /* Tabs de rol */
-        .rol-tabs {
+        .auth-tabs {
             display: flex;
             gap: 3px;
-            background: #e8ede9;
-            border-radius: 9px;
+            background: var(--gray-200);
+            border-radius: var(--radius-md);
             padding: 3px;
             margin-bottom: 1.5rem;
         }
 
-        .rol-tab {
+        .auth-tab {
             flex: 1;
             padding: .55rem .4rem;
             border: none;
-            border-radius: 7px;
+            border-radius: var(--radius-sm);
             background: transparent;
-            color: var(--gris);
-            font-family: 'Inter', sans-serif;
+            color: var(--gray-600);
+            font-family: var(--font-body);
             font-size: .8rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all .2s;
+            transition: var(--transition);
             text-align: center;
         }
 
-        .rol-tab.activo {
-            background: #fff;
-            color: var(--verde);
+        .auth-tab.active {
+            background: var(--white);
+            color: var(--green-800);
             font-weight: 600;
-            box-shadow: 0 1px 6px rgba(0,0,0,.1);
+            box-shadow: var(--shadow-sm);
         }
 
-        /* Badge de rol activo */
-        .rol-badge {
+        .auth-role-badge {
             display: inline-flex;
             align-items: center;
             gap: .4rem;
-            background: rgba(45,122,62,.08);
-            border: 1px solid rgba(45,122,62,.18);
-            color: var(--verde-med);
-            border-radius: 20px;
+            background: rgba(45,106,79,.08);
+            border: 1px solid rgba(45,106,79,.18);
+            color: var(--green-700);
+            border-radius: var(--radius-full);
             padding: .28rem .75rem;
             font-size: .75rem;
             font-weight: 500;
             margin-bottom: 1.2rem;
         }
 
-        .rol-badge::before {
+        .auth-role-badge::before {
             content: '';
             width: 6px;
             height: 6px;
             border-radius: 50%;
-            background: var(--verde-claro);
+            background: var(--green-600);
         }
 
         /* Campos */
-        .campo { margin-bottom: 1.1rem; }
+        .auth-field { margin-bottom: 1.1rem; }
 
-        .campo label {
+        .auth-field label {
             display: block;
             font-size: .75rem;
             font-weight: 600;
-            color: var(--gris);
+            color: var(--gray-600);
             text-transform: uppercase;
             letter-spacing: .08em;
             margin-bottom: .45rem;
         }
 
-        .campo-input { position: relative; }
+        .auth-field-wrap { position: relative; }
 
-        .campo-input .icono-campo {
+        .auth-field-wrap .auth-icon {
             position: absolute;
             left: .9rem;
             top: 50%;
             transform: translateY(-50%);
-            color: var(--gris-lt);
+            color: var(--gray-400);
             font-size: .85rem;
             pointer-events: none;
-            font-style: normal;
         }
 
-        .campo input {
+        .auth-field input {
             width: 100%;
             padding: .8rem 1rem .8rem 2.5rem;
-            background: #fff;
-            border: 1.5px solid var(--borde);
-            border-radius: 9px;
-            font-family: 'Inter', sans-serif;
+            background: var(--white);
+            border: 1.5px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
             font-size: .92rem;
-            color: var(--oscuro);
+            color: var(--gray-900);
             transition: border-color .2s, box-shadow .2s;
             outline: none;
         }
 
-        .campo input:focus {
-            border-color: var(--verde-med);
-            box-shadow: 0 0 0 3px rgba(45,122,62,.1);
+        .auth-field input:focus {
+            border-color: var(--green-700);
+            box-shadow: 0 0 0 3px rgba(64,145,108,.12);
         }
 
-        .campo input::placeholder { color: #b8c4ba; }
+        .auth-field input::placeholder { color: var(--gray-400); }
 
         /* Alerta */
-        .alerta-error {
+        .auth-alert-error {
             background: #fef2f2;
             border: 1px solid #fecaca;
-            border-left: 3px solid #ef4444;
-            color: #c0392b;
+            border-left: 3px solid var(--danger);
+            color: var(--danger);
             padding: .75rem 1rem;
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             font-size: .85rem;
             margin-bottom: 1.2rem;
             font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
         }
 
         /* Botón principal */
-        .btn-ingresar {
+        .auth-submit {
             width: 100%;
             padding: .9rem 1rem;
-            background: var(--verde-med);
-            color: #fff;
+            background: var(--green-800);
+            color: var(--white);
             border: none;
-            border-radius: 9px;
-            font-family: 'Inter', sans-serif;
+            border-radius: var(--radius-md);
+            font-family: var(--font-body);
             font-size: .95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: background .2s, transform .15s, box-shadow .2s;
+            transition: var(--transition);
             margin-top: .5rem;
             letter-spacing: .02em;
         }
 
-        .btn-ingresar:hover {
-            background: var(--verde-claro);
+        .auth-submit:hover {
+            background: var(--green-700);
             transform: translateY(-1px);
-            box-shadow: 0 5px 18px rgba(45,122,62,.3);
+            box-shadow: 0 5px 18px rgba(45,106,79,.3);
         }
 
-        .btn-ingresar:active { transform: translateY(0); }
+        .auth-submit:active { transform: translateY(0); }
 
         /* Links */
-        .enlaces {
+        .auth-links {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -319,192 +309,196 @@
             font-size: .82rem;
         }
 
-        .enlaces a {
-            color: var(--verde-med);
+        .auth-links a {
+            color: var(--green-700);
             text-decoration: none;
             font-weight: 500;
             transition: color .2s;
         }
 
-        .enlaces a:hover { color: var(--verde); text-decoration: underline; }
+        .auth-links a:hover { color: var(--green-800); text-decoration: underline; }
 
         /* Divisor */
-        .divisor {
+        .auth-divider {
             display: flex;
             align-items: center;
             gap: .8rem;
             margin: 1.4rem 0;
-            color: var(--gris-lt);
+            color: var(--gray-400);
             font-size: .75rem;
             text-transform: uppercase;
             letter-spacing: .08em;
         }
 
-        .divisor::before, .divisor::after {
+        .auth-divider::before, .auth-divider::after {
             content: '';
             flex: 1;
             height: 1px;
-            background: var(--borde);
+            background: var(--gray-200);
         }
 
         /* Acceso rápido */
-        .acceso-rapido {
-            border: 1px solid var(--borde);
-            border-radius: 10px;
+        .auth-quick {
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
             overflow: hidden;
         }
 
-        .acceso-rapido-titulo {
-            background: #eef2ef;
+        .auth-quick-title {
+            background: var(--gray-100);
             padding: .5rem 1rem;
             font-size: .7rem;
             font-weight: 600;
-            color: var(--gris);
+            color: var(--gray-600);
             text-transform: uppercase;
             letter-spacing: .1em;
         }
 
-        .hint-row {
+        .auth-quick-row {
             display: flex;
             align-items: center;
             gap: .8rem;
             padding: .65rem 1rem;
             cursor: pointer;
-            border-top: 1px solid var(--borde);
+            border-top: 1px solid var(--gray-200);
             transition: background .15s;
             font-size: .82rem;
-            color: var(--oscuro);
+            color: var(--gray-900);
         }
 
-        .hint-row:hover { background: #f0f5f1; }
+        .auth-quick-row:hover { background: var(--gray-100); }
 
-        .hint-row-icon {
+        .auth-quick-icon {
             width: 28px;
             height: 28px;
-            border-radius: 7px;
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: .75rem;
             font-weight: 700;
             flex-shrink: 0;
-            color: #fff;
+            color: var(--white);
         }
 
-        .icon-usuario { background: var(--verde-claro); }
+        .icon-usuario { background: var(--green-600); }
         .icon-empresa { background: #3b82f6; }
         .icon-admin   { background: #8b5cf6; }
 
-        .hint-row strong { color: var(--oscuro); font-weight: 600; }
-        .hint-row span.cred { color: var(--gris); font-size: .78rem; }
-
         @media (max-width: 860px) {
-            .panel-izq { display: none; }
-            .panel-der { width: 100%; padding: 2rem 1.5rem; }
+            .auth-panel-left { display: none; }
+            .auth-panel-right { width: 100%; padding: 2rem 1.5rem; }
         }
     </style>
 </head>
 <body>
 
 {{-- Panel izquierdo --}}
-<div class="panel-izq">
-    <div class="marca">
-        <div class="marca-logo"></div>
+<div class="auth-panel-left">
+    <div class="auth-brand">
+        <div class="auth-brand-icon">
+            <i class="fa-solid fa-mountain-sun"></i>
+        </div>
         <h1>Flow<span>Zone</span></h1>
         <p>Turismo · Ortega, Tolima</p>
     </div>
-    <div class="pilares">
-        <div class="pilar">
-            <div class="pilar-titulo">Naturaleza</div>
-            <div class="pilar-desc">Cascadas y miradores</div>
+    <div class="auth-pillars">
+        <div class="auth-pillar">
+            <div class="auth-pillar-title">Naturaleza</div>
+            <div class="auth-pillar-desc">Cascadas y miradores</div>
         </div>
-        <div class="pilar">
-            <div class="pilar-titulo">Gastronomía</div>
-            <div class="pilar-desc">Sabores del Tolima</div>
+        <div class="auth-pillar">
+            <div class="auth-pillar-title">Gastronomía</div>
+            <div class="auth-pillar-desc">Sabores del Tolima</div>
         </div>
-        <div class="pilar">
-            <div class="pilar-titulo">Hospedaje</div>
-            <div class="pilar-desc">Hoteles y posadas</div>
+        <div class="auth-pillar">
+            <div class="auth-pillar-title">Hospedaje</div>
+            <div class="auth-pillar-desc">Hoteles y posadas</div>
         </div>
     </div>
 </div>
 
 {{-- Panel derecho --}}
-<div class="panel-der">
-    <div class="form-encabezado">
-        <div class="etiqueta-top">Bienvenido de vuelta</div>
+<div class="auth-panel-right">
+    <div class="auth-heading">
+        <div class="auth-eyebrow">Bienvenido de vuelta</div>
         <h2>Ingresa a tu<br><em>cuenta</em></h2>
     </div>
 
     {{-- Tabs de rol --}}
-    <div class="rol-tabs">
-        <button type="button" class="rol-tab activo" onclick="selRol(this,'usuario')" id="tab-usuario">
+    <div class="auth-tabs">
+        <button type="button" class="auth-tab active" onclick="selRol(this,'usuario')" id="tab-usuario">
             Visitante
         </button>
-        <button type="button" class="rol-tab" onclick="selRol(this,'empresa')" id="tab-empresa">
+        <button type="button" class="auth-tab" onclick="selRol(this,'empresa')" id="tab-empresa">
             Empresa
         </button>
-        <button type="button" class="rol-tab" onclick="selRol(this,'admin')" id="tab-admin">
+        <button type="button" class="auth-tab" onclick="selRol(this,'admin')" id="tab-admin">
             Administrador
         </button>
     </div>
 
-    <div class="rol-badge" id="rol-badge">Ingresando como Visitante</div>
+    <div class="auth-role-badge" id="rol-badge">Ingresando como Visitante</div>
 
     @if($errors->any())
-        <div class="alerta-error">{{ $errors->first() }}</div>
+        <div class="auth-alert-error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            {{ $errors->first() }}
+        </div>
     @endif
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
-        <div class="campo">
-            <label>Correo electrónico</label>
-            <div class="campo-input">
-                <i class="icono-campo">@</i>
+        <div class="auth-field">
+            <label for="campo-correo">Correo electrónico</label>
+            <div class="auth-field-wrap">
+                <i class="auth-icon fa-solid fa-envelope"></i>
                 <input type="email" name="correo" id="campo-correo" required
                        autocomplete="email" placeholder="tu@correo.com"
                        value="{{ old('correo') }}">
             </div>
         </div>
-        <div class="campo">
-            <label>Contraseña</label>
-            <div class="campo-input">
-                <i class="icono-campo">*</i>
+        <div class="auth-field">
+            <label for="campo-password">Contraseña</label>
+            <div class="auth-field-wrap">
+                <i class="auth-icon fa-solid fa-lock"></i>
                 <input type="password" name="password" id="campo-password" required
                        autocomplete="current-password" placeholder="••••••••">
             </div>
         </div>
-        <button type="submit" class="btn-ingresar">Ingresar</button>
+        <button type="submit" class="auth-submit btn-block">
+            <i class="fa-solid fa-right-to-bracket"></i> Ingresar
+        </button>
     </form>
 
-    <div class="enlaces">
-        <a href="{{ route('registro') }}">No tienes cuenta? Regístrate</a>
-        <a href="{{ route('home') }}">Volver al inicio</a>
+    <div class="auth-links">
+        <a href="{{ route('registro') }}">¿No tienes cuenta? Regístrate</a>
+        <a href="{{ route('home') }}">← Inicio</a>
     </div>
 
-    <div class="divisor">acceso rápido</div>
+    <div class="auth-divider">acceso rápido</div>
 
-    <div class="acceso-rapido">
-        <div class="acceso-rapido-titulo">Credenciales de prueba</div>
-        <div class="hint-row" onclick="llenar('juan@example.com','admin123','usuario')">
-            <div class="hint-row-icon icon-usuario">V</div>
+    <div class="auth-quick">
+        <div class="auth-quick-title">Credenciales de prueba</div>
+        <div class="auth-quick-row" onclick="llenar('juan@example.com','admin123','usuario')">
+            <div class="auth-quick-icon icon-usuario">V</div>
             <div>
                 <strong>Visitante</strong>
-                <span class="cred"> — juan@example.com / admin123</span>
+                <span style="color:var(--gray-400);font-size:.78rem;"> — juan@example.com / admin123</span>
             </div>
         </div>
-        <div class="hint-row" onclick="llenar('empresa@example.com','admin123','empresa')">
-            <div class="hint-row-icon icon-empresa">E</div>
+        <div class="auth-quick-row" onclick="llenar('empresa@example.com','admin123','empresa')">
+            <div class="auth-quick-icon icon-empresa">E</div>
             <div>
                 <strong>Empresa</strong>
-                <span class="cred"> — empresa@example.com / admin123</span>
+                <span style="color:var(--gray-400);font-size:.78rem;"> — empresa@example.com / admin123</span>
             </div>
         </div>
-        <div class="hint-row" onclick="llenar('admin@flowzone.com','admin123','admin')">
-            <div class="hint-row-icon icon-admin">A</div>
+        <div class="auth-quick-row" onclick="llenar('admin@flowzone.com','admin123','admin')">
+            <div class="auth-quick-icon icon-admin">A</div>
             <div>
                 <strong>Administrador</strong>
-                <span class="cred"> — admin@flowzone.com / admin123</span>
+                <span style="color:var(--gray-400);font-size:.78rem;"> — admin@flowzone.com / admin123</span>
             </div>
         </div>
     </div>
@@ -518,22 +512,29 @@ const badges = {
 };
 
 function selRol(btn, rol) {
-    document.querySelectorAll('.rol-tab').forEach(t => t.classList.remove('activo'));
-    btn.classList.add('activo');
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
     document.getElementById('rol-badge').textContent = badges[rol];
 }
 
 function llenar(correo, pass, rol) {
     document.getElementById('campo-correo').value   = correo;
     document.getElementById('campo-password').value = pass;
-    document.querySelectorAll('.rol-tab').forEach(t => t.classList.remove('activo'));
-    document.getElementById('tab-' + rol).classList.add('activo');
+    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + rol).classList.add('active');
     document.getElementById('rol-badge').textContent = badges[rol];
 }
 
 const correoActual = document.getElementById('campo-correo').value;
-if (correoActual.includes('admin@'))    { document.getElementById('tab-admin').classList.add('activo');   document.getElementById('tab-usuario').classList.remove('activo'); document.getElementById('rol-badge').textContent = badges['admin']; }
-else if (correoActual.includes('empresa')) { document.getElementById('tab-empresa').classList.add('activo'); document.getElementById('tab-usuario').classList.remove('activo'); document.getElementById('rol-badge').textContent = badges['empresa']; }
+if (correoActual.includes('admin@')) {
+    document.getElementById('tab-admin').classList.add('active');
+    document.getElementById('tab-usuario').classList.remove('active');
+    document.getElementById('rol-badge').textContent = badges['admin'];
+} else if (correoActual.includes('empresa')) {
+    document.getElementById('tab-empresa').classList.add('active');
+    document.getElementById('tab-usuario').classList.remove('active');
+    document.getElementById('rol-badge').textContent = badges['empresa'];
+}
 </script>
 </body>
 </html>

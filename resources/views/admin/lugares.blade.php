@@ -1,147 +1,184 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Lugares - FlowZone Admin</title>
-    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
-</head>
-<body>
-<div class="admin-layout">
-    <aside class="admin-sidebar">
-        <div class="admin-brand"><h2>FlowZone Admin</h2></div>
-        <nav class="admin-nav">
-            <a href="{{ route('admin.dashboard') }}">📊 Dashboard</a>
-            <a href="{{ route('admin.lugares.index') }}" class="active">📍 Lugares</a>
-            <a href="{{ route('admin.hoteles.index') }}">🏨 Hoteles</a>
-            <a href="{{ route('admin.eventos.index') }}">📅 Eventos</a>
-            <a href="{{ route('admin.empresas.index') }}">🏢 Empresas</a>
-            <a href="{{ route('admin.reservas.index') }}" >📋 Reservas</a>
-        </nav>
-    </aside>
+@php use Illuminate\Support\Facades\Storage; @endphp
+@extends('layouts.admin')
 
-    <main class="admin-main">
-        <div class="admin-header"><h1>Gestión de Lugares Turísticos</h1></div>
+@section('title', 'Lugares')
+@section('page-title', 'Lugares')
+@section('page-subtitle', 'Administra los destinos turísticos del sistema')
 
-        @if(session('success'))
-            <div class="alert alert-success">{{ session('success') }}</div>
-        @endif
+@section('content')
 
-        {{-- Formulario crear / editar --}}
-        <div class="admin-section">
-            @isset($lugar)
-                <h2>Editar Lugar</h2>
-                <form method="POST" action="{{ route('admin.lugares.update', $lugar) }}" class="admin-form">
-                    @method('PUT')
-            @else
-                <h2>Agregar Lugar</h2>
-                <form method="POST" action="{{ route('admin.lugares.store') }}" class="admin-form">
-            @endisset
+{{-- Formulario --}}
+<div class="admin-section">
+    <div class="admin-section-header">
+        <h2>
+            <i class="fa-solid fa-{{ isset($lugar) ? 'pen-to-square' : 'plus-circle' }}" style="color:var(--primary);margin-right:.4rem;"></i>
+            {{ isset($lugar) ? 'Editar Lugar: ' . $lugar->nombre : 'Lugares' }}
+        </h2>
+        @unless(isset($lugar))
+            <a href="{{ route('admin.lugares.index') }}" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-plus"></i> Nuevo Lugar
+            </a>
+        @endunless
+    </div>
 
-            @csrf
+    @isset($lugar)
+        <form method="POST" action="{{ route('admin.lugares.update', $lugar) }}"
+              class="admin-form" enctype="multipart/form-data">
+        @method('PUT')
+    @else
+        <form method="POST" action="{{ route('admin.lugares.store') }}"
+              class="admin-form" enctype="multipart/form-data">
+    @endisset
+    @csrf
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Nombre</label>
-                    <input type="text" name="nombre" required value="{{ old('nombre', $lugar->nombre ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label>Categoría</label>
-                    <input type="text" name="categoria" required value="{{ old('categoria', $lugar->categoria ?? '') }}">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Descripción</label>
-                <textarea name="descripcion" rows="4" required>{{ old('descripcion', $lugar->descripcion ?? '') }}</textarea>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Ubicación</label>
-                    <input type="text" name="ubicacion" value="{{ old('ubicacion', $lugar->ubicacion ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label>Horario</label>
-                    <input type="text" name="horario" value="{{ old('horario', $lugar->horario ?? '') }}">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Latitud</label>
-                    <input type="number" step="0.00000001" name="latitud" value="{{ old('latitud', $lugar->latitud ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label>Longitud</label>
-                    <input type="number" step="0.00000001" name="longitud" value="{{ old('longitud', $lugar->longitud ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label>Precio Entrada</label>
-                    <input type="number" step="0.01" name="precio_entrada" value="{{ old('precio_entrada', $lugar->precio_entrada ?? '0') }}">
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>URL de Imagen</label>
-                <input type="url" name="imagen" required value="{{ old('imagen', $lugar->imagen ?? '') }}">
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-                {{ isset($lugar) ? 'Actualizar Lugar' : 'Guardar Lugar' }}
-            </button>
-
-            @isset($lugar)
-                <a href="{{ route('admin.lugares.index') }}" class="btn btn-secondary">Cancelar</a>
-            @endisset
-
-            </form>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" name="nombre" required maxlength="150"
+                   placeholder="Ej: Cascada El Salto"
+                   value="{{ old('nombre', $lugar->nombre ?? '') }}">
         </div>
-
-        {{-- Tabla de lugares --}}
-        <div class="admin-section">
-            <h2>Lugares Registrados</h2>
-            <div class="table-responsive">
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Categoría</th>
-                            <th>Ubicación</th>
-                            <th>Precio Entrada</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($lugares as $l)
-                            <tr>
-                                <td>{{ $l->id }}</td>
-                                <td>{{ $l->nombre }}</td>
-                                <td>{{ $l->categoria }}</td>
-                                <td>{{ $l->ubicacion }}</td>
-                                <td>${{ number_format($l->precio_entrada, 0) }}</td>
-                                <td>
-                                    <a href="{{ route('admin.lugares.edit', $l) }}" class="btn-small btn-edit">Editar</a>
-
-                                    <form method="POST" action="{{ route('admin.lugares.destroy', $l) }}"
-                                          style="display:inline"
-                                          onsubmit="return confirm('¿Eliminar este lugar?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn-small btn-delete">Eliminar</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="6">No hay lugares registrados.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        <div class="form-group">
+            <label>Categoría *</label>
+            <input type="text" name="categoria" required maxlength="100"
+                   placeholder="Ej: Naturaleza, Histórico..."
+                   value="{{ old('categoria', $lugar->categoria ?? '') }}">
         </div>
+    </div>
 
-    </main>
+    <div class="form-group">
+        <label>Descripción *</label>
+        <textarea name="descripcion" rows="3" required
+                  placeholder="Describe el lugar, su historia y atractivos...">{{ old('descripcion', $lugar->descripcion ?? '') }}</textarea>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Ubicación</label>
+            <input type="text" name="ubicacion"
+                   placeholder="Ej: Vereda El Limón, Ortega"
+                   value="{{ old('ubicacion', $lugar->ubicacion ?? '') }}">
+        </div>
+        <div class="form-group">
+            <label>Horario</label>
+            <input type="text" name="horario"
+                   placeholder="Ej: Lun-Dom 8am-5pm"
+                   value="{{ old('horario', $lugar->horario ?? '') }}">
+        </div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Latitud</label>
+            <input type="number" step="0.00000001" name="latitud"
+                   placeholder="4.711000"
+                   value="{{ old('latitud', $lugar->latitud ?? '') }}">
+        </div>
+        <div class="form-group">
+            <label>Longitud</label>
+            <input type="number" step="0.00000001" name="longitud"
+                   placeholder="-74.072100"
+                   value="{{ old('longitud', $lugar->longitud ?? '') }}">
+        </div>
+        <div class="form-group">
+            <label>Precio Entrada (COP)</label>
+            <input type="number" step="0.01" name="precio_entrada"
+                   placeholder="0 = gratuito"
+                   value="{{ old('precio_entrada', $lugar->precio_entrada ?? '0') }}">
+        </div>
+    </div>
+
+    @include('partials.imagen_field', [
+        'currentImage' => $lugar->imagen ?? null,
+        'fieldId'      => 'lugar',
+    ])
+
+    <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-{{ isset($lugar) ? 'floppy-disk' : 'plus' }}"></i>
+            {{ isset($lugar) ? 'Actualizar Lugar' : 'Guardar Lugar' }}
+        </button>
+        @isset($lugar)
+            <a href="{{ route('admin.lugares.index') }}" class="btn btn-outline">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+            </a>
+        @endisset
+    </div>
+
+    </form>
 </div>
-</body>
-</html>
+
+{{-- Tabla --}}
+<div class="admin-section">
+    <div class="admin-section-header">
+        <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Lugares Registrados</h2>
+        <span class="badge badge-info">{{ $lugares->count() }} total</span>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Ubicación</th>
+                    <th>Precio Entrada</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($lugares as $l)
+                    <tr>
+                        <td style="color:var(--gray);font-size:.8rem;">{{ $l->id }}</td>
+                        <td class="td-img">
+                            @if($l->imagen)
+                                @php
+                                    $src = str_starts_with($l->imagen, 'http')
+                                        ? $l->imagen
+                                        : Storage::disk('public')->url($l->imagen);
+                                @endphp
+                                <img src="{{ $src }}" alt="{{ $l->nombre }}"
+                                     onerror="this.style.display='none'">
+                            @else
+                                <span style="color:var(--gray-lt);font-size:.78rem;">Sin imagen</span>
+                            @endif
+                        </td>
+                        <td><strong>{{ $l->nombre }}</strong></td>
+                        <td><span class="badge badge-info">{{ $l->categoria }}</span></td>
+                        <td>{{ $l->ubicacion ?? '—' }}</td>
+                        <td>
+                            @if($l->precio_entrada > 0)
+                                ${{ number_format($l->precio_entrada, 0) }}
+                            @else
+                                <span class="badge badge-success">Gratuito</span>
+                            @endif
+                        </td>
+                        <td>
+                            <a href="{{ route('admin.lugares.edit', $l) }}" class="btn-small btn-edit btn-sm">
+                                <i class="fa-solid fa-pen fa-xs"></i> Editar
+                            </a>
+                            <form method="POST" action="{{ route('admin.lugares.destroy', $l) }}"
+                                  style="display:inline"
+                                  onsubmit="return confirm('¿Eliminar este lugar?')">
+                                @csrf @method('DELETE')
+                                <button type="submit" class="btn-small btn-delete btn-sm">
+                                    <i class="fa-solid fa-trash fa-xs"></i> Eliminar
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="7" style="text-align:center;color:var(--gray);padding:2.5rem;">
+                            <i class="fa-solid fa-inbox" style="font-size:1.5rem;display:block;margin-bottom:.5rem;opacity:.4;"></i>
+                            No hay lugares registrados aún.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@endsection

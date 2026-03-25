@@ -7,6 +7,10 @@ use App\Models\Lugar;
 use App\Models\Evento;
 use App\Models\Gastronomia;
 use App\Models\Reserva;
+use App\Models\BlogPost;
+use App\Models\Calificacion;
+use App\Models\Favorito;
+use App\Models\HeroImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,6 +23,11 @@ class PageController extends Controller
             'hoteles_destacados' => Hotel::where('disponibilidad', true)->latest()->take(3)->get(),
             'lugares_destacados' => Lugar::latest()->take(3)->get(),
             'eventos_proximos'   => Evento::where('fecha', '>=', now())->orderBy('fecha')->take(3)->get(),
+            'blog_recientes'     => BlogPost::where('publicado', true)->latest('fecha_publicacion')->take(3)->get(),
+            'heroImages'         => HeroImage::activas()->seccion('hero')->get(),
+            'totalHoteles'       => Hotel::count(),
+            'totalLugares'       => Lugar::count(),
+            'totalEventos'       => Evento::count(),
         ]);
     }
 
@@ -45,10 +54,19 @@ class PageController extends Controller
 
     public function detalleHotel(Hotel $hotel)
     {
-        return view('pages.detalle_hotel', [
-            'hotel'      => $hotel,
-            'es_favorito'=> false, // TODO: favoritos
-        ]);
+        $stats = Calificacion::stats('hotel', $hotel->id);
+        $miCalificacion = auth()->check()
+            ? Calificacion::where(['usuario_id' => auth()->id(), 'tipo' => 'hotel', 'item_id' => $hotel->id])->first()
+            : null;
+        $reseñas = Calificacion::with('usuario')
+            ->where('tipo', 'hotel')->where('item_id', $hotel->id)
+            ->whereNotNull('comentario')->latest()->take(10)->get();
+
+        $es_favorito = auth()->check()
+            ? Favorito::esFavorito(auth()->id(), 'hotel', $hotel->id)
+            : false;
+
+        return view('pages.detalle_hotel', compact('hotel', 'stats', 'miCalificacion', 'reseñas', 'es_favorito'));
     }
 
     // ── Lugares ──────────────────────────────────────────────
@@ -75,10 +93,19 @@ class PageController extends Controller
 
     public function detalleLugar(Lugar $lugar)
     {
-        return view('pages.detalle_lugar', [
-            'lugar'      => $lugar,
-            'es_favorito'=> false,
-        ]);
+        $stats = Calificacion::stats('lugar', $lugar->id);
+        $miCalificacion = auth()->check()
+            ? Calificacion::where(['usuario_id' => auth()->id(), 'tipo' => 'lugar', 'item_id' => $lugar->id])->first()
+            : null;
+        $reseñas = Calificacion::with('usuario')
+            ->where('tipo', 'lugar')->where('item_id', $lugar->id)
+            ->whereNotNull('comentario')->latest()->take(10)->get();
+
+        $es_favorito = auth()->check()
+            ? Favorito::esFavorito(auth()->id(), 'lugar', $lugar->id)
+            : false;
+
+        return view('pages.detalle_lugar', compact('lugar', 'stats', 'miCalificacion', 'reseñas', 'es_favorito'));
     }
 
     // ── Eventos ──────────────────────────────────────────────
@@ -106,7 +133,7 @@ class PageController extends Controller
     // ── Gastronomía ──────────────────────────────────────────
     public function gastronomia(Request $request)
     {
-        $query = Gastronomia::query();
+        $query = Gastronomia::with('empresa');
 
         if ($request->filled('tipo')) {
             $query->where('tipo', $request->tipo);
@@ -114,7 +141,7 @@ class PageController extends Controller
 
         if ($request->filled('busqueda')) {
             $q = $request->busqueda;
-            $query->where(fn($q2) => $q2->where('nombre', 'ilike', "%$q%")->orWhere('descripcion', 'ilike', "%$q%"));
+            $query->where(fn($q2) => $q2->where('nombre', 'like', "%$q%")->orWhere('descripcion', 'like', "%$q%"));
         }
 
         return view('pages.gastronomia', [
@@ -125,10 +152,146 @@ class PageController extends Controller
         ]);
     }
 
+    // ── Blog ─────────────────────────────────────────────────
+    public function blog(Request $request)
+    {
+        $query = BlogPost::with(['empresa', 'usuario'])->where('publicado', true);
+
+        if ($request->filled('tipo')) {
+            $query->where('tipo', $request->tipo);
+        }
+
+        if ($request->filled('busqueda')) {
+            $q = $request->busqueda;
+            $query->where(fn($q2) => $q2->where('titulo', 'like', "%$q%")->orWhere('contenido', 'like', "%$q%"));
+        }
+
+        return view('pages.blog', [
+            'posts'      => $query->latest('fecha_publicacion')->paginate(9),
+            'tipo_filtro'=> $request->tipo ?? '',
+            'busqueda'   => $request->busqueda ?? '',
+        ]);
+    }
+
+    public function blogPost(BlogPost $post)
+    {
+        abort_if(!$post->publicado, 404);
+        $relacionados = BlogPost::where('tipo', $post->tipo)
+            ->where('publicado', true)
+            ->where('id', '!=', $post->id)
+            ->latest('fecha_publicacion')
+            ->take(3)
+            ->get();
+
+        $stats = Calificacion::stats('blog', $post->id);
+        $miCalificacion = auth()->check()
+            ? Calificacion::where(['usuario_id' => auth()->id(), 'tipo' => 'blog', 'item_id' => $post->id])->first()
+            : null;
+        $reseñas = Calificacion::with('usuario')
+            ->where('tipo', 'blog')->where('item_id', $post->id)
+            ->whereNotNull('comentario')->latest()->take(10)->get();
+
+        return view('pages.blog_post', compact('post', 'relacionados', 'stats', 'miCalificacion', 'reseñas'));
+    }
+
     // ── Contacto ─────────────────────────────────────────────
     public function contacto()
     {
         return view('pages.contacto');
+    }
+
+    // ── Maps ─────────────────────────────────────────────────
+    public function maps()
+    {
+        // Todos los puntos con coordenadas para el mapa inicial
+        $lugares = Lugar::whereNotNull('latitud')->whereNotNull('longitud')->get()
+            ->map(fn($l) => [
+                'tipo'        => 'lugar',
+                'id'          => $l->id,
+                'nombre'      => $l->nombre,
+                'descripcion' => \Str::limit($l->descripcion, 100),
+                'ubicacion'   => $l->ubicacion,
+                'categoria'   => $l->categoria,
+                'lat'         => (float) $l->latitud,
+                'lng'         => (float) $l->longitud,
+                'url'         => route('lugares.detalle', $l),
+                'precio'      => $l->precio_entrada > 0
+                    ? '$' . number_format($l->precio_entrada, 0, ',', '.') . ' COP'
+                    : 'Entrada gratuita',
+            ]);
+
+        $hoteles = Hotel::whereNotNull('latitud')->whereNotNull('longitud')
+            ->where('disponibilidad', true)->get()
+            ->map(fn($h) => [
+                'tipo'        => 'hotel',
+                'id'          => $h->id,
+                'nombre'      => $h->nombre,
+                'descripcion' => \Str::limit($h->descripcion, 100),
+                'ubicacion'   => $h->ubicacion,
+                'categoria'   => 'Hotel',
+                'lat'         => (float) $h->latitud,
+                'lng'         => (float) $h->longitud,
+                'url'         => route('hoteles.detalle', $h),
+                'precio'      => '$' . number_format($h->precio, 0, ',', '.') . ' COP/noche',
+            ]);
+
+        $puntos = $lugares->merge($hoteles)->values();
+
+        return view('pages.maps', compact('puntos'));
+    }
+
+    public function mapsBuscar(Request $request)
+    {
+        $q = trim($request->get('q', ''));
+
+        $lugares = Lugar::query();
+        $hoteles = Hotel::where('disponibilidad', true);
+
+        if ($q !== '') {
+            $lugares->where(function ($query) use ($q) {
+                $query->where('nombre', 'like', "%{$q}%")
+                      ->orWhere('ubicacion', 'like', "%{$q}%")
+                      ->orWhere('categoria', 'like', "%{$q}%")
+                      ->orWhere('descripcion', 'like', "%{$q}%");
+            });
+            $hoteles->where(function ($query) use ($q) {
+                $query->where('nombre', 'like', "%{$q}%")
+                      ->orWhere('ubicacion', 'like', "%{$q}%")
+                      ->orWhere('descripcion', 'like', "%{$q}%");
+            });
+        }
+
+        $resultLugares = $lugares->get()->map(fn($l) => [
+            'tipo'        => 'lugar',
+            'id'          => $l->id,
+            'nombre'      => $l->nombre,
+            'descripcion' => \Str::limit($l->descripcion, 100),
+            'ubicacion'   => $l->ubicacion,
+            'categoria'   => $l->categoria,
+            'lat'         => $l->latitud ? (float) $l->latitud : null,
+            'lng'         => $l->longitud ? (float) $l->longitud : null,
+            'url'         => route('lugares.detalle', $l),
+            'precio'      => $l->precio_entrada > 0
+                ? '$' . number_format($l->precio_entrada, 0, ',', '.') . ' COP'
+                : 'Entrada gratuita',
+        ]);
+
+        $resultHoteles = $hoteles->get()->map(fn($h) => [
+            'tipo'        => 'hotel',
+            'id'          => $h->id,
+            'nombre'      => $h->nombre,
+            'descripcion' => \Str::limit($h->descripcion, 100),
+            'ubicacion'   => $h->ubicacion,
+            'categoria'   => 'Hotel',
+            'lat'         => $h->latitud ? (float) $h->latitud : null,
+            'lng'         => $h->longitud ? (float) $h->longitud : null,
+            'url'         => route('hoteles.detalle', $h),
+            'precio'      => '$' . number_format($h->precio, 0, ',', '.') . ' COP/noche',
+        ]);
+
+        return response()->json(
+            $resultLugares->merge($resultHoteles)->values()
+        );
     }
 
     // ── Reservas (requiere auth) ──────────────────────────────
@@ -205,6 +368,16 @@ class PageController extends Controller
     // ── Favoritos (requiere auth) ─────────────────────────────
     public function favoritos()
     {
-        return view('pages.favoritos');
+        $userId = Auth::id();
+
+        $favs = Favorito::where('usuario_id', $userId)->get();
+
+        $hotelIds  = $favs->where('tipo', 'hotel')->pluck('item_id');
+        $lugarIds  = $favs->where('tipo', 'lugar')->pluck('item_id');
+
+        $hoteles = Hotel::whereIn('id', $hotelIds)->get();
+        $lugares = Lugar::whereIn('id', $lugarIds)->get();
+
+        return view('pages.favoritos', compact('hoteles', 'lugares'));
     }
 }

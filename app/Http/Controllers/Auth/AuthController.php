@@ -76,9 +76,17 @@ class AuthController extends Controller
             'password.min'        => 'La contraseña debe tener al menos 6 caracteres.',
         ]);
 
+        if ($request->rol === 'empresa') {
+            $request->validate([
+                'empresa_nombre' => ['required', 'string', 'max:200'],
+            ], [
+                'empresa_nombre.required' => 'El nombre de la empresa es obligatorio.',
+            ]);
+        }
+
         $estado = $request->rol === 'empresa' ? 'pendiente' : 'activo';
 
-        User::create([
+        $user = User::create([
             'name'     => $request->nombre,
             'email'    => $request->correo,
             'password' => Hash::make($request->password),
@@ -86,6 +94,17 @@ class AuthController extends Controller
             'rol'      => $request->rol,
             'estado'   => $estado,
         ]);
+
+        // Crear registro en tabla empresas si el rol es empresa
+        if ($request->rol === 'empresa') {
+            \App\Models\Empresa::create([
+                'usuario_id' => $user->id,
+                'nombre'     => $request->empresa_nombre,
+                'telefono'   => $request->telefono,
+                'direccion'  => $request->empresa_direccion,
+                'aprobado'   => false,
+            ]);
+        }
 
         return back()->with('success', $request->rol === 'empresa' ? 'empresa' : 'usuario');
     }

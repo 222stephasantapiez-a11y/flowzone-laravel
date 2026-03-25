@@ -43,6 +43,11 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Reserva::class, 'usuario_id');
     }
 
+    public function empresa()
+    {
+        return $this->hasOne(\App\Models\Empresa::class, 'usuario_id');
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
