@@ -11,8 +11,16 @@ class EsEmpresa
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check() || Auth::user()->rol !== 'empresa') {
-            abort(403, 'Acceso restringido al panel de empresa.');
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        if (Auth::user()->rol !== 'empresa') {
+            // Redirigir según el rol real en lugar de mostrar 403
+            return match (Auth::user()->rol) {
+                'admin'  => redirect()->route('admin.dashboard'),
+                default  => redirect()->route('home'),
+            };
         }
 
         return $next($request);

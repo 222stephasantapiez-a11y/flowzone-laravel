@@ -23,8 +23,8 @@ class EmpresaDashboardController extends Controller
         $totalReseñasEmp     = 0;
 
         if ($empresa) {
-            // Hoteles asociados a esta empresa (via empresa_id si existe, o por nombre)
-            $hotelIds = \App\Models\Hotel::where('empresa_id', $empresa->id)->pluck('id');
+            // Usar la relación Eloquent definida en el modelo
+            $hotelIds = $empresa->hoteles()->pluck('id');
 
             if ($hotelIds->isNotEmpty()) {
                 $statsCalificaciones = Calificacion::where('tipo', 'hotel')

@@ -26,4 +26,9 @@ class Empresa extends Model
     {
         return $this->hasMany(NotificacionAdmin::class, 'empresa_id');
     }
+
+    public function hoteles()
+    {
+        return $this->hasMany(\App\Models\Hotel::class, 'empresa_id');
+    }
 }

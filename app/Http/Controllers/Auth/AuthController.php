@@ -25,7 +25,6 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        // Auth::attempt usa el campo 'email' del modelo
         $credentials = [
             'email'    => $request->correo,
             'password' => $request->password,
@@ -37,10 +36,14 @@ class AuthController extends Controller
                 ->withInput($request->only('correo'));
         }
 
+        // Regenerar sesión INMEDIATAMENTE después del attempt, antes de cualquier otra lógica
+        $request->session()->regenerate();
+
         $user = Auth::user();
 
         if ($user->estado === 'bloqueado') {
             Auth::logout();
+            $request->session()->invalidate();
             return back()
                 ->withErrors(['correo' => 'Tu cuenta ha sido bloqueada. Contacta al administrador.'])
                 ->withInput($request->only('correo'));
@@ -48,12 +51,11 @@ class AuthController extends Controller
 
         if ($user->estado === 'pendiente') {
             Auth::logout();
+            $request->session()->invalidate();
             return back()
                 ->withErrors(['correo' => 'Tu cuenta está pendiente de aprobación.'])
                 ->withInput($request->only('correo'));
         }
-
-        $request->session()->regenerate();
 
         return $this->redirectByRole($user);
     }
