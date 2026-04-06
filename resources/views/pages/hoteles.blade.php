@@ -3,6 +3,30 @@
 @section('title', 'Hoteles en Ortega')
 @section('body-class', 'no-hero')
 
+@push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+@endpush 
+@push('scripts')
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    var lat = 4.60971;   
+    var lng = -74.08175;
+
+    var map = L.map('mapaaa').setView([lat, lng], 13);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: 'yo'
+    }).addTo(map);
+
+    L.marker([lat, lng]).addTo(map)
+        .bindPopup('Aquí estás 📍');
+
+    setTimeout(() => {
+        map.invalidateSize();
+    }, 100);
+</script>
+@endpush
 @section('content')
 <main>
 
@@ -41,6 +65,11 @@
         </form>
     </div>
 
+    {{-- Mapa --}}
+    <div class="map-container">
+        <div id="mapaaa" style="height: 200px;width: 300px;"></div>
+    </div>
+    
     {{-- Grid de hoteles --}}
     <div class="grid">
         @forelse($hoteles as $hotel)
