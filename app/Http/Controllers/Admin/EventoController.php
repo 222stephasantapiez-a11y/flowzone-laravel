@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Evento;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\EventosExport;
+use App\Imports\EventosImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class EventoController extends Controller
 {
@@ -114,4 +118,30 @@ class EventoController extends Controller
         return redirect()->route('admin.eventos.index')
                          ->with('success', 'Evento eliminado correctamente.');
     }
+
+
+       public function exportExcel()
+{
+    return Excel::download(new EventosExport, 'eventos.xlsx');
+}
+
+public function exportPdf()
+{
+    $eventos = \App\Models\Evento::all();
+
+    $pdf = Pdf::loadView('admin.pdf.eventos', compact('eventos'));
+
+    return $pdf->download('eventos.pdf');
+}
+
+public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    Excel::import(new EventosImport, $request->file('archivo'));
+
+    return back()->with('success', 'Eventos importados correctamente');
+}
 }

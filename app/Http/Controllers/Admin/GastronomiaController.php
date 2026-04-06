@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\GastronomiaExport;
+use App\Imports\GastronomiaImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\Gastronomia;
 use App\Models\Empresa;
@@ -103,4 +107,30 @@ class GastronomiaController extends Controller
         return redirect()->route('admin.gastronomia.index')
                          ->with('success', 'Elemento eliminado.');
     }
+
+
+            public function exportExcel()
+{
+    return Excel::download(new GastronomiaExport, 'gastronomia.xlsx');
 }
+
+public function exportPdf()
+{
+    $gastronomia = \App\Models\Gastronomia::all();
+
+    $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomia'));
+
+    return $pdf->download('gastronomia.pdf');
+}
+
+public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    Excel::import(new GastronomiaImport, $request->file('archivo'));
+
+    return back()->with('success', 'Restaurantes importados correctamente');
+}
+    }

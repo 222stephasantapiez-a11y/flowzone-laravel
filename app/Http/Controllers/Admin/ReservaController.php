@@ -2,6 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\ReservasExport;
+use App\Imports\ReservasImport;
+use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\Controller;
 use App\Models\Reserva;
 use App\Models\Hotel;
@@ -13,19 +17,29 @@ class ReservaController extends Controller
     // Estados válidos del enum
     const ESTADOS = ['pendiente', 'confirmada', 'cancelada'];
 
-    public function index()
-    {
-        // with() carga hotel y usuario en una sola query (evita N+1)
-        $reservas = Reserva::with(['hotel', 'usuario'])
-                            ->orderBy('id', 'desc')
-                            ->get();
+      public function index(Request $request)
+{
+    $query = Reserva::with(['hotel', 'usuario']);
 
-        $hoteles  = Hotel::orderBy('nombre')->get();
-        $usuarios = User::orderBy('name')->get();
-
-        return view('admin.reservas', compact('reservas', 'hoteles', 'usuarios'));
+    if ($request->filled('fecha_inicio')) {
+        $query->whereDate('fecha_entrada', '>=', $request->fecha_inicio);
     }
 
+    if ($request->filled('fecha_fin')) {
+        $query->whereDate('fecha_salida', '<=', $request->fecha_fin);
+    }
+
+    if ($request->filled('estado')) {
+        $query->where('estado', $request->estado);
+    }
+
+    $reservas = $query->orderBy('id', 'desc')->get();
+
+    $usuarios = User::all();
+    $hoteles = Hotel::all();
+
+    return view('admin.reservas', compact('reservas', 'usuarios', 'hoteles'));
+}
     public function store(Request $request)
     {
         $request->validate([
@@ -83,4 +97,33 @@ class ReservaController extends Controller
         return redirect()->route('admin.reservas.index')
                          ->with('success', 'Reserva eliminada correctamente.');
     }
+
+    public function exportExcel()
+{
+    return Excel::download(new ReservasExport, 'reservas.xlsx');
+}
+  public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    Excel::import(
+        new ReservasImport,
+        $request->file('archivo')
+    );
+
+    return redirect()
+        ->route('admin.reservas.index')
+        ->with('success', 'Reservas importadas correctamente');
+}
+
+public function exportPdf()
+{
+    $reservas = Reserva::with(['usuario', 'hotel'])->get();
+
+    $pdf = Pdf::loadView('admin.pdf.reservas', compact('reservas'));
+
+    return $pdf->download('reservas.pdf');
+}
 }

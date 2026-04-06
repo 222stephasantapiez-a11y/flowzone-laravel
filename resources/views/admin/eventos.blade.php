@@ -15,10 +15,33 @@
             {{ isset($evento) ? 'Editar Evento: ' . $evento->nombre : 'Eventos' }}
         </h2>
         @unless(isset($evento))
-            <a href="{{ route('admin.eventos.index') }}" class="btn btn-primary btn-sm">
+            <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+                   <a href="{{ route('admin.eventos.index') }}" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-plus"></i> Nuevo Evento
             </a>
+    <a href="{{ route('admin.eventos.export.excel') }}" class="btn btn-success btn-sm">
+        <i class="fa-solid fa-file-excel"></i> Excel
+    </a>
+
+    <a href="{{ route('admin.eventos.export.pdf') }}" class="btn btn-danger btn-sm">
+        <i class="fa-solid fa-file-pdf"></i> PDF
+    </a>
+</div>
         @endunless
+        <form action="{{ route('admin.eventos.import.excel') }}"
+      method="POST"
+      enctype="multipart/form-data"
+      style="margin-bottom:1rem;">
+    @csrf
+
+    <div style="display:flex; gap:.5rem;">
+        <input type="file" name="archivo" required>
+
+        <button type="submit" class="btn btn-primary btn-sm">
+            Importar Excel
+        </button>
+    </div>
+</form>
     </div>
 
     @isset($evento)

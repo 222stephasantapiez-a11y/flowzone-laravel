@@ -14,10 +14,32 @@
             {{ isset($gastronomium) ? 'Editar: ' . $gastronomium->nombre : 'Gastronomía' }}
         </h2>
         @unless(isset($gastronomium))
-            <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-primary btn-sm">
+            <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+                <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-plus"></i> Nuevo Elemento
-            </a>
+    <a href="{{ route('admin.gastronomia.export.excel') }}" class="btn btn-success btn-sm">
+        <i class="fa-solid fa-file-excel"></i> Excel
+    </a>
+
+    <a href="{{ route('admin.gastronomia.export.pdf') }}" class="btn btn-danger btn-sm">
+        <i class="fa-solid fa-file-pdf"></i> PDF
+    </a>
+</div>
         @endunless
+        <form action="{{ route('admin.gastronomia.import.excel') }}"
+      method="POST"
+      enctype="multipart/form-data"
+      style="margin-bottom:1rem;">
+    @csrf
+
+    <div style="display:flex; gap:.5rem;">
+        <input type="file" name="archivo" required>
+
+        <button type="submit" class="btn btn-primary btn-sm">
+            Importar Excel
+        </button>
+    </div>
+</form>
     </div>
 
     @isset($gastronomium)

@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\HotelesExport;
+use App\Imports\HotelesImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Hotel;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class HotelController extends Controller
@@ -132,5 +136,29 @@ class HotelController extends Controller
         $hotel->delete();
         return redirect()->route('admin.hoteles.index')
                          ->with('success', 'Hotel eliminado correctamente.');
+    }
+    public function exportExcel()
+   {
+    return Excel::download(new HotelesExport, 'hoteles.xlsx');
+   }
+
+    public function exportPdf()
+{
+    $hoteles = \App\Models\Hotel::all();
+
+    $pdf = Pdf::loadView('admin.pdf.hoteles', compact('hoteles'));
+
+    return $pdf->download('hoteles.pdf');
+  }
+
+     public function importExcel(Request $request)
+    {
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    Excel::import(new HotelesImport, $request->file('archivo'));
+
+    return back()->with('success', 'Hoteles importados correctamente');
     }
 }

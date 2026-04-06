@@ -30,6 +30,15 @@
             </a>
 
             <div class="nav-section-label">Gestión</div>
+
+               <a href="{{ route('admin.usuarios.index') }}" class="{{ request()->routeIs('admin.usuarios.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-clipboard-list"></i> Usuarios
+                @isset($usuariosPend)
+                    @if($usuariosPend > 0)
+                        <span class="admin-notif-badge">{{ $usuariosPend }}</span>
+                    @endif
+                @endisset
+            </a>
             <a href="{{ route('admin.hoteles.index') }}" class="{{ request()->routeIs('admin.hoteles.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-hotel"></i> Hoteles
             </a>
