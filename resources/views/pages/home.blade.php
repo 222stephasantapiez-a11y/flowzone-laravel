@@ -12,6 +12,8 @@
 {{-- ═══════════════════════════════════════════════════════
      HERO — Full screen landing
 ═══════════════════════════════════════════════════════ --}}
+
+
 <section class="hero" @if($heroBg) style="background-image: url('{{ $heroBg }}')" @else style="background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%)" @endif>
     <div class="hero-overlay"></div>
     <div class="container">
@@ -148,41 +150,63 @@
     <div class="container">
         <div class="section-header">
             <div>
-                <p class="section-label"><i class="fa-solid fa-compass"></i> Experiencias</p>
+                <p class="section-label">
+                    <i class="fa-solid fa-compass"></i> Experiencias
+                </p>
                 <h2 class="section-title">Vive Ortega al Máximo</h2>
             </div>
         </div>
+
         <div class="experience-grid">
-            <div class="experience-card tall" style="background:linear-gradient(135deg,var(--green-900),var(--green-700));">
-                <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--green-900),var(--green-700));display:flex;align-items:center;justify-content:center;">
-                    <i class="fa-solid fa-tree" style="font-size:5rem;color:rgba(255,255,255,.15);"></i>
-                </div>
+
+            <!-- Card grande -->
+            <div class="experience-card tall">
+                <img src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee"
+                     alt="Ecoturismo Rural">
+
                 <div class="experience-card-overlay">
                     <span class="exp-tag">Naturaleza</span>
-                    <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:.3rem;">Ecoturismo Rural</h3>
-                    <p style="font-size:.85rem;opacity:.8;">Senderos, ríos y paisajes únicos del Tolima</p>
+                    <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:.3rem;">
+                        Ecoturismo Rural
+                    </h3>
+                    <p style="font-size:.85rem;opacity:.8;">
+                        Senderos, ríos y paisajes únicos del Tolima
+                    </p>
                 </div>
             </div>
-            <div class="experience-card" style="background:linear-gradient(135deg,var(--green-800),var(--green-600));">
-                <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--green-800),var(--green-600));display:flex;align-items:center;justify-content:center;">
-                    <i class="fa-solid fa-utensils" style="font-size:3rem;color:rgba(255,255,255,.15);"></i>
-                </div>
+
+            <!-- Card comida -->
+            <div class="experience-card">
+                <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836"
+                     alt="Sabores Locales">
+
                 <div class="experience-card-overlay">
                     <span class="exp-tag">Gastronomía</span>
-                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:.3rem;">Sabores Locales</h3>
-                    <p style="font-size:.82rem;opacity:.8;">Cocina tradicional tolimense</p>
+                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:.3rem;">
+                        Sabores Locales
+                    </h3>
+                    <p style="font-size:.82rem;opacity:.8;">
+                        Cocina tradicional tolimense
+                    </p>
                 </div>
             </div>
-            <div class="experience-card" style="background:linear-gradient(135deg,var(--gold-500),var(--gold-400));">
-                <div style="width:100%;height:100%;background:linear-gradient(135deg,var(--gold-500),var(--gold-400));display:flex;align-items:center;justify-content:center;">
-                    <i class="fa-solid fa-calendar-star" style="font-size:3rem;color:rgba(255,255,255,.15);"></i>
-                </div>
+
+            <!-- Card cultura -->
+            <div class="experience-card">
+                <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30"
+                     alt="Festivales">
+
                 <div class="experience-card-overlay">
                     <span class="exp-tag">Cultura</span>
-                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:.3rem;">Festivales y Eventos</h3>
-                    <p style="font-size:.82rem;opacity:.8;">Tradiciones y celebraciones locales</p>
+                    <h3 style="font-size:1.1rem;font-weight:700;margin-bottom:.3rem;">
+                        Festivales y Eventos
+                    </h3>
+                    <p style="font-size:.82rem;opacity:.8;">
+                        Tradiciones y celebraciones locales
+                    </p>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
