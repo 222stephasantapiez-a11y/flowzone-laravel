@@ -1,7 +1,7 @@
 <nav class="navbar" id="navbar">
     <div class="container navbar-inner">
         <a class="nav-brand" href="{{ route('home') }}">
-            <i class="fa-solid fa-mountain-sun"></i> FlowZone
+            <i ></i> FlowZone
         </a>
 
         <ul class="nav-menu" id="navMenu">

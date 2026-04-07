@@ -63,7 +63,7 @@
                              onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-mountain-sun\'></i></div>'">
                     @else
                         <div class="card-img-fallback">
-                            <i class="fa-solid fa-mountain-sun" aria-hidden="true"></i>
+                            <i ></i>
                         </div>
                     @endif
 
