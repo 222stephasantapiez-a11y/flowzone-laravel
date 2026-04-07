@@ -14,10 +14,28 @@
             {{ isset($blog) ? 'Editar: ' . $blog->titulo : 'Blog' }}
         </h2>
         @unless(isset($blog))
-            <a href="{{ route('admin.blog.index') }}" class="btn btn-primary btn-sm">
+           
+            <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+                 <a href="{{ route('admin.blog.index') }}" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-plus"></i> Nueva Publicación
             </a>
+    <a href="{{ route('admin.blog.export.excel') }}" class="btn btn-success btn-sm">
+        Exportar Excel
+    </a>
+
+    <a href="{{ route('admin.blog.export.pdf') }}" class="btn btn-danger btn-sm">
+        Exportar PDF
+    </a>
+</div>
         @endunless
+
+            <form action="{{ route('admin.blog.import.excel') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="archivo" required>
+        <button type="submit" class="btn btn-primary btn-sm">
+            Importar
+        </button>
+    </form>
     </div>
 
     @isset($blog)
