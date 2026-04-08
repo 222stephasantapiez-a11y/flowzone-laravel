@@ -8,23 +8,21 @@
 @endpush 
 @push('scripts')
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
-    var lat = 4.60971;   
-    var lng = -74.08175;
 
-    var map = L.map('mapaaa').setView([lat, lng], 13);
+    var map = L.map('mapaaa').setView([3.9377, -75.2230], 14);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: 'yo'
-    }).addTo(map);
+     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+         attribution: 'yo'
+     }).addTo(map);
 
-    L.marker([lat, lng]).addTo(map)
-        .bindPopup('Aquí estás 📍');
+     L.marker([3.9377, -75.2230]).addTo(map)
+         .bindPopup('Aquí estás 📍');
 
-    setTimeout(() => {
-        map.invalidateSize();
+     setTimeout(() => {
+         map.invalidateSize();
     }, 100);
+
 </script>
 @endpush
 @section('content')
