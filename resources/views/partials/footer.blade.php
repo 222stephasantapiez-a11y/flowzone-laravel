@@ -2,7 +2,7 @@
     <div class="container">
         <div class="footer-content">
             <div class="footer-brand">
-                <h3><i class="fa-solid fa-mountain-sun"></i> FlowZone</h3>
+                <h3><i></i> FlowZone</h3>
                 <p>Descubre la belleza natural y cultural de Ortega, Tolima. Tu guía de turismo local para vivir experiencias únicas en el corazón del campo colombiano.</p>
                 <div class="footer-social">
                     <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>

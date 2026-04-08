@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\LugaresExport;
+use App\Imports\LugaresImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Lugar;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class LugarController extends Controller
@@ -112,4 +116,29 @@ class LugarController extends Controller
         return redirect()->route('admin.lugares.index')
                          ->with('success', 'Lugar eliminado correctamente.');
     }
+
+    public function exportExcel()
+{
+    return Excel::download(new LugaresExport, 'lugares.xlsx');
+}
+
+public function exportPdf()
+{
+    $lugares = \App\Models\Lugar::all();
+
+    $pdf = Pdf::loadView('admin.pdf.lugares', compact('lugares'));
+
+    return $pdf->download('lugares.pdf');
+}
+
+public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    Excel::import(new LugaresImport, $request->file('archivo'));
+
+    return back()->with('success', 'Lugares importados correctamente');
+}
 }

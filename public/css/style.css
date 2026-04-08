@@ -1,5 +1,5 @@
 /* ============================================================
-   FlowZone — Sistema de Diseño Completo
+   FlowZone ï¿½ Sistema de Diseï¿½o Completo
    modern-travel-ui-redesign
    ============================================================ */
 
@@ -27,7 +27,7 @@
   --gray-600: #5a7060;
   --gray-900: #1a2e22;
 
-  /* Semánticos */
+  /* Semï¿½nticos */
   --danger:  #dc2626;
   --warning: #d97706;
   --success: #16a34a;
@@ -41,11 +41,11 @@
   --light:     var(--gray-50);
   --gray:      var(--gray-400);
 
-  /* Tipografía */
+  /* Tipografï¿½a */
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body:    'Inter', system-ui, sans-serif;
 
-  /* Escala tipográfica */
+  /* Escala tipogrï¿½fica */
   --text-xs:   0.75rem;
   --text-sm:   0.875rem;
   --text-base: 1rem;
@@ -524,7 +524,7 @@ body.no-hero .navbar {
   margin-top: 1rem;
 }
 
-/* Blog card — layout horizontal */
+/* Blog card ï¿½ layout horizontal */
 .blog-card {
   background: var(--white);
   border-radius: var(--radius-lg);
@@ -687,7 +687,7 @@ body.no-hero .navbar {
   transform: translateY(-2px);
 }
 
-/* Tamaños */
+/* Tamaï¿½os */
 .btn-sm  { padding: .4rem .9rem; font-size: .8rem; }
 .btn-lg  { padding: .85rem 2rem; font-size: 1rem; }
 .btn-block { width: 100%; }
@@ -1607,7 +1607,7 @@ body.no-hero .navbar {
   font-size: 1.2rem;
 }
 
-/* Categoría / precio / ubicación / fecha (legacy) */
+/* Categorï¿½a / precio / ubicaciï¿½n / fecha (legacy) */
 .categoria, .precio, .ubicacion, .fecha {
   color: var(--gray);
   font-size: .9rem;
@@ -1619,7 +1619,7 @@ body.no-hero .navbar {
 
 /* -- 21. MEDIA QUERIES --------------------------------------- */
 
-/* 1024px — sidebar colapsado */
+/* 1024px ï¿½ sidebar colapsado */
 @media (max-width: 1024px) {
   .admin-sidebar {
     width: 220px;
@@ -1640,7 +1640,7 @@ body.no-hero .navbar {
   .experience-card.tall { grid-row: span 1; }
 }
 
-/* 768px — hamburger, grid 1 col, sidebar fixed */
+/* 768px ï¿½ hamburger, grid 1 col, sidebar fixed */
 @media (max-width: 768px) {
   .nav-menu { display: none; }
 
@@ -1719,7 +1719,7 @@ body.no-hero .navbar {
   }
 }
 
-/* 480px — footer 1 col, stats 2 cols */
+/* 480px ï¿½ footer 1 col, stats 2 cols */
 @media (max-width: 480px) {
   .footer-content {
     grid-template-columns: 1fr;
@@ -1753,7 +1753,7 @@ body.no-hero .navbar {
   font-size: 3rem;
 }
 
-/* Descripción corta en card */
+/* Descripciï¿½n corta en card */
 .card-desc {
   font-size: .88rem;
   color: var(--gray-600);
@@ -1801,7 +1801,7 @@ body.no-hero .navbar {
 }
 
 
-/* -- PAGE HERO EYEBROW & PÁRRAFO ------------------------------ */
+/* -- PAGE HERO EYEBROW & Pï¿½RRAFO ------------------------------ */
 .page-hero-eyebrow {
   display: inline-flex;
   align-items: center;
@@ -2233,19 +2233,19 @@ body.no-hero .navbar {
 
 /* -- FIXES: Listados lugares/hoteles ------------------------- */
 
-/* Asegurar que el container siempre tenga padding lateral mínimo */
+/* Asegurar que el container siempre tenga padding lateral mï¿½nimo */
 .container {
     padding-left: max(1.25rem, env(safe-area-inset-left));
     padding-right: max(1.25rem, env(safe-area-inset-right));
 }
 
-/* Grid de cards: gap más generoso y mínimo de columna más flexible */
+/* Grid de cards: gap mï¿½s generoso y mï¿½nimo de columna mï¿½s flexible */
 .grid {
     gap: 2rem;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 }
 
-/* Cards: sombra y borde sutil para separación visual */
+/* Cards: sombra y borde sutil para separaciï¿½n visual */
 .card {
     border: 1px solid var(--gray-200);
 }
@@ -2255,7 +2255,7 @@ body.no-hero .navbar {
     height: 210px;
 }
 
-/* Acciones de card: alineación y separación */
+/* Acciones de card: alineaciï¿½n y separaciï¿½n */
 .card-actions {
     margin-top: 1.1rem;
     gap: .6rem;
@@ -2268,13 +2268,13 @@ body.no-hero .navbar {
     padding-right: 1.25rem;
 }
 
-/* Sección de contenido: padding vertical más cómodo */
+/* Secciï¿½n de contenido: padding vertical mï¿½s cï¿½modo */
 .section {
     padding-top: 3.5rem;
     padding-bottom: 3.5rem;
 }
 
-/* Filtros: mejor separación del hero */
+/* Filtros: mejor separaciï¿½n del hero */
 .filters {
     margin-bottom: 2.5rem;
     border: 1px solid var(--gray-200);
@@ -2316,7 +2316,7 @@ body.no-hero .navbar {
 
 
 /* ============================================================
-   REVIEWS — Calificaciones y reseñas
+   REVIEWS ï¿½ Calificaciones y reseï¿½as
    ============================================================ */
 
 .rv-section {
@@ -2475,7 +2475,7 @@ body.no-hero .navbar {
     color: var(--gold-500);
 }
 
-/* El JS maneja el hover — CSS solo define estado base */
+/* El JS maneja el hover ï¿½ CSS solo define estado base */
 .rv-star-picker .rv-star-btn i { color: var(--gray-200); }
 .rv-star-picker .rv-star-btn.active i { color: var(--gold-500); }
 
@@ -2623,7 +2623,7 @@ body.no-hero .navbar {
     border-radius: var(--radius-full);
 }
 
-/* -- Cards de reseñas -- */
+/* -- Cards de reseï¿½as -- */
 .rv-list {
     display: flex;
     flex-direction: column;
@@ -2713,7 +2713,7 @@ body.no-hero .navbar {
     margin: 0;
 }
 
-/* -- Estado vacío -- */
+/* -- Estado vacï¿½o -- */
 .rv-empty {
     text-align: center;
     padding: 2.5rem 1rem;

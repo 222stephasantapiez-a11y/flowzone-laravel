@@ -15,6 +15,7 @@
             Solicitudes pendientes
             <span class="badge badge-warning" style="margin-left:.5rem;">{{ $notifCount }}</span>
         </h2>
+        
         <form method="POST" action="{{ route('admin.notificaciones.leer-todas') }}" style="display:inline">
             @csrf
             <button type="submit" class="btn-small btn-edit">
@@ -90,8 +91,10 @@
 </div>
 @endisset
 
+
 {{-- Tabla empresas --}}
 <div class="admin-section">
+
     <div class="admin-section-header">
         <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Empresas Registradas</h2>
         <span class="badge badge-info">{{ $empresas->count() }} total</span>
@@ -166,6 +169,28 @@
                 @endforelse
             </tbody>
         </table>
+
+        
+        <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+    <a href="{{ route('admin.empresas.export.excel') }}" class="btn btn-success btn-sm">
+        Excel
+    </a>
+
+    <a href="{{ route('admin.empresas.export.pdf') }}" class="btn btn-danger btn-sm">
+        PDF
+    </a>
+
+    <form action="{{ route('admin.empresas.import.excel') }}"
+          method="POST"
+          enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="archivo" required>
+        <button type="submit" class="btn btn-primary btn-sm">
+            Importar
+        </button>
+    </form>
+</div>
+
     </div>
 </div>
 
