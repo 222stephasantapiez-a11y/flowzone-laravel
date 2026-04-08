@@ -98,7 +98,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-plus"></i> Agregar imagen
+                <i class="fa-solid "></i> Agregar imagen
             </button>
         </form>
     </div>

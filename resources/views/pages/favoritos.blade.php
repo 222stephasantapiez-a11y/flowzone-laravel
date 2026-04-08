@@ -138,7 +138,7 @@
                 <div class="fav-card" data-card-id="lugar-{{ $lugar->id }}">
                     <div class="fav-card-img" style="{{ $img ? 'background-image:url(\''.$img.'\')' : '' }}">
                         @if(!$img)
-                            <i class="fa-solid fa-mountain-sun" style="font-size:2.5rem;color:rgba(255,255,255,.4);"></i>
+                            <i style="font-size:2.5rem;color:rgba(255,255,255,.4);"></i>
                         @endif
                         <button class="fav-remove-btn btn-favorito-remove"
                                 data-tipo="lugar" data-id="{{ $lugar->id }}"

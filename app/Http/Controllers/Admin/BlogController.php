@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
-use App\Models\Empresa;
+use App\Exports\BlogsExport;
+use App\Imports\BlogsImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Empresa;
 use Illuminate\Support\Facades\Storage;
 
 class BlogController extends Controller
@@ -108,4 +112,30 @@ class BlogController extends Controller
         $msg = $blog->publicado ? 'Publicación publicada.' : 'Publicación despublicada.';
         return back()->with('success', $msg);
     }
+
+     public function exportExcel()
+{
+    return Excel::download(new BlogsExport, 'blogs.xlsx');
+}
+
+public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    Excel::import(new BlogsImport, $request->file('archivo'));
+
+    return redirect()->back()->with('success', 'Blogs importados correctamente');
+}
+
+public function exportPdf()
+{
+    $blogs = BlogPost::all();
+
+    $pdf = Pdf::loadView('admin.pdf.blog', compact('blogs'));
+
+    return $pdf->download('blogs.pdf');
+}
+
 }

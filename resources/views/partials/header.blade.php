@@ -2,6 +2,7 @@
     <div class="container navbar-inner">
         <a class="nav-brand" href="{{ route('home') }}">
             <i class=></i> FlowZone
+
         </a>
 
         <ul class="nav-menu" id="navMenu">
