@@ -220,6 +220,7 @@ class PageController extends Controller
                     : 'Entrada gratuita',
             ]);
 
+
         $hoteles = Hotel::whereNotNull('latitud')->whereNotNull('longitud')
             ->where('disponibilidad', true)->get()
             ->map(fn($h) => [
@@ -235,7 +236,17 @@ class PageController extends Controller
                 'precio'      => '$' . number_format($h->precio, 0, ',', '.') . ' COP/noche',
             ]);
 
-        $puntos = $lugares->merge($hoteles)->values();
+
+        //validar que lugares y hoteles no esten vacions antes de hacer merge
+        if ($lugares->isNotEmpty() && $hoteles->isNotEmpty()) {
+            $puntos = $lugares->merge($hoteles)->values();
+        } elseif($lugares->isNotEmpty()) {
+            $puntos = $lugares;
+        } elseif($hoteles->isNotEmpty()) {
+            $puntos = $hoteles;
+        } else {
+            $puntos = collect(); // Colección vacía si no hay puntos
+        }
 
         return view('pages.maps', compact('puntos'));
     }
