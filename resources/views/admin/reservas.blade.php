@@ -120,21 +120,15 @@
             <i class="fa-solid fa-list" style="color:var(--primary);"></i>
             Todas las Reservas
         </h2>
-    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
-
-    <a href="{{ route('admin.reservas.export.excel') }}" class="btn btn-success btn-sm">
-        <i class="fa-solid fa-file-excel"></i> Excel
-    </a>
-
-    <a href="{{ route('admin.reservas.export.pdf') }}" class="btn btn-danger btn-sm">
-        <i class="fa-solid fa-file-pdf"></i> PDF
-    </a>
-
-    <span class="badge badge-info">
-        {{ $reservas->count() }} total
-    </span>
-     </div>
-     
+        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+            <a href="{{ route('admin.reservas.export.excel') }}" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-file-excel"></i> Excel
+            </a>
+            <a href="{{ route('admin.reservas.export.pdf') }}" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+            </a>
+            <span class="badge badge-info">{{ $reservas->total() }} total</span>
+        </div>
     </div>
 
     {{-- Filtros --}}
@@ -155,15 +149,9 @@
                 <label>Estado</label>
                 <select name="estado">
                     <option value="">Todos</option>
-                    <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>
-                        Pendiente
-                    </option>
-                    <option value="confirmada" {{ request('estado') == 'confirmada' ? 'selected' : '' }}>
-                        Confirmada
-                    </option>
-                    <option value="cancelada" {{ request('estado') == 'cancelada' ? 'selected' : '' }}>
-                        Cancelada
-                    </option>
+                    <option value="pendiente"  {{ request('estado') == 'pendiente'  ? 'selected' : '' }}>Pendiente</option>
+                    <option value="confirmada" {{ request('estado') == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
+                    <option value="cancelada"  {{ request('estado') == 'cancelada'  ? 'selected' : '' }}>Cancelada</option>
                 </select>
             </div>
 
@@ -181,10 +169,8 @@
           enctype="multipart/form-data"
           style="margin-bottom:1rem;">
         @csrf
-
         <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
             <input type="file" name="archivo" required>
-
             <button type="submit" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-upload"></i> Importar Excel
             </button>
@@ -226,14 +212,12 @@
                                class="btn-small btn-edit btn-sm">
                                 <i class="fa-solid fa-pen fa-xs"></i> Editar
                             </a>
-
                             <form method="POST"
                                   action="{{ route('admin.reservas.destroy', $r) }}"
                                   style="display:inline"
                                   onsubmit="return confirm('¿Eliminar esta reserva?')">
                                 @csrf
                                 @method('DELETE')
-
                                 <button type="submit" class="btn-small btn-delete btn-sm">
                                     <i class="fa-solid fa-trash fa-xs"></i> Eliminar
                                 </button>
@@ -242,8 +226,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9"
-                            style="text-align:center;color:var(--gray);padding:2.5rem;">
+                        <td colspan="9" style="text-align:center;color:var(--gray);padding:2.5rem;">
                             No hay reservas registradas aún.
                         </td>
                     </tr>
@@ -251,6 +234,51 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Paginación --}}
+    @if($reservas->hasPages())
+    <div class="pagination-bar">
+        <div class="pagination-info">
+            Mostrando <strong>{{ $reservas->firstItem() }}</strong>–<strong>{{ $reservas->lastItem() }}</strong>
+            de <strong>{{ $reservas->total() }}</strong> registros
+        </div>
+
+        <div class="pagination-links">
+            @if($reservas->onFirstPage())
+                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
+            @else
+                <a href="{{ $reservas->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
+            @endif
+
+            @foreach($reservas->getUrlRange(max(1,$reservas->currentPage()-2), min($reservas->lastPage(),$reservas->currentPage()+2)) as $page => $url)
+                @if($page == $reservas->currentPage())
+                    <span class="page-btn page-btn--active">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if($reservas->hasMorePages())
+                <a href="{{ $reservas->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
+            @else
+                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
+            @endif
+        </div>
+
+        <form method="GET" class="per-page-form">
+            @foreach(request()->except(['page','per_page']) as $k => $v)
+                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+            @endforeach
+            <label class="per-page-label">Filas:</label>
+            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
+                @foreach([5,10,25,50,100] as $n)
+                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
+                @endforeach
+            </select>
+        </form>
+    </div>
+    @endif
+
 </div>
 
 @endsection

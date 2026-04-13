@@ -27,11 +27,12 @@ class BlogController extends Controller
         return $current;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->get();
+        $perPage  = $request->get('per_page', 10);
+        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.blog', compact('posts', 'empresas'));
+        return view('admin.blog', compact('posts', 'empresas', 'perPage'));
     }
 
     public function store(Request $request)
@@ -62,9 +63,10 @@ class BlogController extends Controller
 
     public function edit(BlogPost $blog)
     {
-        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->get();
+        $perPage  = 10;
+        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.blog', compact('posts', 'empresas', 'blog'));
+        return view('admin.blog', compact('posts', 'empresas', 'blog', 'perPage'));
     }
 
     public function update(Request $request, BlogPost $blog)

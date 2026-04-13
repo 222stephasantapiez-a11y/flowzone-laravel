@@ -31,11 +31,12 @@ class GastronomiaController extends Controller
         return $current ?? '';
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $items    = Gastronomia::with('empresa')->latest()->get();
+        $perPage  = $request->get('per_page', 10);
+        $items    = Gastronomia::with('empresa')->latest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.gastronomia', compact('items', 'empresas'));
+        return view('admin.gastronomia', compact('items', 'empresas', 'perPage'));
     }
 
     public function store(Request $request)
@@ -67,9 +68,10 @@ class GastronomiaController extends Controller
 
     public function edit(Gastronomia $gastronomium)
     {
-        $items    = Gastronomia::with('empresa')->latest()->get();
+        $perPage  = 10;
+        $items    = Gastronomia::with('empresa')->latest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.gastronomia', compact('items', 'empresas', 'gastronomium'));
+        return view('admin.gastronomia', compact('items', 'empresas', 'gastronomium', 'perPage'));
     }
 
     public function update(Request $request, Gastronomia $gastronomium)
@@ -108,29 +110,28 @@ class GastronomiaController extends Controller
                          ->with('success', 'Elemento eliminado.');
     }
 
-
-            public function exportExcel()
-{
-    return Excel::download(new GastronomiaExport, 'gastronomia.xlsx');
-}
-
-public function exportPdf()
-{
-    $gastronomia = \App\Models\Gastronomia::all();
-
-    $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomia'));
-
-    return $pdf->download('gastronomia.pdf');
-}
-
-public function importExcel(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|mimes:xlsx,xls,csv'
-    ]);
-
-    Excel::import(new GastronomiaImport, $request->file('archivo'));
-
-    return back()->with('success', 'Restaurantes importados correctamente');
-}
+    public function exportExcel()
+    {
+        return Excel::download(new GastronomiaExport, 'gastronomia.xlsx');
     }
+
+    public function exportPdf()
+    {
+        $gastronomia = \App\Models\Gastronomia::all();
+
+        $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomia'));
+
+        return $pdf->download('gastronomia.pdf');
+    }
+
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        Excel::import(new GastronomiaImport, $request->file('archivo'));
+
+        return back()->with('success', 'Restaurantes importados correctamente');
+    }
+}
