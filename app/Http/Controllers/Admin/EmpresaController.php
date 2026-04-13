@@ -14,14 +14,15 @@ use Illuminate\Http\Request;
 
 class EmpresaController extends Controller
 {
-    public function index()
-    {
-        $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
-        $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
-        $notifCount     = $notificaciones->count();
+   public function index(Request $request)
+{
+    $perPage        = $request->get('per_page', 10);
+    $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
+    $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
+    $notifCount     = $notificaciones->count();
 
-        return view('admin.empresas', compact('empresas', 'notificaciones', 'notifCount'));
-    }
+    return view('admin.empresas', compact('empresas', 'notificaciones', 'notifCount', 'perPage'));
+}
 
     public function aprobar(Empresa $empresa)
     {

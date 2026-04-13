@@ -31,11 +31,12 @@ class BlogController extends Controller
         return $current;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->get();
+        $perPage  = $request->get('per_page', 10);
+        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.blog', compact('posts', 'empresas'));
+        return view('admin.blog', compact('posts', 'empresas', 'perPage'));
     }
 
     public function store(Request $request)
@@ -66,9 +67,10 @@ class BlogController extends Controller
 
     public function edit(BlogPost $blog)
     {
-        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->get();
+        $perPage  = 10;
+        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.blog', compact('posts', 'empresas', 'blog'));
+        return view('admin.blog', compact('posts', 'empresas', 'blog', 'perPage'));
     }
 
     public function update(Request $request, BlogPost $blog)
@@ -112,30 +114,4 @@ class BlogController extends Controller
         $msg = $blog->publicado ? 'Publicación publicada.' : 'Publicación despublicada.';
         return back()->with('success', $msg);
     }
-
-     public function exportExcel()
-{
-    return Excel::download(new BlogsExport, 'blogs.xlsx');
-}
-
-public function importExcel(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|mimes:xlsx,xls,csv'
-    ]);
-
-    Excel::import(new BlogsImport, $request->file('archivo'));
-
-    return redirect()->back()->with('success', 'Blogs importados correctamente');
-}
-
-public function exportPdf()
-{
-    $blogs = BlogPost::all();
-
-    $pdf = Pdf::loadView('admin.pdf.blog', compact('blogs'));
-
-    return $pdf->download('blogs.pdf');
-}
-
 }

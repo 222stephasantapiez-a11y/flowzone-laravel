@@ -46,7 +46,7 @@ class PageController extends Controller
         }
 
         return view('pages.hoteles', [
-            'hoteles'   => $query->latest()->get(),
+         'hoteles' => $query->latest()->paginate(5)->withQueryString(),
             'busqueda'  => $request->busqueda ?? '',
             'precio_max'=> $request->precio_max ?? '',
         ]);
@@ -84,7 +84,7 @@ class PageController extends Controller
         }
 
         return view('pages.lugares', [
-            'lugares'         => $query->latest()->get(),
+         'lugares' => $query->latest()->paginate(5)->withQueryString(),
             'categorias'      => Lugar::distinct()->pluck('categoria')->filter()->sort()->values(),
             'categoria_filtro'=> $request->categoria ?? '',
             'busqueda'        => $request->busqueda ?? '',

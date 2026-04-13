@@ -32,8 +32,6 @@
 
     </div>
 
- 
-
   <form action="{{ route('admin.hoteles.import.excel') }}"
       method="POST"
       enctype="multipart/form-data"
@@ -163,7 +161,7 @@
 <div class="admin-section">
     <div class="admin-section-header">
         <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Hoteles Registrados</h2>
-        <span class="badge badge-info">{{ $hoteles->count() }} total</span>
+        <span class="badge badge-info">{{ $hoteles->total() }} total</span>
     </div>
     <div class="table-responsive">
         <table class="admin-table">
@@ -232,6 +230,51 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Paginación --}}
+    @if($hoteles->hasPages())
+    <div class="pagination-bar">
+        <div class="pagination-info">
+            Mostrando <strong>{{ $hoteles->firstItem() }}</strong>–<strong>{{ $hoteles->lastItem() }}</strong>
+            de <strong>{{ $hoteles->total() }}</strong> registros
+        </div>
+
+        <div class="pagination-links">
+            @if($hoteles->onFirstPage())
+                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
+            @else
+                <a href="{{ $hoteles->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
+            @endif
+
+            @foreach($hoteles->getUrlRange(max(1,$hoteles->currentPage()-2), min($hoteles->lastPage(),$hoteles->currentPage()+2)) as $page => $url)
+                @if($page == $hoteles->currentPage())
+                    <span class="page-btn page-btn--active">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if($hoteles->hasMorePages())
+                <a href="{{ $hoteles->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
+            @else
+                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
+            @endif
+        </div>
+
+        <form method="GET" class="per-page-form">
+            @foreach(request()->except(['page','per_page']) as $k => $v)
+                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+            @endforeach
+            <label class="per-page-label">Filas:</label>
+            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
+                @foreach([5,10,25,50,100] as $n)
+                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
+                @endforeach
+            </select>
+        </form>
+    </div>
+    @endif
+
 </div>
 
 @endsection
