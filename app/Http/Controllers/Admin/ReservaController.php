@@ -14,32 +14,33 @@ use Illuminate\Http\Request;
 
 class ReservaController extends Controller
 {
-    // Estados válidos del enum
     const ESTADOS = ['pendiente', 'confirmada', 'cancelada'];
 
-      public function index(Request $request)
-{
-    $query = Reserva::with(['hotel', 'usuario']);
+    public function index(Request $request)
+    {
+        $query = Reserva::with(['hotel', 'usuario']);
 
-    if ($request->filled('fecha_inicio')) {
-        $query->whereDate('fecha_entrada', '>=', $request->fecha_inicio);
+        if ($request->filled('fecha_inicio')) {
+            $query->whereDate('fecha_entrada', '>=', $request->fecha_inicio);
+        }
+
+        if ($request->filled('fecha_fin')) {
+            $query->whereDate('fecha_salida', '<=', $request->fecha_fin);
+        }
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->estado);
+        }
+
+        $perPage  = $request->get('per_page', 10);
+        $reservas = $query->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
+
+        $usuarios = User::all();
+        $hoteles  = Hotel::all();
+
+        return view('admin.reservas', compact('reservas', 'usuarios', 'hoteles', 'perPage'));
     }
 
-    if ($request->filled('fecha_fin')) {
-        $query->whereDate('fecha_salida', '<=', $request->fecha_fin);
-    }
-
-    if ($request->filled('estado')) {
-        $query->where('estado', $request->estado);
-    }
-
-    $reservas = $query->orderBy('id', 'desc')->get();
-
-    $usuarios = User::all();
-    $hoteles = Hotel::all();
-
-    return view('admin.reservas', compact('reservas', 'usuarios', 'hoteles'));
-}
     public function store(Request $request)
     {
         $request->validate([
@@ -63,11 +64,12 @@ class ReservaController extends Controller
 
     public function edit(Reserva $reserva)
     {
-        $reservas = Reserva::with(['hotel', 'usuario'])->orderBy('id', 'desc')->get();
+        $perPage  = 10;
+        $reservas = Reserva::with(['hotel', 'usuario'])->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
         $hoteles  = Hotel::orderBy('nombre')->get();
         $usuarios = User::orderBy('name')->get();
 
-        return view('admin.reservas', compact('reservas', 'hoteles', 'usuarios', 'reserva'));
+        return view('admin.reservas', compact('reservas', 'hoteles', 'usuarios', 'reserva', 'perPage'));
     }
 
     public function update(Request $request, Reserva $reserva)
@@ -99,31 +101,29 @@ class ReservaController extends Controller
     }
 
     public function exportExcel()
-{
-    return Excel::download(new ReservasExport, 'reservas.xlsx');
-}
-  public function importExcel(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|mimes:xlsx,xls,csv'
-    ]);
+    {
+        return Excel::download(new ReservasExport, 'reservas.xlsx');
+    }
 
-    Excel::import(
-        new ReservasImport,
-        $request->file('archivo')
-    );
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:xlsx,xls,csv'
+        ]);
 
-    return redirect()
-        ->route('admin.reservas.index')
-        ->with('success', 'Reservas importadas correctamente');
-}
+        Excel::import(new ReservasImport, $request->file('archivo'));
 
-public function exportPdf()
-{
-    $reservas = Reserva::with(['usuario', 'hotel'])->get();
+        return redirect()
+            ->route('admin.reservas.index')
+            ->with('success', 'Reservas importadas correctamente');
+    }
 
-    $pdf = Pdf::loadView('admin.pdf.reservas', compact('reservas'));
+    public function exportPdf()
+    {
+        $reservas = Reserva::with(['usuario', 'hotel'])->get();
 
-    return $pdf->download('reservas.pdf');
-}
+        $pdf = Pdf::loadView('admin.pdf.reservas', compact('reservas'));
+
+        return $pdf->download('reservas.pdf');
+    }
 }

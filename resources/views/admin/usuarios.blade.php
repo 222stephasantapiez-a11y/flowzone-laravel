@@ -21,7 +21,7 @@
             </a>
 
             <span class="badge badge-info">
-                {{ $usuarios->count() }} total
+                {{ $usuarios->total() }} total
             </span>
         </div>
     </div>
@@ -74,6 +74,51 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Paginación --}}
+    @if($usuarios->hasPages())
+    <div class="pagination-bar">
+        <div class="pagination-info">
+            Mostrando <strong>{{ $usuarios->firstItem() }}</strong>–<strong>{{ $usuarios->lastItem() }}</strong>
+            de <strong>{{ $usuarios->total() }}</strong> registros
+        </div>
+
+        <div class="pagination-links">
+            @if($usuarios->onFirstPage())
+                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
+            @else
+                <a href="{{ $usuarios->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
+            @endif
+
+            @foreach($usuarios->getUrlRange(max(1,$usuarios->currentPage()-2), min($usuarios->lastPage(),$usuarios->currentPage()+2)) as $page => $url)
+                @if($page == $usuarios->currentPage())
+                    <span class="page-btn page-btn--active">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if($usuarios->hasMorePages())
+                <a href="{{ $usuarios->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
+            @else
+                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
+            @endif
+        </div>
+
+        <form method="GET" class="per-page-form">
+            @foreach(request()->except(['page','per_page']) as $k => $v)
+                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+            @endforeach
+            <label class="per-page-label">Filas:</label>
+            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
+                @foreach([5,10,25,50,100] as $n)
+                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
+                @endforeach
+            </select>
+        </form>
+    </div>
+    @endif
+
 </div>
 
 @endsection

@@ -46,7 +46,7 @@ class PageController extends Controller
         }
 
         return view('pages.hoteles', [
-            'hoteles'   => $query->latest()->get(),
+         'hoteles' => $query->latest()->paginate(5)->withQueryString(),
             'busqueda'  => $request->busqueda ?? '',
             'precio_max'=> $request->precio_max ?? '',
         ]);
@@ -84,7 +84,7 @@ class PageController extends Controller
         }
 
         return view('pages.lugares', [
-            'lugares'         => $query->latest()->get(),
+         'lugares' => $query->latest()->paginate(5)->withQueryString(),
             'categorias'      => Lugar::distinct()->pluck('categoria')->filter()->sort()->values(),
             'categoria_filtro'=> $request->categoria ?? '',
             'busqueda'        => $request->busqueda ?? '',
@@ -220,6 +220,7 @@ class PageController extends Controller
                     : 'Entrada gratuita',
             ]);
 
+
         $hoteles = Hotel::whereNotNull('latitud')->whereNotNull('longitud')
             ->where('disponibilidad', true)->get()
             ->map(fn($h) => [
@@ -235,7 +236,17 @@ class PageController extends Controller
                 'precio'      => '$' . number_format($h->precio, 0, ',', '.') . ' COP/noche',
             ]);
 
-        $puntos = $lugares->merge($hoteles)->values();
+
+        //validar que lugares y hoteles no esten vacions antes de hacer merge
+        if ($lugares->isNotEmpty() && $hoteles->isNotEmpty()) {
+            $puntos = $lugares->merge($hoteles)->values();
+        } elseif($lugares->isNotEmpty()) {
+            $puntos = $lugares;
+        } elseif($hoteles->isNotEmpty()) {
+            $puntos = $hoteles;
+        } else {
+            $puntos = collect(); // Colección vacía si no hay puntos
+        }
 
         return view('pages.maps', compact('puntos'));
     }

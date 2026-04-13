@@ -16,30 +16,28 @@
         @unless(isset($gastronomium))
             <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
                 <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-plus"></i> Nuevo Elemento
-    <a href="{{ route('admin.gastronomia.export.excel') }}" class="btn btn-success btn-sm">
-        <i class="fa-solid fa-file-excel"></i> Excel
-    </a>
-
-    <a href="{{ route('admin.gastronomia.export.pdf') }}" class="btn btn-danger btn-sm">
-        <i class="fa-solid fa-file-pdf"></i> PDF
-    </a>
-</div>
+                    <i class="fa-solid fa-plus"></i> Nuevo Elemento
+                </a>
+                <a href="{{ route('admin.gastronomia.export.excel') }}" class="btn btn-success btn-sm">
+                    <i class="fa-solid fa-file-excel"></i> Excel
+                </a>
+                <a href="{{ route('admin.gastronomia.export.pdf') }}" class="btn btn-danger btn-sm">
+                    <i class="fa-solid fa-file-pdf"></i> PDF
+                </a>
+            </div>
         @endunless
         <form action="{{ route('admin.gastronomia.import.excel') }}"
-      method="POST"
-      enctype="multipart/form-data"
-      style="margin-bottom:1rem;">
-    @csrf
-
-    <div style="display:flex; gap:.5rem;">
-        <input type="file" name="archivo" required>
-
-        <button type="submit" class="btn btn-primary btn-sm">
-            Importar Excel
-        </button>
-    </div>
-</form>
+              method="POST"
+              enctype="multipart/form-data"
+              style="margin-bottom:1rem;">
+            @csrf
+            <div style="display:flex; gap:.5rem;">
+                <input type="file" name="archivo" required>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    Importar Excel
+                </button>
+            </div>
+        </form>
     </div>
 
     @isset($gastronomium)
@@ -154,7 +152,7 @@
 <div class="admin-section">
     <div class="admin-section-header">
         <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Elementos Registrados</h2>
-        <span class="badge badge-info">{{ $items->count() }} total</span>
+        <span class="badge badge-info">{{ $items->total() }} total</span>
     </div>
     <div class="table-responsive">
         <table class="admin-table">
@@ -205,6 +203,51 @@
             </tbody>
         </table>
     </div>
+
+    {{-- Paginación --}}
+    @if($items->hasPages())
+    <div class="pagination-bar">
+        <div class="pagination-info">
+            Mostrando <strong>{{ $items->firstItem() }}</strong>–<strong>{{ $items->lastItem() }}</strong>
+            de <strong>{{ $items->total() }}</strong> registros
+        </div>
+
+        <div class="pagination-links">
+            @if($items->onFirstPage())
+                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
+            @else
+                <a href="{{ $items->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
+            @endif
+
+            @foreach($items->getUrlRange(max(1,$items->currentPage()-2), min($items->lastPage(),$items->currentPage()+2)) as $page => $url)
+                @if($page == $items->currentPage())
+                    <span class="page-btn page-btn--active">{{ $page }}</span>
+                @else
+                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
+                @endif
+            @endforeach
+
+            @if($items->hasMorePages())
+                <a href="{{ $items->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
+            @else
+                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
+            @endif
+        </div>
+
+        <form method="GET" class="per-page-form">
+            @foreach(request()->except(['page','per_page']) as $k => $v)
+                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
+            @endforeach
+            <label class="per-page-label">Filas:</label>
+            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
+                @foreach([5,10,25,50,100] as $n)
+                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
+                @endforeach
+            </select>
+        </form>
+    </div>
+    @endif
+
 </div>
 
 @endsection
