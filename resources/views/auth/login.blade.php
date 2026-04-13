@@ -32,7 +32,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200&q=80') center/cover no-repeat;
+            background: url('https://th.bing.com/th/id/OIP.ZnOpbBwzMNPumOarX1JeUgHaEK?w=263&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3') center/cover no-repeat;
         }
 
         .auth-panel-left::after {
@@ -396,8 +396,8 @@
 {{-- Panel izquierdo --}}
 <div class="auth-panel-left">
     <div class="auth-brand">
-        <div class="auth-brand-icon">
-            <i class="fa-solid fa-mountain-sun"></i>
+        <div class="">
+            <i ></i>
         </div>
         <h1>Flow<span>Zone</span></h1>
         <p>Turismo · Ortega, Tolima</p>

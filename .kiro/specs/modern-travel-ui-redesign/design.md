@@ -167,7 +167,7 @@ Estado scroll (>80px):
 <nav class="navbar" id="navbar">
   <div class="container navbar-inner">
     <a class="nav-brand" href="/">
-      <i class="fa-solid fa-mountain-sun"></i> FlowZone
+      <i></i> FlowZone
     </a>
     <ul class="nav-menu">
       <li><a href="/lugares">Lugares</a></li>
