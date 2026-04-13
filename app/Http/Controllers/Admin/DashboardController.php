@@ -81,9 +81,44 @@ class DashboardController extends Controller
         return ucfirst($l);
          });
 
-$estadoData = $reservasPorEstado->values();
+        $estadoData = $reservasPorEstado->values(
+        );
+
+        
+// Reservas por mes para gráfica de barras
+$reservasPorMes = Reserva::select(
+    DB::raw('EXTRACT(MONTH FROM fecha_entrada) as mes'),
+    DB::raw('COUNT(*) as total')
+)
+->groupBy('mes')
+->orderBy('mes')
+->get();
+
+$mesLabels = $reservasPorMes->pluck('mes')->map(function ($mes) {
+    $nombresMeses = [
+        1 => 'Enero',
+        2 => 'Febrero',
+        3 => 'Marzo',
+        4 => 'Abril',
+        5 => 'Mayo',
+        6 => 'Junio',
+        7 => 'Julio',
+        8 => 'Agosto',
+        9 => 'Septiembre',
+        10 => 'Octubre',
+        11 => 'Noviembre',
+        12 => 'Diciembre'
+    ];
+
+    return $nombresMeses[$mes] ?? 'Mes '.$mes;
+});
+
+$mesData = $reservasPorMes->pluck('total');
+
+             
 
         return view('admin.dashboard', compact(
+            'mesLabels', 'mesData',
             'totalUsuarios', 'totalEmpresas', 'empresasPend',
             'totalLugares', 'totalHoteles', 'totalEventos',
             'totalReservas', 'reservasPend',

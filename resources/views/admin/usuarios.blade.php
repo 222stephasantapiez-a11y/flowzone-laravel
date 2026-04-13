@@ -48,6 +48,9 @@
                     <th>ID</th>
                     <th>Nombre</th>
                     <th>Email</th>
+                    <th>rol</th>
+                    <th>estado</th>
+                    <th>telefono</th>
                     <th>Fecha registro</th>
                 </tr>
             </thead>
@@ -58,6 +61,9 @@
                         <td>{{ $u->id }}</td>
                         <td>{{ $u->name }}</td>
                         <td>{{ $u->email }}</td>
+                        <td>{{ $u->rol }}</td>
+                        <td>{{ $u->estado}}</td>
+                        <td>{{ $u->telefono}}</td>
                         <td>{{ $u->created_at }}</td>
                     </tr>
                 @empty
