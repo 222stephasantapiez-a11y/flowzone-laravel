@@ -7,154 +7,209 @@
 
 @section('content')
 
-{{-- Formulario --}}
+{{-- Barra superior --}}
 <div class="admin-section">
     <div class="admin-section-header">
         <h2>
-            <i class="fa-solid fa-{{ isset($hotel) ? 'pen-to-square' : 'plus-circle' }}" style="color:var(--primary);margin-right:.4rem;"></i>
-            {{ isset($hotel) ? 'Editar Hotel: ' . $hotel->nombre : 'Hoteles' }}
+            <i class="fa-solid fa-hotel" style="color:var(--primary);margin-right:.4rem;"></i>
+            Hoteles
         </h2>
-        @unless(isset($hotel))
-        
-               <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
-                 <a href="{{ route('admin.hoteles.index') }}" class="btn btn-primary  btn-sm ">
-                <i class="fa-solid fa-plus"></i> Nuevo Hotel
-            </a>
-    <a href="{{ route('admin.hoteles.export.excel') }}" class="btn btn-success btn-sm">
-        <i class="fa-solid fa-file-excel"></i> Excel
-    </a>
-
-    <a href="{{ route('admin.hoteles.export.pdf') }}" class="btn btn-danger btn-sm">
-        <i class="fa-solid fa-file-pdf"></i> PDF
-    </a>
-  </div>
-        @endunless
-
-    </div>
-
-  <form action="{{ route('admin.hoteles.import.excel') }}"
-      method="POST"
-      enctype="multipart/form-data"
-      style="margin-bottom:1rem;">
-    @csrf
-
-    <div style="display:flex; gap:.5rem;">
-        <input type="file" name="archivo" required>
-
-        <button type="submit" class="btn btn-primary btn-sm">
-            Importar Excel
-        </button>
-    </div>
-</form>
-
-    @isset($hotel)
-        <form method="POST" action="{{ route('admin.hoteles.update', $hotel) }}"
-              class="admin-form" enctype="multipart/form-data">
-        @method('PUT')
-    @else
-        <form method="POST" action="{{ route('admin.hoteles.store') }}"
-              class="admin-form" enctype="multipart/form-data">
-    @endisset
-    @csrf
-
-    <div class="form-row">
-        <div class="form-group">
-            <label>Nombre *</label>
-            <input type="text" name="nombre" required maxlength="150"
-                   placeholder="Ej: Hotel Campestre El Paraíso"
-                   value="{{ old('nombre', $hotel->nombre ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Precio por noche (COP) *</label>
-            <input type="number" name="precio" required min="0" step="1000"
-                   placeholder="Ej: 120000"
-                   value="{{ old('precio', $hotel->precio ?? '') }}">
+        <div style="display:flex; gap:.5rem;">
+            @unless(isset($hotel))
+                <button onclick="abrirModal()" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-plus"></i> Nuevo Hotel
+                </button>
+                <a href="{{ route('admin.hoteles.export.excel') }}" class="btn btn-success btn-sm">
+                    <i class="fa-solid fa-file-excel"></i> Excel
+                </a>
+                <a href="{{ route('admin.hoteles.export.pdf') }}" class="btn btn-danger btn-sm">
+                    <i class="fa-solid fa-file-pdf"></i> PDF
+                </a>
+            @endunless
         </div>
     </div>
 
-    <div class="form-group">
-        <label>Descripción *</label>
-        <textarea name="descripcion" rows="3" required
-                  placeholder="Describe el hotel, sus características y entorno...">{{ old('descripcion', $hotel->descripcion ?? '') }}</textarea>
-    </div>
-
-    <div class="form-row">
-        <div class="form-group">
-            <label>Ubicación</label>
-            <input type="text" name="ubicacion" maxlength="200"
-                   placeholder="Ej: Km 2 Vía Ortega-Chaparral"
-                   value="{{ old('ubicacion', $hotel->ubicacion ?? '') }}">
+    <form action="{{ route('admin.hoteles.import.excel') }}"
+          method="POST"
+          enctype="multipart/form-data"
+          style="margin-top:.75rem;">
+        @csrf
+        <div style="display:flex; gap:.5rem;">
+            <input type="file" name="archivo" required>
+            <button type="submit" class="btn btn-primary btn-sm">
+                Importar Excel
+            </button>
         </div>
-        <div class="form-group">
-            <label>Capacidad (personas)</label>
-            <input type="number" name="capacidad" min="1"
-                   placeholder="Ej: 50"
-                   value="{{ old('capacidad', $hotel->capacidad ?? '') }}">
-        </div>
-    </div>
-
-    <div class="form-row">
-        <div class="form-group">
-            <label>Latitud <span class="form-hint" style="display:inline">(-90 a 90)</span></label>
-            <input type="number" step="0.000001" name="latitud" min="-90" max="90"
-                   placeholder="4.711000"
-                   value="{{ old('latitud', $hotel->latitud ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Longitud <span class="form-hint" style="display:inline">(-180 a 180)</span></label>
-            <input type="number" step="0.000001" name="longitud" min="-180" max="180"
-                   placeholder="-74.072100"
-                   value="{{ old('longitud', $hotel->longitud ?? '') }}">
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>Servicios <span class="form-hint" style="display:inline">(separados por coma)</span></label>
-        <input type="text" name="servicios"
-               placeholder="Ej: WiFi, Piscina, Parqueadero, Restaurante"
-               value="{{ old('servicios', $hotel->servicios ?? '') }}">
-    </div>
-
-    <div class="form-row">
-        <div class="form-group">
-            <label>Teléfono</label>
-            <input type="text" name="telefono" maxlength="20"
-                   placeholder="Ej: 3201234567"
-                   value="{{ old('telefono', $hotel->telefono ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" name="email" maxlength="150"
-                   placeholder="hotel@correo.com"
-                   value="{{ old('email', $hotel->email ?? '') }}">
-        </div>
-    </div>
-
-    @include('partials.imagen_field', [
-        'currentImage' => $hotel->imagen ?? null,
-        'fieldId'      => 'hotel',
-    ])
-
-    <div class="form-group" style="display:flex;align-items:center;gap:.6rem;">
-        <input type="checkbox" name="disponibilidad" id="disponibilidad"
-               style="width:18px;height:18px;accent-color:var(--primary);flex-shrink:0;"
-               {{ old('disponibilidad', $hotel->disponibilidad ?? true) ? 'checked' : '' }}>
-        <label for="disponibilidad" style="margin:0;cursor:pointer;">Disponible para reservas</label>
-    </div>
-
-    <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
-        <button type="submit" class="btn btn-primary">
-            <i class="fa-solid fa-{{ isset($hotel) ? 'floppy-disk' : 'plus' }}"></i>
-            {{ isset($hotel) ? 'Actualizar Hotel' : 'Guardar Hotel' }}
-        </button>
-        @isset($hotel)
-            <a href="{{ route('admin.hoteles.index') }}" class="btn btn-outline">
-                <i class="fa-solid fa-xmark"></i> Cancelar
-            </a>
-        @endisset
-    </div>
-
     </form>
+</div>
+
+{{-- ===================== MODAL ===================== --}}
+<div id="modal-hotel" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+">
+    <div style="
+        background: #fff;
+        border-radius: 1rem;
+        max-width: 720px;
+        margin: 0 auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        overflow: hidden;
+    ">
+        {{-- Header modal --}}
+        <div style="
+            background: linear-gradient(135deg, var(--green-900), var(--green-700));
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        ">
+            <h3 style="color:#fff;font-size:1.05rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-{{ isset($hotel) ? 'pen-to-square' : 'plus-circle' }}"></i>
+                {{ isset($hotel) ? 'Editar Hotel: ' . $hotel->nombre : 'Nuevo Hotel' }}
+            </h3>
+            <button onclick="cerrarModal()" style="
+                background: rgba(255,255,255,.15);
+                border: none;
+                color: #fff;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background .2s;
+            " onmouseover="this.style.background='rgba(255,255,255,.3)'"
+               onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        {{-- Body modal --}}
+        <div style="padding: 1.75rem;">
+
+            @isset($hotel)
+                <form method="POST" action="{{ route('admin.hoteles.update', $hotel) }}"
+                      class="admin-form" enctype="multipart/form-data">
+                @method('PUT')
+            @else
+                <form method="POST" action="{{ route('admin.hoteles.store') }}"
+                      class="admin-form" enctype="multipart/form-data">
+            @endisset
+            @csrf
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" name="nombre" required maxlength="150"
+                           placeholder="Ej: Hotel Campestre El Paraíso"
+                           value="{{ old('nombre', $hotel->nombre ?? '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Precio por noche (COP) *</label>
+                    <input type="number" name="precio" required min="0" step="1000"
+                           placeholder="Ej: 120000"
+                           value="{{ old('precio', $hotel->precio ?? '') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Descripción *</label>
+                <textarea name="descripcion" rows="3" required
+                          placeholder="Describe el hotel, sus características y entorno...">{{ old('descripcion', $hotel->descripcion ?? '') }}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ubicación</label>
+                    <input type="text" name="ubicacion" maxlength="200"
+                           placeholder="Ej: Km 2 Vía Ortega-Chaparral"
+                           value="{{ old('ubicacion', $hotel->ubicacion ?? '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Capacidad (personas)</label>
+                    <input type="number" name="capacidad" min="1"
+                           placeholder="Ej: 50"
+                           value="{{ old('capacidad', $hotel->capacidad ?? '') }}">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Latitud <span class="form-hint" style="display:inline">(-90 a 90)</span></label>
+                    <input type="number" step="0.000001" name="latitud" min="-90" max="90"
+                           placeholder="4.711000"
+                           value="{{ old('latitud', $hotel->latitud ?? '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Longitud <span class="form-hint" style="display:inline">(-180 a 180)</span></label>
+                    <input type="number" step="0.000001" name="longitud" min="-180" max="180"
+                           placeholder="-74.072100"
+                           value="{{ old('longitud', $hotel->longitud ?? '') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Servicios <span class="form-hint" style="display:inline">(separados por coma)</span></label>
+                <input type="text" name="servicios"
+                       placeholder="Ej: WiFi, Piscina, Parqueadero, Restaurante"
+                       value="{{ old('servicios', $hotel->servicios ?? '') }}">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" maxlength="20"
+                           placeholder="Ej: 3201234567"
+                           value="{{ old('telefono', $hotel->telefono ?? '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" name="email" maxlength="150"
+                           placeholder="hotel@correo.com"
+                           value="{{ old('email', $hotel->email ?? '') }}">
+                </div>
+            </div>
+
+            @include('partials.imagen_field', [
+                'currentImage' => $hotel->imagen ?? null,
+                'fieldId'      => 'hotel',
+            ])
+
+            <div class="form-group" style="display:flex;align-items:center;gap:.6rem;">
+                <input type="checkbox" name="disponibilidad" id="disponibilidad"
+                       style="width:18px;height:18px;accent-color:var(--primary);flex-shrink:0;"
+                       {{ old('disponibilidad', $hotel->disponibilidad ?? true) ? 'checked' : '' }}>
+                <label for="disponibilidad" style="margin:0;cursor:pointer;">Disponible para reservas</label>
+            </div>
+
+            <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-{{ isset($hotel) ? 'floppy-disk' : 'plus' }}"></i>
+                    {{ isset($hotel) ? 'Actualizar Hotel' : 'Guardar Hotel' }}
+                </button>
+                @isset($hotel)
+                    <a href="{{ route('admin.hoteles.index') }}" class="btn btn-outline">
+                        <i class="fa-solid fa-xmark"></i> Cancelar
+                    </a>
+                @else
+                    <button type="button" onclick="cerrarModal()" class="btn btn-outline">
+                        <i class="fa-solid fa-xmark"></i> Cancelar
+                    </button>
+                @endisset
+            </div>
+
+            </form>
+        </div>
+    </div>
 </div>
 
 {{-- Tabla --}}
@@ -276,5 +331,34 @@
     @endif
 
 </div>
+
+@push('scripts')
+<script>
+function abrirModal() {
+    document.getElementById('modal-hotel').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+    document.getElementById('modal-hotel').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Cerrar al hacer clic fuera del modal
+document.getElementById('modal-hotel').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+});
+
+// Cerrar con tecla Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarModal();
+});
+
+// Si estamos editando, abrir el modal automáticamente
+@isset($hotel)
+    abrirModal();
+@endisset
+</script>
+@endpush
 
 @endsection
