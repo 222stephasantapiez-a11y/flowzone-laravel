@@ -114,4 +114,35 @@ class BlogController extends Controller
         $msg = $blog->publicado ? 'Publicación publicada.' : 'Publicación despublicada.';
         return back()->with('success', $msg);
     }
+      public function exportExcel()
+{
+    return Excel::download(new BlogsExport, 'blogs.xlsx');
 }
+
+public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    Excel::import(new BlogsImport, $request->file('archivo'));
+
+    return back()->with(
+        'success',
+        'Importación completada. Los blogs duplicados fueron omitidos.'
+    );
+}
+
+public function exportPdf()
+{
+    $blogs = BlogPost::all();
+
+    $pdf = Pdf::loadView('admin.pdf.blog', compact('blogs'));
+
+    return $pdf->download('blogs.pdf');
+}
+
+
+
+
+    }

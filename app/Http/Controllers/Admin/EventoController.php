@@ -136,13 +136,16 @@ class EventoController extends Controller
     }
 
     public function importExcel(Request $request)
-    {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
 
-        Excel::import(new EventosImport, $request->file('archivo'));
+    Excel::import(new EventosImport, $request->file('archivo'));
 
-        return back()->with('success', 'Eventos importados correctamente');
-    }
+    return back()->with(
+        'success',
+        'Importación completada. Los eventos duplicados fueron omitidos.'
+    );
+}
 }

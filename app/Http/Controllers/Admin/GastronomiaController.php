@@ -124,14 +124,17 @@ class GastronomiaController extends Controller
         return $pdf->download('gastronomia.pdf');
     }
 
-    public function importExcel(Request $request)
-    {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
+         public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
 
-        Excel::import(new GastronomiaImport, $request->file('archivo'));
+    Excel::import(new GastronomiaImport, $request->file('archivo'));
 
-        return back()->with('success', 'Restaurantes importados correctamente');
-    }
+    return back()->with(
+        'success',
+        'Importación completada. Los registros duplicados fueron omitidos.'
+    );
+}
 }

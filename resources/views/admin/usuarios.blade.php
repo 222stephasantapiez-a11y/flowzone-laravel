@@ -25,7 +25,11 @@
             </span>
         </div>
     </div>
-
+              @if(session('warning'))
+    <div class="alert alert-warning">
+        {{ session('warning') }}
+    </div>
+@endif
     <form action="{{ route('admin.usuarios.import.excel') }}"
           method="POST"
           enctype="multipart/form-data"

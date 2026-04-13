@@ -31,15 +31,14 @@ class UsuarioController extends Controller
 
         return $pdf->download('usuarios.pdf');
     }
-
+ 
     public function importExcel(Request $request)
-    {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
+{
+    Excel::import(new UsuariosImport, $request->file('archivo'));
 
-        Excel::import(new UsuariosImport, $request->file('archivo'));
-
-        return back()->with('success', 'Usuarios importados correctamente');
-    }
+    return back()->with(
+        'warning',
+        'Algunos usuarios ya estaban registrados y no se importaron.'
+    );
+}
 }

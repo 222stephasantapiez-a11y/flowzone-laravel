@@ -6,7 +6,7 @@ use App\Models\Hotel;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class HotelesExport implements FromCollection
+class HotelesExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
@@ -14,6 +14,7 @@ class HotelesExport implements FromCollection
             'id',
             'nombre',
             'precio',
+            'ubicacion',
             'created_at'
         )->get();
     }
@@ -24,6 +25,7 @@ class HotelesExport implements FromCollection
         'ID',
         'Nombre',
         'Precio',
+        'direccion',
         'Fecha Registro'
     ];
 }

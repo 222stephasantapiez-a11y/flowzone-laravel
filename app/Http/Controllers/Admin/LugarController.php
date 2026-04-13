@@ -130,7 +130,6 @@ public function exportPdf()
 
     return $pdf->download('lugares.pdf');
 }
-
 public function importExcel(Request $request)
 {
     $request->validate([
@@ -139,6 +138,9 @@ public function importExcel(Request $request)
 
     Excel::import(new LugaresImport, $request->file('archivo'));
 
-    return back()->with('success', 'Lugares importados correctamente');
+    return back()->with(
+        'success',
+        'Importación completada. Los lugares duplicados fueron omitidos.'
+    );
 }
 }

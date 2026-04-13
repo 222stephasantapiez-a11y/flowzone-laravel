@@ -10,10 +10,21 @@ class BlogsImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
+        $titulo = $row['titulo'] ?? '';
+        $slug = $row['slug'] ?? null;
+
+        $existe = BlogPost::where('titulo', $titulo)
+            ->orWhere('slug', $slug)
+            ->exists();
+
+        if ($existe) {
+            return null; // omite blogs repetidos
+        }
+
         return new BlogPost([
-            'titulo' => $row['titulo'] ?? '',
+            'titulo' => $titulo,
             'contenido' => $row['contenido'] ?? '',
-            'slug' => $row['slug'] ?? null,
+            'slug' => $slug,
             'publicado' => $row['publicado'] ?? 0,
         ]);
     }

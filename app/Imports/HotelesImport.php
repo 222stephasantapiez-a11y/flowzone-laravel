@@ -10,9 +10,17 @@ class HotelesImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
+        $existe = Hotel::where('nombre', $row['nombre'])
+            ->where('ubicacion', $row['direccion'])
+            ->exists();
+
+        if ($existe) {
+            return null; // omite hoteles repetidos
+        }
+
         return new Hotel([
             'nombre' => $row['nombre'],
-            'direccion' => $row['direccion'],
+            'ubicacion' => $row['direccion'],
             'precio' => $row['precio'],
         ]);
     }

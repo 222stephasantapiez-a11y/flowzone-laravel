@@ -151,15 +151,17 @@ class HotelController extends Controller
 
     return $pdf->download('hoteles.pdf');
   }
-
-     public function importExcel(Request $request)
-    {
+public function importExcel(Request $request)
+{
     $request->validate([
         'archivo' => 'required|mimes:xlsx,xls,csv'
     ]);
 
     Excel::import(new HotelesImport, $request->file('archivo'));
 
-    return back()->with('success', 'Hoteles importados correctamente');
-    }
+    return back()->with(
+        'success',
+        'Importación completada. Los hoteles duplicados fueron omitidos.'
+    );
+}
 }

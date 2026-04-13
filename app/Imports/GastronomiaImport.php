@@ -10,6 +10,14 @@ class GastronomiaImport implements ToModel, WithHeadingRow
 {
     public function model(array $row)
     {
+        $existe = Gastronomia::where('nombre', $row['nombre'])
+            ->where('ubicacion', $row['ubicacion'])
+            ->exists();
+
+        if ($existe) {
+            return null; // omite registros repetidos
+        }
+
         return new Gastronomia([
             'nombre' => $row['nombre'],
             'descripcion' => $row['descripcion'],

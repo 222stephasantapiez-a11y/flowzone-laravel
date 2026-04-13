@@ -10,11 +10,21 @@ class ReservasImport implements ToModel, WithStartRow
 {
     public function startRow(): int
     {
-        return 2; // empieza desde la fila 2, salta encabezados
+        return 2; // salta encabezados
     }
 
     public function model(array $row)
     {
+        $existe = Reserva::where('usuario_id', $row[0])
+            ->where('hotel_id', $row[1])
+            ->where('fecha_entrada', $row[2])
+            ->where('fecha_salida', $row[3])
+            ->exists();
+
+        if ($existe) {
+            return null; // omite reservas duplicadas
+        }
+
         return new Reserva([
             'usuario_id'    => $row[0],
             'hotel_id'      => $row[1],

@@ -105,18 +105,19 @@ class ReservaController extends Controller
         return Excel::download(new ReservasExport, 'reservas.xlsx');
     }
 
-    public function importExcel(Request $request)
-    {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
+   public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
 
-        Excel::import(new ReservasImport, $request->file('archivo'));
+    Excel::import(new ReservasImport, $request->file('archivo'));
 
-        return redirect()
-            ->route('admin.reservas.index')
-            ->with('success', 'Reservas importadas correctamente');
-    }
+    return back()->with(
+        'success',
+        'Importación completada. Las reservas duplicadas fueron omitidas.'
+    );
+}
 
     public function exportPdf()
     {

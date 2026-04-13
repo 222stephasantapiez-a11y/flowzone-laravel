@@ -6,7 +6,7 @@ use App\Models\Gastronomia;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class GastronomiaExport implements FromCollection
+class GastronomiaExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
