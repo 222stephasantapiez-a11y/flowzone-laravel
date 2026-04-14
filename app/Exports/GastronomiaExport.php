@@ -4,6 +4,7 @@ namespace App\Exports;
 
 use App\Models\Gastronomia;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithHeadings;
 
 class GastronomiaExport implements FromCollection
 {
@@ -14,8 +15,20 @@ class GastronomiaExport implements FromCollection
             'nombre',
             'descripcion',
             'ubicacion',
-            'precio',
+            'precio_promedio',
             'created_at'
         )->get();
     }
+
+    public function headings(): array
+{
+    return [
+        'ID',
+        'Nombre',
+        'Descripción',
+        'Ubicación',
+        'Precio',
+        'Fecha Registro'
+    ];
+}
 }

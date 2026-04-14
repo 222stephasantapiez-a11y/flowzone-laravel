@@ -144,17 +144,10 @@
                 </div>
             </div>
 
-            <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-plus"></i> Agregar imagen
-                </button>
-                <button type="button" onclick="cerrarModalImagen()" class="btn btn-outline">
-                    <i class="fa-solid fa-xmark"></i> Cancelar
-                </button>
-            </div>
-                </form>
-            </div>
-        </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid "></i> Agregar imagen
+            </button>
+        </form>
     </div>
 
     {{-- Tab: Hero --}}

@@ -140,31 +140,38 @@
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Latitud</label>
-                    <input type="number" step="0.00000001" name="latitud"
-                           placeholder="4.711000"
-                           value="{{ old('latitud', $lugar->latitud ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label>Longitud</label>
-                    <input type="number" step="0.00000001" name="longitud"
-                           placeholder="-74.072100"
-                           value="{{ old('longitud', $lugar->longitud ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label>Precio Entrada (COP)</label>
-                    <input type="number" step="0.01" name="precio_entrada"
-                           placeholder="0 = gratuito"
-                           value="{{ old('precio_entrada', $lugar->precio_entrada ?? '0') }}">
-                </div>
-            </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Precio Entrada (COP)</label>
+            <input type="number" step="0.01" name="precio_entrada"
+                   placeholder="0 = gratuito"
+                   value="{{ old('precio_entrada', $lugar->precio_entrada ?? '0') }}">
+        </div>
+    </div>
 
-            @include('partials.imagen_field', [
-                'currentImage' => $lugar->imagen ?? null,
-                'fieldId'      => 'lugar',
-            ])
+    @include('partials.map_picker', [
+        'mapId'        => 'lugar',
+        'latValue'     => old('latitud', $lugar->latitud ?? ''),
+        'lngValue'     => old('longitud', $lugar->longitud ?? ''),
+        'addressValue' => old('ubicacion', $lugar->ubicacion ?? ''),
+    ])
+
+    @include('partials.imagen_field', [
+        'currentImage' => $lugar->imagen ?? null,
+        'fieldId'      => 'lugar',
+    ])
+
+    <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
+        <button type="submit" class="btn btn-primary">
+            <i class="fa-solid fa-{{ isset($lugar) ? 'floppy-disk' : 'plus' }}"></i>
+            {{ isset($lugar) ? 'Actualizar Lugar' : 'Guardar Lugar' }}
+        </button>
+        @isset($lugar)
+            <a href="{{ route('admin.lugares.index') }}" class="btn btn-outline">
+                <i class="fa-solid fa-xmark"></i> Cancelar
+            </a>
+        @endisset
+    </div>
 
             <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">
@@ -306,30 +313,16 @@
 
 </div>
 
+@endsection
+
 @push('scripts')
 <script>
-function abrirModal() {
-    document.getElementById('modal-lugar').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-
-function cerrarModal() {
-    document.getElementById('modal-lugar').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-document.getElementById('modal-lugar').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModal();
+document.addEventListener('DOMContentLoaded', function () {
+    mapPickerInit(
+        'lugar',
+        {{ old('latitud', isset($lugar) && $lugar->latitud ? $lugar->latitud : 'null') }},
+        {{ old('longitud', isset($lugar) && $lugar->longitud ? $lugar->longitud : 'null') }}
+    );
 });
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') cerrarModal();
-});
-
-@isset($lugar)
-    abrirModal();
-@endisset
 </script>
 @endpush
-
-@endsection

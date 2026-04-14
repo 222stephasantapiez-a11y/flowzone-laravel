@@ -142,47 +142,39 @@
                 </div>
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Latitud <span class="form-hint" style="display:inline">(-90 a 90)</span></label>
-                    <input type="number" step="0.000001" name="latitud" min="-90" max="90"
-                           placeholder="4.711000"
-                           value="{{ old('latitud', $hotel->latitud ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label>Longitud <span class="form-hint" style="display:inline">(-180 a 180)</span></label>
-                    <input type="number" step="0.000001" name="longitud" min="-180" max="180"
-                           placeholder="-74.072100"
-                           value="{{ old('longitud', $hotel->longitud ?? '') }}">
-                </div>
-            </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" maxlength="20"
+                   placeholder="Ej: 3201234567"
+                   value="{{ old('telefono', $hotel->telefono ?? '') }}">
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" name="email" maxlength="150"
+                   placeholder="hotel@correo.com"
+                   value="{{ old('email', $hotel->email ?? '') }}">
+        </div>
+    </div>
 
-            <div class="form-group">
-                <label>Servicios <span class="form-hint" style="display:inline">(separados por coma)</span></label>
-                <input type="text" name="servicios"
-                       placeholder="Ej: WiFi, Piscina, Parqueadero, Restaurante"
-                       value="{{ old('servicios', $hotel->servicios ?? '') }}">
-            </div>
+    <div class="form-group">
+        <label>Servicios <span class="form-hint" style="display:inline">(separados por coma)</span></label>
+        <input type="text" name="servicios"
+               placeholder="Ej: WiFi, Piscina, Parqueadero, Restaurante"
+               value="{{ old('servicios', $hotel->servicios ?? '') }}">
+    </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="text" name="telefono" maxlength="20"
-                           placeholder="Ej: 3201234567"
-                           value="{{ old('telefono', $hotel->telefono ?? '') }}">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" name="email" maxlength="150"
-                           placeholder="hotel@correo.com"
-                           value="{{ old('email', $hotel->email ?? '') }}">
-                </div>
-            </div>
+    @include('partials.map_picker', [
+        'mapId'        => 'hotel',
+        'latValue'     => old('latitud', $hotel->latitud ?? ''),
+        'lngValue'     => old('longitud', $hotel->longitud ?? ''),
+        'addressValue' => old('ubicacion', $hotel->ubicacion ?? ''),
+    ])
 
-            @include('partials.imagen_field', [
-                'currentImage' => $hotel->imagen ?? null,
-                'fieldId'      => 'hotel',
-            ])
+    @include('partials.imagen_field', [
+        'currentImage' => $hotel->imagen ?? null,
+        'fieldId'      => 'hotel',
+    ])
 
             <div class="form-group" style="display:flex;align-items:center;gap:.6rem;">
                 <input type="checkbox" name="disponibilidad" id="disponibilidad"
@@ -332,33 +324,16 @@
 
 </div>
 
+@endsection
+
 @push('scripts')
 <script>
-function abrirModal() {
-    document.getElementById('modal-hotel').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-
-function cerrarModal() {
-    document.getElementById('modal-hotel').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-// Cerrar al hacer clic fuera del modal
-document.getElementById('modal-hotel').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModal();
+document.addEventListener('DOMContentLoaded', function () {
+    mapPickerInit(
+        'hotel',
+        {{ old('latitud', isset($hotel) && $hotel->latitud ? $hotel->latitud : 'null') }},
+        {{ old('longitud', isset($hotel) && $hotel->longitud ? $hotel->longitud : 'null') }}
+    );
 });
-
-// Cerrar con tecla Escape
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') cerrarModal();
-});
-
-// Si estamos editando, abrir el modal automáticamente
-@isset($hotel)
-    abrirModal();
-@endisset
 </script>
 @endpush
-
-@endsection

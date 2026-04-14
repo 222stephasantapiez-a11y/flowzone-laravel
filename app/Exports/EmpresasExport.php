@@ -6,19 +6,19 @@ use App\Models\User;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 
-class UsuariosExport implements FromCollection, WithHeadings
+class EmpresasExport implements FromCollection, WithHeadings
 {
     public function collection()
     {
-        return User::select(
-            'id',
-            'name',
-            'email',
-            'rol',
-            'estado',
-            'telefono',
-            'created_at'
-        )->get();
+        return User::where('rol', 'empresa')
+            ->select(
+                'id',
+                'name',
+                'email',
+                'telefono',
+                'created_at'
+            )
+            ->get();
     }
 
     public function headings(): array
@@ -27,9 +27,7 @@ class UsuariosExport implements FromCollection, WithHeadings
             'ID',
             'Nombre',
             'Correo',
-            'Rol',
-            'Estado',
-            'Telefono',
+            'Teléfono',
             'Fecha Registro'
         ];
     }

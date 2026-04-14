@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Exports\EmpresasExport;
+use App\Imports\EmpresasImport;
+use App\Models\User;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\NotificacionAdmin;
@@ -89,4 +94,29 @@ class EmpresaController extends Controller
         NotificacionAdmin::where('leido', false)->update(['leido' => true]);
         return back()->with('success', 'Todas las notificaciones marcadas como leídas.');
     }
+     public function exportExcel()
+{
+    return Excel::download(new EmpresasExport, 'empresas.xlsx');
+}
+
+public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    Excel::import(new EmpresasImport, $request->file('archivo'));
+
+    return redirect()->back()->with('success', 'Empresas importadas correctamente');
+}
+
+public function exportPdf()
+{
+    $empresas = User::where('rol', 'empresa')->get();
+
+    $pdf = Pdf::loadView('admin.pdf.empresa', compact('empresas'));
+
+    return $pdf->download('empresas.pdf');
+}
+
 }

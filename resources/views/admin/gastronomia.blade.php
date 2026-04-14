@@ -164,6 +164,13 @@
         </div>
     </div>
 
+    @include('partials.map_picker', [
+        'mapId'        => 'gastro',
+        'latValue'     => old('latitud', $gastronomium->latitud ?? ''),
+        'lngValue'     => old('longitud', $gastronomium->longitud ?? ''),
+        'addressValue' => old('direccion', $gastronomium->direccion ?? ''),
+    ])
+
     <div class="form-group">
         <label>Ingredientes principales <span class="form-hint" style="display:inline">(separados por coma)</span></label>
         <input type="text" name="ingredientes"
@@ -311,30 +318,16 @@
 
 </div>
 
+@endsection
+
 @push('scripts')
 <script>
-function abrirModal() {
-    document.getElementById('modal-gastronomia').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-
-function cerrarModal() {
-    document.getElementById('modal-gastronomia').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-document.getElementById('modal-gastronomia').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModal();
+document.addEventListener('DOMContentLoaded', function () {
+    mapPickerInit(
+        'gastro',
+        {{ old('latitud', isset($gastronomium) && $gastronomium->latitud ? $gastronomium->latitud : 'null') }},
+        {{ old('longitud', isset($gastronomium) && $gastronomium->longitud ? $gastronomium->longitud : 'null') }}
+    );
 });
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') cerrarModal();
-});
-
-@isset($gastronomium)
-    abrirModal();
-@endisset
 </script>
 @endpush
-
-@endsection

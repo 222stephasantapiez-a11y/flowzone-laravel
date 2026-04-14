@@ -31,6 +31,9 @@ Route::get('/blog/{post:slug}', [PageController::class, 'blogPost'])->name('blog
 Route::get('/contacto', [PageController::class, 'contacto'])->name('contacto');
 Route::get('/maps', [PageController::class, 'maps'])->name('maps');
 Route::get('/maps/buscar', [PageController::class, 'mapsBuscar'])->name('maps.buscar');
+Route::get('/generador', function () {
+    return view('pages.generador');
+})->name('generador');
 
 // ── Autenticación ────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
@@ -105,6 +108,9 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('/eventos/import/excel', [App\Http\Controllers\Admin\EventoController::class, 'importExcel'])->name('eventos.import.excel');
 
     Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas.index');
+    Route::get('/empresas/export/excel', [EmpresaController::class, 'exportExcel'])->name('empresas.export.excel');
+    Route::get('/empresas/export/pdf', [EmpresaController::class, 'exportPdf'])->name('empresas.export.pdf');
+    Route::post('/empresas/import/excel', [EmpresaController::class, 'importExcel'])->name('empresas.import.excel');
     Route::get('/empresas/{empresa}/edit', [EmpresaController::class, 'edit'])->name('empresas.edit');
     Route::put('/empresas/{empresa}', [EmpresaController::class, 'update'])->name('empresas.update');
     Route::patch('/empresas/{empresa}/aprobar', [EmpresaController::class, 'aprobar'])->name('empresas.aprobar');
@@ -134,10 +140,15 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     // Blog admin
     Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
     Route::post('/blog', [BlogController::class, 'store'])->name('blog.store');
+    Route::get('/blog/export/excel',[BlogController::class, 'exportExcel'])->name('blog.export.excel');
+    Route::post('/blog/import/excel', [BlogController::class, 'importExcel'])->name('blog.import.excel');
+    Route::get('/blog/export/pdf', [BlogController::class, 'exportPdf'])->name('blog.export.pdf');
     Route::get('/blog/{blog}/edit', [BlogController::class, 'edit'])->name('blog.edit');
     Route::put('/blog/{blog}', [BlogController::class, 'update'])->name('blog.update');
     Route::delete('/blog/{blog}', [BlogController::class, 'destroy'])->name('blog.destroy');
     Route::patch('/blog/{blog}/publicar', [BlogController::class, 'togglePublicado'])->name('blog.publicar');
+
+
 
     // Gestión de imágenes hero/galería
     Route::get('/imagenes', [ImagenController::class, 'index'])->name('imagenes.index');

@@ -74,6 +74,13 @@
         </div>
     </div>
 
+    @include('partials.map_picker', [
+        'mapId'        => 'emp-gastro',
+        'latValue'     => old('latitud', $gastronomium->latitud ?? ''),
+        'lngValue'     => old('longitud', $gastronomium->longitud ?? ''),
+        'addressValue' => old('direccion', $gastronomium->direccion ?? ''),
+    ])
+
     <div class="form-group">
         <label>Ingredientes <span style="font-size:.78rem;color:var(--gray-400);font-weight:400;">(separados por coma)</span></label>
         <input type="text" name="ingredientes"
@@ -178,3 +185,15 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    mapPickerInit(
+        'emp-gastro',
+        {{ old('latitud', $gastronomium->latitud ?? 'null') }},
+        {{ old('longitud', $gastronomium->longitud ?? 'null') }}
+    );
+});
+</script>
+@endpush

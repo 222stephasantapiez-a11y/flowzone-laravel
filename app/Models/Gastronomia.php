@@ -10,8 +10,8 @@ class Gastronomia extends Model
 
     protected $fillable = [
         'nombre', 'descripcion', 'tipo', 'precio_promedio',
-        'restaurante', 'direccion', 'telefono', 'imagen',
-        'ingredientes', 'empresa_id', 'ubicacion',
+        'restaurante', 'direccion', 'latitud', 'longitud',
+        'telefono', 'imagen', 'ingredientes', 'empresa_id', 'ubicacion',
     ];
 
     protected $casts = [

@@ -49,17 +49,19 @@ class GastronomiaController extends Controller
         ]);
 
         Gastronomia::create([
-            'nombre'          => $request->nombre,
-            'descripcion'     => $request->descripcion,
-            'tipo'            => $request->tipo,
-            'precio_promedio' => $request->precio_promedio ?: null,
-            'restaurante'     => $request->restaurante,
-            'direccion'       => $request->direccion,
-            'ubicacion'       => $request->ubicacion,
-            'telefono'        => $request->telefono,
-            'ingredientes'    => $request->ingredientes,
-            'empresa_id'      => $request->empresa_id ?: null,
-            'imagen'          => $this->handleImage($request),
+            'nombre'         => $request->nombre,
+            'descripcion'    => $request->descripcion,
+            'tipo'           => $request->tipo,
+            'precio_promedio'=> $request->precio_promedio ?: null,
+            'restaurante'    => $request->restaurante,
+            'direccion'      => $request->direccion,
+            'ubicacion'      => $request->ubicacion,
+            'telefono'       => $request->telefono,
+            'ingredientes'   => $request->ingredientes,
+            'empresa_id'     => $request->empresa_id ?: null,
+            'imagen'         => $this->handleImage($request),
+            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
         ]);
 
         return redirect()->route('admin.gastronomia.index')
@@ -83,17 +85,19 @@ class GastronomiaController extends Controller
         ]);
 
         $gastronomium->update([
-            'nombre'          => $request->nombre,
-            'descripcion'     => $request->descripcion,
-            'tipo'            => $request->tipo,
-            'precio_promedio' => $request->precio_promedio ?: null,
-            'restaurante'     => $request->restaurante,
-            'direccion'       => $request->direccion,
-            'ubicacion'       => $request->ubicacion,
-            'telefono'        => $request->telefono,
-            'ingredientes'    => $request->ingredientes,
-            'empresa_id'      => $request->empresa_id ?: null,
-            'imagen'          => $this->handleImage($request, $gastronomium->imagen),
+            'nombre'         => $request->nombre,
+            'descripcion'    => $request->descripcion,
+            'tipo'           => $request->tipo,
+            'precio_promedio'=> $request->precio_promedio ?: null,
+            'restaurante'    => $request->restaurante,
+            'direccion'      => $request->direccion,
+            'ubicacion'      => $request->ubicacion,
+            'telefono'       => $request->telefono,
+            'ingredientes'   => $request->ingredientes,
+            'empresa_id'     => $request->empresa_id ?: null,
+            'imagen'         => $this->handleImage($request, $gastronomium->imagen),
+            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
         ]);
 
         return redirect()->route('admin.gastronomia.index')
