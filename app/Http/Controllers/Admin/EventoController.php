@@ -47,7 +47,7 @@ class EventoController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->get('per_page', 10);
-        $eventos = Evento::orderBy('fecha', 'desc')->paginate($perPage)->withQueryString();
+        $eventos = Evento::orderBy('fecha', 'asc')->paginate($perPage)->withQueryString();
         return view('admin.eventos', compact('eventos', 'perPage'));
     }
 

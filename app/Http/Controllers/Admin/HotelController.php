@@ -69,7 +69,7 @@ class HotelController extends Controller
   public function index(Request $request)
 {
     $perPage = $request->get('per_page', 10);
-    $hoteles = Hotel::orderBy('id', 'desc')->paginate($perPage)->withQueryString();
+    $hoteles = Hotel::orderBy('id', 'asc')->paginate($perPage)->withQueryString();
     return view('admin.hoteles', compact('hoteles', 'perPage'));
 }
 
