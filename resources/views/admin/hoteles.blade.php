@@ -14,40 +14,36 @@
             <i class="fa-solid fa-{{ isset($hotel) ? 'pen-to-square' : 'plus-circle' }}" style="color:var(--primary);margin-right:.4rem;"></i>
             {{ isset($hotel) ? 'Editar Hotel: ' . $hotel->nombre : 'Hoteles' }}
         </h2>
-        @unless(isset($hotel))
-        
-               <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
-                 <a href="{{ route('admin.hoteles.index') }}" class="btn btn-primary  btn-sm ">
-                <i class="fa-solid fa-plus"></i> Nuevo Hotel
-            </a>
-    <a href="{{ route('admin.hoteles.export.excel') }}" class="btn btn-success btn-sm">
-        <i class="fa-solid fa-file-excel"></i> Excel
-    </a>
-
-    <a href="{{ route('admin.hoteles.export.pdf') }}" class="btn btn-danger btn-sm">
-        <i class="fa-solid fa-file-pdf"></i> PDF
-    </a>
-  </div>
-        @endunless
+        <div style="display:flex; gap:.5rem; margin-bottom:1rem; flex-wrap:wrap;">
+            @unless(isset($hotel))
+                <a href="{{ route('admin.hoteles.index') }}" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-plus"></i> Nuevo Hotel
+                </a>
+                <a href="{{ route('admin.hoteles.export.excel') }}" class="btn btn-success btn-sm">
+                    <i class="fa-solid fa-file-excel"></i> Excel
+                </a>
+                <a href="{{ route('admin.hoteles.export.pdf') }}" class="btn btn-danger btn-sm">
+                    <i class="fa-solid fa-file-pdf"></i> PDF
+                </a>
+            @endunless
+            @include('partials.import_modal', [
+                'importRoute' => 'admin.hoteles.import.excel',
+                'sampleFile'  => 'ejemplo_hoteles.xlsx',
+                'modalId'     => 'importHoteles',
+                'columns'     => [
+                    'nombre'      => 'Nombre del hotel (requerido)',
+                    'descripcion' => 'Descripción del hotel',
+                    'precio'      => 'Precio por noche en COP (requerido)',
+                    'ubicacion'   => 'Ubicación o zona',
+                    'capacidad'   => 'Capacidad en personas',
+                    'servicios'   => 'Servicios separados por coma (WiFi, Piscina...)',
+                    'telefono'    => 'Teléfono de contacto',
+                ],
+            ])
+        </div>
 
     </div>
 
- 
-
-  <form action="{{ route('admin.hoteles.import.excel') }}"
-      method="POST"
-      enctype="multipart/form-data"
-      style="margin-bottom:1rem;">
-    @csrf
-
-    <div style="display:flex; gap:.5rem;">
-        <input type="file" name="archivo" required>
-
-        <button type="submit" class="btn btn-primary btn-sm">
-            Importar Excel
-        </button>
-    </div>
-</form>
 
     @isset($hotel)
         <form method="POST" action="{{ route('admin.hoteles.update', $hotel) }}"

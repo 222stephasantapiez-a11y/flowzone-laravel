@@ -130,6 +130,21 @@
         <i class="fa-solid fa-file-pdf"></i> PDF
     </a>
 
+    @include('partials.import_modal', [
+        'importRoute' => 'admin.reservas.import.excel',
+        'sampleFile'  => 'ejemplo_reservas.xlsx',
+        'modalId'     => 'importReservas',
+        'columns'     => [
+            'usuario_id'    => 'ID del usuario (requerido)',
+            'hotel_id'      => 'ID del hotel (requerido)',
+            'fecha_entrada' => 'Fecha entrada YYYY-MM-DD (requerido)',
+            'fecha_salida'  => 'Fecha salida YYYY-MM-DD (requerido)',
+            'num_personas'  => 'Número de personas',
+            'precio_total'  => 'Precio total en COP',
+            'estado'        => 'Estado: pendiente, confirmada o cancelada',
+        ],
+    ])
+
     <span class="badge badge-info">
         {{ $reservas->count() }} total
     </span>

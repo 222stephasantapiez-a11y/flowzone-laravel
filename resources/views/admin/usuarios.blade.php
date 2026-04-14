@@ -23,23 +23,17 @@
             <span class="badge badge-info">
                 {{ $usuarios->count() }} total
             </span>
+            @include('partials.import_modal', [
+                'importRoute' => 'admin.usuarios.import.excel',
+                'sampleFile'  => 'ejemplo_usuarios.xlsx',
+                'modalId'     => 'importUsuarios',
+                'columns'     => [
+                    'name'  => 'Nombre completo del usuario (requerido)',
+                    'email' => 'Correo electrónico único (requerido)',
+                ],
+            ])
         </div>
     </div>
-
-    <form action="{{ route('admin.usuarios.import.excel') }}"
-          method="POST"
-          enctype="multipart/form-data"
-          style="margin-bottom:1rem;">
-        @csrf
-
-        <div style="display:flex; gap:.5rem;">
-            <input type="file" name="archivo" required>
-
-            <button type="submit" class="btn btn-primary btn-sm">
-                Importar Excel
-            </button>
-        </div>
-    </form>
 
     <div class="table-responsive">
         <table class="admin-table">
