@@ -34,7 +34,7 @@ class BlogController extends Controller
     public function index(Request $request)
     {
         $perPage  = $request->get('per_page', 10);
-        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->paginate($perPage)->withQueryString();
+        $posts    = BlogPost::with(['empresa', 'usuario'])->oldest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
         return view('admin.blog', compact('posts', 'empresas', 'perPage'));
     }
@@ -68,7 +68,7 @@ class BlogController extends Controller
     public function edit(BlogPost $blog)
     {
         $perPage  = 10;
-        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->paginate($perPage)->withQueryString();
+        $posts    = BlogPost::with(['empresa', 'usuario'])->oldest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
         return view('admin.blog', compact('posts', 'empresas', 'blog', 'perPage'));
     }

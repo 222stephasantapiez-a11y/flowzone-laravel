@@ -57,39 +57,94 @@
 </div>
 @endif
 
-
-{{-- FORMULARIO --}}
-@isset($empresa)
-<div class="admin-section">
-    <h2>Editar Empresa: {{ $empresa->nombre }}</h2>
-
-    <form method="POST" action="{{ route('admin.empresas.update', $empresa) }}" class="admin-form">
-        @csrf @method('PUT')
-
-        <div class="form-row">
-            <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" name="nombre" value="{{ old('nombre', $empresa->nombre) }}">
-            </div>
-
-            <div class="form-group">
-                <label>Teléfono</label>
-                <input type="text" name="telefono" value="{{ old('telefono', $empresa->telefono) }}">
-            </div>
+{{-- ===================== MODAL ===================== --}}
+<div id="modal-empresa" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+">
+    <div style="
+        background: #fff;
+        border-radius: 1rem;
+        max-width: 720px;
+        margin: 0 auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        overflow: hidden;
+    ">
+        {{-- Header modal --}}
+        <div style="
+            background: linear-gradient(135deg, var(--red-900), var(--red-700));
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        ">
+            <h3 style="color:#fff;font-size:1.05rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-pen-to-square"></i>
+                Editar Empresa
+            </h3>
+            <button onclick="cerrarModal()" style="
+                background: rgba(255,255,255,.15);
+                border: none;
+                color: #fff;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background .2s;
+            " onmouseover="this.style.background='rgba(255,255,255,.3)'"
+               onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
-        <div class="form-group">
-            <label>Dirección</label>
-            <input type="text" name="direccion" value="{{ old('direccion', $empresa->direccion) }}">
-        </div>
+        {{-- Body modal --}}
+        <div style="padding: 1.75rem;">
 
-        <button type="submit" class="btn btn-primary">
-            Actualizar Empresa
-        </button>
-    </form>
+            @isset($empresa)
+                <form method="POST" action="{{ route('admin.empresas.update', $empresa) }}" class="admin-form">
+                @csrf @method('PUT')
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" name="nombre" value="{{ old('nombre', $empresa->nombre) }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" name="telefono" value="{{ old('telefono', $empresa->telefono) }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" name="direccion" value="{{ old('direccion', $empresa->direccion) }}">
+                </div>
+
+                <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Actualizar Empresa
+                    </button>
+                    <a href="{{ route('admin.empresas.index') }}" class="btn btn-outline">
+                        <i class="fa-solid fa-xmark"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+            @endisset
+        </div>
+    </div>
 </div>
-@endisset
-
 
 {{-- TABLA --}}
 <div class="admin-section">
@@ -211,5 +266,27 @@
     @endif
 
 </div>
+
+@push('scripts')
+<script>
+function cerrarModal() {
+    document.getElementById('modal-empresa').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('modal-empresa').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarModal();
+});
+
+@isset($empresa)
+    document.getElementById('modal-empresa').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+@endisset
+</script>
+@endpush
 
 @endsection

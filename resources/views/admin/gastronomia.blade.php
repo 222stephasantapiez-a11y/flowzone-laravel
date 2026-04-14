@@ -7,48 +7,102 @@
 
 @section('content')
 
+{{-- Barra superior --}}
 <div class="admin-section">
     <div class="admin-section-header">
         <h2>
-            <i class="fa-solid fa-{{ isset($gastronomium) ? 'pen-to-square' : 'plus-circle' }}" style="color:var(--primary);margin-right:.4rem;"></i>
-            {{ isset($gastronomium) ? 'Editar: ' . $gastronomium->nombre : 'Gastronomía' }}
+            <i class="fa-solid fa-utensils" style="color:var(--primary);margin-right:.4rem;"></i>
+            Gastronomía
         </h2>
-        @unless(isset($gastronomium))
-            <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
-                <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-primary btn-sm">
-                    <i class="fa-solid fa-plus"></i> Nuevo Elemento
-                </a>
-                <a href="{{ route('admin.gastronomia.export.excel') }}" class="btn btn-success btn-sm">
-                    <i class="fa-solid fa-file-excel"></i> Excel
-                </a>
-                <a href="{{ route('admin.gastronomia.export.pdf') }}" class="btn btn-danger btn-sm">
-                    <i class="fa-solid fa-file-pdf"></i> PDF
-                </a>
-            </div>
-        @endunless
-        <form action="{{ route('admin.gastronomia.import.excel') }}"
-              method="POST"
-              enctype="multipart/form-data"
-              style="margin-bottom:1rem;">
-            @csrf
-            <div style="display:flex; gap:.5rem;">
-                <input type="file" name="archivo" required>
-                <button type="submit" class="btn btn-primary btn-sm">
-                    Importar Excel
-                </button>
-            </div>
-        </form>
+        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+            <button onclick="abrirModal()" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-plus"></i> Nuevo Elemento
+            </button>
+            <a href="{{ route('admin.gastronomia.export.excel') }}" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-file-excel"></i> Excel
+            </a>
+            <a href="{{ route('admin.gastronomia.export.pdf') }}" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+            </a>
+            <span class="badge badge-info">{{ $items->total() }} total</span>
+        </div>
     </div>
 
-    @isset($gastronomium)
-        <form method="POST" action="{{ route('admin.gastronomia.update', $gastronomium) }}"
-              class="admin-form" enctype="multipart/form-data">
-        @method('PUT')
-    @else
-        <form method="POST" action="{{ route('admin.gastronomia.store') }}"
-              class="admin-form" enctype="multipart/form-data">
-    @endisset
-    @csrf
+    {{-- Importar Excel --}}
+    <form action="{{ route('admin.gastronomia.import.excel') }}"
+          method="POST"
+          enctype="multipart/form-data"
+          style="margin-top:.75rem;">
+        @csrf
+        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+            <input type="file" name="archivo" required>
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-upload"></i> Importar Excel
+            </button>
+        </div>
+    </form>
+</div>
+
+{{-- ===================== MODAL ===================== --}}
+<div id="modal-gastronomia" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+">
+    <div style="
+        background: #fff;
+        border-radius: 1rem;
+        max-width: 720px;
+        margin: 0 auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        overflow: hidden;
+    ">
+        {{-- Header modal --}}
+        <div style="
+            background: linear-gradient(135deg, var(--orange-900), var(--orange-700));
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        ">
+            <h3 style="color:#fff;font-size:1.05rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-{{ isset($gastronomium) ? 'pen-to-square' : 'plus-circle' }}"></i>
+                {{ isset($gastronomium) ? 'Editar: ' . $gastronomium->nombre : 'Nuevo Elemento' }}
+            </h3>
+            <button onclick="cerrarModal()" style="
+                background: rgba(255,255,255,.15);
+                border: none;
+                color: #fff;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background .2s;
+            " onmouseover="this.style.background='rgba(255,255,255,.3)'"
+               onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        {{-- Body modal --}}
+        <div style="padding: 1.75rem;max-height:calc(90vh - 120px);overflow-y:auto;">
+
+            @isset($gastronomium)
+                <form method="POST" action="{{ route('admin.gastronomia.update', $gastronomium) }}" class="admin-form" enctype="multipart/form-data">
+                @method('PUT')
+            @else
+                <form method="POST" action="{{ route('admin.gastronomia.store') }}" class="admin-form" enctype="multipart/form-data">
+            @endisset
+            @csrf
 
     <div class="form-row">
         <div class="form-group">
@@ -142,18 +196,25 @@
         'fieldId'      => 'gastro',
     ])
 
-    <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
-        <button type="submit" class="btn btn-primary">
-            <i class="fa-solid fa-{{ isset($gastronomium) ? 'floppy-disk' : 'plus' }}"></i>
-            {{ isset($gastronomium) ? 'Actualizar' : 'Guardar' }}
-        </button>
-        @isset($gastronomium)
-            <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-outline">
-                <i class="fa-solid fa-xmark"></i> Cancelar
-            </a>
-        @endisset
+            <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-{{ isset($gastronomium) ? 'floppy-disk' : 'plus' }}"></i>
+                    {{ isset($gastronomium) ? 'Actualizar' : 'Guardar' }}
+                </button>
+                @isset($gastronomium)
+                    <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-outline">
+                        <i class="fa-solid fa-xmark"></i> Cancelar
+                    </a>
+                @else
+                    <button type="button" onclick="cerrarModal()" class="btn btn-outline">
+                        <i class="fa-solid fa-xmark"></i> Cancelar
+                    </button>
+                @endisset
+            </div>
+
+            </form>
+        </div>
     </div>
-    </form>
 </div>
 
 <div class="admin-section">

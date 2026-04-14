@@ -47,7 +47,7 @@ class LugarController extends Controller
    public function index(Request $request)
 {
     $perPage = $request->get('per_page', 10);
-    $lugares = Lugar::orderBy('id', 'desc')->paginate($perPage)->withQueryString();
+    $lugares = Lugar::orderBy('id', 'asc')->paginate($perPage)->withQueryString();
     return view('admin.lugares', compact('lugares', 'perPage'));
 }
     public function store(Request $request)

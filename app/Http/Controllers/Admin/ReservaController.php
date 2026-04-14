@@ -33,7 +33,7 @@ class ReservaController extends Controller
         }
 
         $perPage  = $request->get('per_page', 10);
-        $reservas = $query->orderBy('id', 'desc')->paginate($perPage)->withQueryString();
+        $reservas = $query->orderBy('id', 'asc')->paginate($perPage)->withQueryString();
 
         $usuarios = User::all();
         $hoteles  = Hotel::all();

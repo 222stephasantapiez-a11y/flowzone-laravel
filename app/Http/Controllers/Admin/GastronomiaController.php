@@ -34,7 +34,7 @@ class GastronomiaController extends Controller
     public function index(Request $request)
     {
         $perPage  = $request->get('per_page', 10);
-        $items    = Gastronomia::with('empresa')->latest()->paginate($perPage)->withQueryString();
+        $items    = Gastronomia::with('empresa')->oldest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
         return view('admin.gastronomia', compact('items', 'empresas', 'perPage'));
     }
@@ -71,7 +71,7 @@ class GastronomiaController extends Controller
     public function edit(Gastronomia $gastronomium)
     {
         $perPage  = 10;
-        $items    = Gastronomia::with('empresa')->latest()->paginate($perPage)->withQueryString();
+        $items    = Gastronomia::with('empresa')->oldest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
         return view('admin.gastronomia', compact('items', 'empresas', 'gastronomium', 'perPage'));
     }
@@ -122,9 +122,7 @@ class GastronomiaController extends Controller
     public function exportPdf()
     {
         $gastronomia = \App\Models\Gastronomia::all();
-
         $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomia'));
-
         return $pdf->download('gastronomia.pdf');
     }
 
