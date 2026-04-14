@@ -95,24 +95,19 @@
 
     <div class="form-row">
         <div class="form-group">
-            <label>Latitud</label>
-            <input type="number" step="0.00000001" name="latitud"
-                   placeholder="4.711000"
-                   value="{{ old('latitud', $lugar->latitud ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Longitud</label>
-            <input type="number" step="0.00000001" name="longitud"
-                   placeholder="-74.072100"
-                   value="{{ old('longitud', $lugar->longitud ?? '') }}">
-        </div>
-        <div class="form-group">
             <label>Precio Entrada (COP)</label>
             <input type="number" step="0.01" name="precio_entrada"
                    placeholder="0 = gratuito"
                    value="{{ old('precio_entrada', $lugar->precio_entrada ?? '0') }}">
         </div>
     </div>
+
+    @include('partials.map_picker', [
+        'mapId'        => 'lugar',
+        'latValue'     => old('latitud', $lugar->latitud ?? ''),
+        'lngValue'     => old('longitud', $lugar->longitud ?? ''),
+        'addressValue' => old('ubicacion', $lugar->ubicacion ?? ''),
+    ])
 
     @include('partials.imagen_field', [
         'currentImage' => $lugar->imagen ?? null,
@@ -253,3 +248,15 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    mapPickerInit(
+        'lugar',
+        {{ old('latitud', isset($lugar) && $lugar->latitud ? $lugar->latitud : 'null') }},
+        {{ old('longitud', isset($lugar) && $lugar->longitud ? $lugar->longitud : 'null') }}
+    );
+});
+</script>
+@endpush

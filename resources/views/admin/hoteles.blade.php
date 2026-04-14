@@ -95,28 +95,6 @@
 
     <div class="form-row">
         <div class="form-group">
-            <label>Latitud <span class="form-hint" style="display:inline">(-90 a 90)</span></label>
-            <input type="number" step="0.000001" name="latitud" min="-90" max="90"
-                   placeholder="4.711000"
-                   value="{{ old('latitud', $hotel->latitud ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Longitud <span class="form-hint" style="display:inline">(-180 a 180)</span></label>
-            <input type="number" step="0.000001" name="longitud" min="-180" max="180"
-                   placeholder="-74.072100"
-                   value="{{ old('longitud', $hotel->longitud ?? '') }}">
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label>Servicios <span class="form-hint" style="display:inline">(separados por coma)</span></label>
-        <input type="text" name="servicios"
-               placeholder="Ej: WiFi, Piscina, Parqueadero, Restaurante"
-               value="{{ old('servicios', $hotel->servicios ?? '') }}">
-    </div>
-
-    <div class="form-row">
-        <div class="form-group">
             <label>Teléfono</label>
             <input type="text" name="telefono" maxlength="20"
                    placeholder="Ej: 3201234567"
@@ -129,6 +107,20 @@
                    value="{{ old('email', $hotel->email ?? '') }}">
         </div>
     </div>
+
+    <div class="form-group">
+        <label>Servicios <span class="form-hint" style="display:inline">(separados por coma)</span></label>
+        <input type="text" name="servicios"
+               placeholder="Ej: WiFi, Piscina, Parqueadero, Restaurante"
+               value="{{ old('servicios', $hotel->servicios ?? '') }}">
+    </div>
+
+    @include('partials.map_picker', [
+        'mapId'        => 'hotel',
+        'latValue'     => old('latitud', $hotel->latitud ?? ''),
+        'lngValue'     => old('longitud', $hotel->longitud ?? ''),
+        'addressValue' => old('ubicacion', $hotel->ubicacion ?? ''),
+    ])
 
     @include('partials.imagen_field', [
         'currentImage' => $hotel->imagen ?? null,
@@ -278,3 +270,15 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    mapPickerInit(
+        'hotel',
+        {{ old('latitud', isset($hotel) && $hotel->latitud ? $hotel->latitud : 'null') }},
+        {{ old('longitud', isset($hotel) && $hotel->longitud ? $hotel->longitud : 'null') }}
+    );
+});
+</script>
+@endpush
