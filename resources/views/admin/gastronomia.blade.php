@@ -329,5 +329,23 @@ document.addEventListener('DOMContentLoaded', function () {
         {{ old('longitud', isset($gastronomium) && $gastronomium->longitud ? $gastronomium->longitud : 'null') }}
     );
 });
+
+    function abrirModal() {
+        document.getElementById('modal-gastronomia').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal-gastronomia').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('modal-gastronomia').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') cerrarModal();
+    });
 </script>
 @endpush

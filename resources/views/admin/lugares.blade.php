@@ -324,5 +324,23 @@ document.addEventListener('DOMContentLoaded', function () {
         {{ old('longitud', isset($lugar) && $lugar->longitud ? $lugar->longitud : 'null') }}
     );
 });
+
+    function abrirModal() {
+        document.getElementById('modal-lugar').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal-lugar').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('modal-lugar').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') cerrarModal();
+    });
 </script>
 @endpush

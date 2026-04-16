@@ -335,5 +335,23 @@ document.addEventListener('DOMContentLoaded', function () {
         {{ old('longitud', isset($hotel) && $hotel->longitud ? $hotel->longitud : 'null') }}
     );
 });
+
+    function abrirModal() {
+        document.getElementById('modal-hotel').style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal-hotel').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('modal-hotel').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') cerrarModal();
+    });
 </script>
 @endpush
