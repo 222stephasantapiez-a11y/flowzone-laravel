@@ -2730,7 +2730,6 @@ body.no-hero .navbar {
 .rv-empty p {
     font-size: .9rem;
 }
-
 /* -- Responsive -- */
 @media (max-width: 640px) {
     .rv-header {
@@ -2749,4 +2748,107 @@ body.no-hero .navbar {
     .rv-card-top { gap: .6rem; }
 
     .rv-card-stars { margin-left: auto; }
+}
+
+
+/* =====================================================
+   PAGINACIÓN ADMIN
+   ===================================================== */
+.pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: .75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    border-radius: 0 0 .75rem .75rem;
+    margin-top: .5rem;
+}
+
+.pagination-info {
+    font-size: .82rem;
+    color: var(--gray-600);
+}
+
+.pagination-links {
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+}
+
+.page-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 2rem;
+    padding: 0 .55rem;
+    border-radius: .45rem;
+    font-size: .82rem;
+    font-weight: 500;
+    color: var(--gray-600);
+    background: #fff;
+    border: 1px solid var(--gray-200);
+    text-decoration: none;
+    transition: background .15s, color .15s, border-color .15s;
+    cursor: pointer;
+}
+
+.page-btn:hover {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.page-btn--active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+    pointer-events: none;
+}
+
+.page-btn--disabled {
+    opacity: .4;
+    pointer-events: none;
+    background: var(--gray-100);
+}
+
+.page-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(45,106,79,.25);
+}
+
+.per-page-form {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+}
+
+.per-page-label {
+    font-size: .82rem;
+    color: var(--gray-600);
+}
+
+.per-page-select {
+    padding: .3rem .6rem;
+    border: 1px solid var(--gray-200);
+    border-radius: .45rem;
+    font-size: .82rem;
+    background: #fff;
+    color: var(--gray-900);
+    outline: none;
+    transition: border-color .15s;
+}
+
+.per-page-select:focus {
+    border-color: var(--primary);
+}
+
+@media (max-width: 600px) {
+    .pagination-bar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }

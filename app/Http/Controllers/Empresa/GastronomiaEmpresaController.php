@@ -61,6 +61,8 @@ class GastronomiaEmpresaController extends Controller
             'ingredientes'   => $request->ingredientes,
             'empresa_id'     => $empresa->id,
             'imagen'         => $this->handleImage($request),
+            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
         ]);
 
         return redirect()->route('empresa.gastronomia.index')
@@ -96,6 +98,8 @@ class GastronomiaEmpresaController extends Controller
             'telefono'       => $request->telefono,
             'ingredientes'   => $request->ingredientes,
             'imagen'         => $this->handleImage($request, $gastronomium->imagen),
+            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
         ]);
 
         return redirect()->route('empresa.gastronomia.index')

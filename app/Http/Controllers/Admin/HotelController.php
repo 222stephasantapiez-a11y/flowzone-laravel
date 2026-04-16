@@ -66,11 +66,12 @@ class HotelController extends Controller
         ];
     }
 
-    public function index()
-    {
-        $hoteles = Hotel::orderBy('id', 'desc')->get();
-        return view('admin.hoteles', compact('hoteles'));
-    }
+  public function index(Request $request)
+{
+    $perPage = $request->get('per_page', 10);
+    $hoteles = Hotel::orderBy('id', 'asc')->paginate($perPage)->withQueryString();
+    return view('admin.hoteles', compact('hoteles', 'perPage'));
+}
 
     public function store(Request $request)
     {

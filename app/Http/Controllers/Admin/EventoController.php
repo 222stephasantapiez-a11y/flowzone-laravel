@@ -44,10 +44,11 @@ class EventoController extends Controller
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $eventos = Evento::orderBy('fecha', 'desc')->get();
-        return view('admin.eventos', compact('eventos'));
+        $perPage = $request->get('per_page', 10);
+        $eventos = Evento::orderBy('fecha', 'asc')->paginate($perPage)->withQueryString();
+        return view('admin.eventos', compact('eventos', 'perPage'));
     }
 
     public function store(Request $request)
@@ -79,8 +80,9 @@ class EventoController extends Controller
 
     public function edit(Evento $evento)
     {
-        $eventos = Evento::orderBy('fecha', 'desc')->get();
-        return view('admin.eventos', compact('eventos', 'evento'));
+        $perPage = 10;
+        $eventos = Evento::orderBy('fecha', 'desc')->paginate($perPage)->withQueryString();
+        return view('admin.eventos', compact('eventos', 'evento', 'perPage'));
     }
 
     public function update(Request $request, Evento $evento)
@@ -119,29 +121,28 @@ class EventoController extends Controller
                          ->with('success', 'Evento eliminado correctamente.');
     }
 
+    public function exportExcel()
+    {
+        return Excel::download(new EventosExport, 'eventos.xlsx');
+    }
 
-       public function exportExcel()
-{
-    return Excel::download(new EventosExport, 'eventos.xlsx');
-}
+    public function exportPdf()
+    {
+        $eventos = \App\Models\Evento::all();
 
-public function exportPdf()
-{
-    $eventos = \App\Models\Evento::all();
+        $pdf = Pdf::loadView('admin.pdf.eventos', compact('eventos'));
 
-    $pdf = Pdf::loadView('admin.pdf.eventos', compact('eventos'));
+        return $pdf->download('eventos.pdf');
+    }
 
-    return $pdf->download('eventos.pdf');
-}
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:xlsx,xls,csv'
+        ]);
 
-public function importExcel(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|mimes:xlsx,xls,csv'
-    ]);
+        Excel::import(new EventosImport, $request->file('archivo'));
 
-    Excel::import(new EventosImport, $request->file('archivo'));
-
-    return back()->with('success', 'Eventos importados correctamente');
-}
+        return back()->with('success', 'Eventos importados correctamente');
+    }
 }

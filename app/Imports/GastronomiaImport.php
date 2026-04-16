@@ -14,7 +14,7 @@ class GastronomiaImport implements ToModel, WithHeadingRow
             'nombre' => $row['nombre'],
             'descripcion' => $row['descripcion'],
             'ubicacion' => $row['ubicacion'],
-            'precio' => $row['precio'],
+            'precio' => $row['precio_promedio'],
         ]);
     }
 }
