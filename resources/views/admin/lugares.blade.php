@@ -24,23 +24,21 @@
             <a href="{{ route('admin.lugares.export.pdf') }}" class="btn btn-danger btn-sm">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
-            <span class="badge badge-info">{{ $lugares->total() }} total</span>
+                @include('partials.import_modal', [
+                'importRoute' => 'admin.lugares.import.excel',
+                'sampleFile'  => 'ejemplo_lugares.xlsx',
+                'modalId'     => 'importLugares',
+                'columns'     => [
+                    'nombre'         => 'Nombre del lugar (requerido)',
+                    'descripcion'    => 'Descripción del lugar (requerido)',
+                    'ubicacion'      => 'Ubicación o dirección',
+                    'categoria'      => 'Categoría (Naturaleza, Histórico...)',
+                    'precio_entrada' => 'Precio de entrada en COP (0 = gratuito)',
+                    'horario'        => 'Horario de atención',
+                ],
+            ])
         </div>
     </div>
-
-    {{-- Importar Excel --}}
-    <form action="{{ route('admin.lugares.import.excel') }}"
-          method="POST"
-          enctype="multipart/form-data"
-          style="margin-top:.75rem;">
-        @csrf
-        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
-            <input type="file" name="archivo" required>
-            <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-upload"></i> Importar Excel
-            </button>
-        </div>
-    </form>
 </div>
 
 {{-- ===================== MODAL ===================== --}}

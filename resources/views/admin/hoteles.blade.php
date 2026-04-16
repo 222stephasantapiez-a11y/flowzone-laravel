@@ -26,21 +26,22 @@
                     <i class="fa-solid fa-file-pdf"></i> PDF
                 </a>
             @endunless
+            @include('partials.import_modal', [
+                'importRoute' => 'admin.hoteles.import.excel',
+                'sampleFile'  => 'ejemplo_hoteles.xlsx',
+                'modalId'     => 'importHoteles',
+                'columns'     => [
+                    'nombre'      => 'Nombre del hotel (requerido)',
+                    'descripcion' => 'Descripción del hotel',
+                    'precio'      => 'Precio por noche en COP (requerido)',
+                    'ubicacion'   => 'Ubicación o zona',
+                    'capacidad'   => 'Capacidad en personas',
+                    'servicios'   => 'Servicios separados por coma (WiFi, Piscina...)',
+                    'telefono'    => 'Teléfono de contacto',
+                ],
+            ])
         </div>
     </div>
-
-    <form action="{{ route('admin.hoteles.import.excel') }}"
-          method="POST"
-          enctype="multipart/form-data"
-          style="margin-top:.75rem;">
-        @csrf
-        <div style="display:flex; gap:.5rem;">
-            <input type="file" name="archivo" required>
-            <button type="submit" class="btn btn-primary btn-sm">
-                Importar Excel
-            </button>
-        </div>
-    </form>
 </div>
 
 {{-- ===================== MODAL ===================== --}}

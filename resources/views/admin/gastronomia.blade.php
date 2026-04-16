@@ -24,24 +24,25 @@
             <a href="{{ route('admin.gastronomia.export.pdf') }}" class="btn btn-danger btn-sm">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
-            <span class="badge badge-info">{{ $items->total() }} total</span>
+             @include('partials.import_modal', [
+                'importRoute' => 'admin.gastronomia.import.excel',
+                'sampleFile'  => 'ejemplo_gastronomia.xlsx',
+                'modalId'     => 'importGastronomia',
+                'columns'     => [
+                    'nombre'      => 'Nombre del plato o restaurante (requerido)',
+                    'descripcion' => 'Descripción',
+                    'ubicacion'   => 'Ubicación o zona',
+                    'precio'      => 'Precio promedio en COP',
+                    'tipo'        => 'Tipo (Plato típico, Bebida, Postre, Restaurante...)',
+                    'restaurante' => 'Nombre del establecimiento',
+                    'direccion'   => 'Dirección física',
+                    'telefono'    => 'Teléfono de contacto',
+                ],
+            ])
         </div>
     </div>
-
-    {{-- Importar Excel --}}
-    <form action="{{ route('admin.gastronomia.import.excel') }}"
-          method="POST"
-          enctype="multipart/form-data"
-          style="margin-top:.75rem;">
-        @csrf
-        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
-            <input type="file" name="archivo" required>
-            <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-upload"></i> Importar Excel
-            </button>
-        </div>
-    </form>
 </div>
+
 
 {{-- ===================== MODAL ===================== --}}
 <div id="modal-gastronomia" style="

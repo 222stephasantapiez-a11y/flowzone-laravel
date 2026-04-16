@@ -13,7 +13,13 @@ class HotelesExport implements FromCollection
         return Hotel::select(
             'id',
             'nombre',
+            'descripcion',
             'precio',
+            'ubicacion',
+            'capacidad',
+            'servicios',
+            'telefono',
+            'disponibilidad',
             'created_at'
         )->get();
     }

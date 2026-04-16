@@ -24,23 +24,23 @@
             <a href="{{ route('admin.eventos.export.pdf') }}" class="btn btn-danger btn-sm">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
-            <span class="badge badge-info">{{ $eventos->total() }} total</span>
+            @include('partials.import_modal', [
+                'importRoute' => 'admin.eventos.import.excel',
+                'sampleFile'  => 'ejemplo_eventos.xlsx',
+                'modalId'     => 'importEventos',
+                'columns'     => [
+                    'nombre'      => 'Nombre del evento (requerido)',
+                    'descripcion' => 'Descripción del evento (requerido)',
+                    'fecha'       => 'Fecha en formato YYYY-MM-DD (requerido)',
+                    'ubicacion'   => 'Lugar donde se realiza',
+                    'categoria'   => 'Categoría (Cultural, Deportivo...)',
+                    'precio'      => 'Precio en COP (0 = gratuito)',
+                    'organizador' => 'Nombre del organizador',
+                    'contacto'    => 'Teléfono o email de contacto',
+                ],
+            ])
         </div>
     </div>
-
-    {{-- Importar Excel --}}
-    <form action="{{ route('admin.eventos.import.excel') }}"
-          method="POST"
-          enctype="multipart/form-data"
-          style="margin-top:.75rem;">
-        @csrf
-        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
-            <input type="file" name="archivo" required>
-            <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-upload"></i> Importar Excel
-            </button>
-        </div>
-    </form>
 </div>
 
 {{-- ===================== MODAL ===================== --}}

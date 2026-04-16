@@ -23,8 +23,38 @@
             <a href="{{ route('admin.reservas.export.pdf') }}" class="btn btn-danger btn-sm">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
-            <span class="badge badge-info">{{ $reservas->total() }} total</span>
+            @include('partials.import_modal', [
+                'importRoute' => 'admin.reservas.import.excel',
+                'sampleFile'  => 'ejemplo_reservas.xlsx',
+                'modalId'     => 'importReservas',
+                'columns'     => [
+                    'usuario_id'    => 'ID del usuario (requerido)',
+                    'hotel_id'      => 'ID del hotel (requerido)',
+                    'fecha_entrada' => 'Fecha entrada YYYY-MM-DD (requerido)',
+                    'fecha_salida'  => 'Fecha salida YYYY-MM-DD (requerido)',
+                    'num_personas'  => 'Número de personas',
+                    'precio_total'  => 'Precio total en COP',
+                    'estado'        => 'Estado: pendiente, confirmada o cancelada',
+                ],
+            ])
         </div>
+    </form>
+</div>
+
+{{-- Tabla --}}
+<div class="admin-section">
+    <div class="admin-section-header">
+        <h2>
+            <i class="fa-solid fa-list" style="color:var(--primary);"></i>
+            Todas las Reservas
+        </h2>
+    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+
+    <span class="badge badge-info">
+        {{ $reservas->count() }} total
+    </span>
+     </div>
+     
     </div>
 
     {{-- Filtros --}}
@@ -53,20 +83,6 @@
                     <i class="fa-solid fa-filter"></i> Filtrar
                 </button>
             </div>
-        </div>
-    </form>
-
-    {{-- Importar Excel --}}
-    <form action="{{ route('admin.reservas.import.excel') }}"
-          method="POST"
-          enctype="multipart/form-data"
-          style="margin-top:.75rem;">
-        @csrf
-        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
-            <input type="file" name="archivo" required>
-            <button type="submit" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-upload"></i> Importar Excel
-            </button>
         </div>
     </form>
 </div>
