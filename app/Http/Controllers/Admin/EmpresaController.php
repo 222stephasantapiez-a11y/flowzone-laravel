@@ -14,6 +14,52 @@ use Illuminate\Http\Request;
 
 class EmpresaController extends Controller
 {
+   // Busca la función index y cámbiala por esta:
+public function index(Request $request)
+{
+    $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
+    $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
+    $notifCount     = $notificaciones->count();
+
+    // LÓGICA DEL GENERADOR
+    $plan = null;
+    if ($request->has('generar')) {
+        $evento = \DB::table('eventos')->inRandomOrder()->first();
+        $gastronomia = \DB::table('gastronomia')->inRandomOrder()->first();
+        $hotel = \DB::table('hoteles')->inRandomOrder()->first();
+        $lugar = \DB::table('lugares')->inRandomOrder()->first();
+
+        // Si existen los registros, calculamos
+        if ($evento && $gastronomia && $hotel && $lugar) {
+            $subtotal = ($evento->precio ?? 0) + 
+                        ($gastronomia->precio_promedio ?? 0) + 
+                        ($hotel->precio ?? 0) + 
+                        ($lugar->precio_entrada ?? 0);
+
+            $descuento = $subtotal * 0.20;
+            $precioFinal = $subtotal - $descuento;
+
+            $plan = [
+                'evento' => $evento,
+                'gastronomia' => $gastronomia,
+                'hotel' => $hotel,
+                'lugar' => $lugar,
+                'subtotal' => $subtotal,
+                'descuento' => $descuento,
+                'precioFinal' => $precioFinal
+            ];
+        }
+    }
+
+    // Añadimos 'plan' al compact
+    return view('admin.empresas', compact('empresas', 'notificaciones', 'notifCount', 'plan'));
+}
+
+    public function create()
+    {
+        $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
+        $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
+        $notifCount     = $notificaciones->count();
    public function index(Request $request)
 {
     $perPage        = $request->get('per_page', 10);

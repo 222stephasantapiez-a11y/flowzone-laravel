@@ -189,8 +189,54 @@
         </div>
     </div>
 </div>
+<!-- BOTÓN FILTRAR -->
+<button onclick="toggleFiltros()" class="btn btn-primary" style="margin-bottom:1rem;">
+    <i class="fa-solid fa-filter"></i> Filtrar
+</button>
 
-{{-- Tabla --}}
+<!-- FORMULARIO OCULTO -->
+<form method="GET" action="{{ route('admin.eventos.index') }}"
+      id="filtrosBox"
+      style="display:none; margin-bottom:1rem;">
+
+    <input type="text" name="nombre" placeholder="Nombre"
+        value="{{ request('nombre') }}">
+
+    <input type="date" name="fecha"
+        value="{{ request('fecha') }}">
+
+    <input type="text" name="ubicacion" placeholder="Ubicación"
+        value="{{ request('ubicacion') }}">
+
+    <input type="number" name="precio" placeholder="Precio máximo"
+        value="{{ request('precio') }}">
+
+    <button type="submit">Aplicar</button>
+</form>
+
+<!-- SCRIPT -->
+<script>
+function toggleFiltros() {
+    const box = document.getElementById('filtrosBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+window.onload = function() {
+    const hasFilters =
+        "{{ request('nombre') }}" ||
+        "{{ request('fecha') }}" ||
+        "{{ request('ubicacion') }}" ||
+        "{{ request('precio') }}";
+
+    if (hasFilters) {
+        document.getElementById('filtrosBox').style.display = 'block';
+    }
+}
+</script>
+
+
+
+{{-- Tabla --}}  
 <div class="admin-section">
     <div class="admin-section-header">
         <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Eventos Registrados</h2>

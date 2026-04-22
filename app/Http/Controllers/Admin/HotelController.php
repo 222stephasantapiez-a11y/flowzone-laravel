@@ -10,9 +10,48 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Models\Hotel;
 use Illuminate\Support\Facades\Storage;
+ 
+
+
 
 class HotelController extends Controller
 {
+
+//filtro
+public function index(Request $request)
+{
+    $query = Hotel::query();
+
+    // filtro por ubicación
+    if ($request->ubicacion) {
+        $query->where('ubicacion', 'like', '%' . $request->ubicacion . '%');
+    }
+
+    // filtro por servicio
+    if ($request->servicio) {
+        $query->where('servicio', $request->servicio);
+    }
+
+    // filtro por capacidad mínima
+    if ($request->capacidad) {
+        $query->where('capacidad', '>=', $request->capacidad);
+    }
+
+    // filtro por disponibilidad
+    if ($request->disponibilidad) {
+        $query->where('disponibilidad', $request->disponibilidad);
+    }
+
+    // filtro por precio máximo
+    if ($request->precio) {
+        $query->where('precio', '<=', $request->precio);
+    }
+
+    $hoteles = $query->paginate(10)->withQueryString();
+
+    return view('admin.hoteles', compact('hoteles'));
+}
+
     private function handleImageUpload(Request $request, ?string $currentImage = null): string
     {
         // Opción B: archivo subido
@@ -66,6 +105,7 @@ class HotelController extends Controller
         ];
     }
 
+   
   public function index(Request $request)
 {
     $perPage = $request->get('per_page', 10);
