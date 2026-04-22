@@ -151,7 +151,30 @@
 
     <div class="admin-section-header">
         <h2>Empresas Registradas</h2>
-        <span class="badge badge-info">{{ $empresas->total() }} total</span>
+        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+              <span class="badge badge-info">{{ $empresas->total() }} total</span>
+            <a href="{{ route('admin.empresas.export.excel') }}" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-file-excel"></i> Excel
+            </a>
+            <a href="{{ route('admin.empresas.export.pdf') }}" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+            </a>
+            @include('partials.import_modal', [
+                'importRoute' => 'admin.empresas.import.excel',
+                'sampleFile'  => 'ejemplo_.xlsx',
+                'modalId'     => 'importEventos', 
+                'columns'     => [
+                    'nombre'      => 'Nombre del evento (requerido)',
+                    'descripcion' => 'Descripción del evento (requerido)',
+                    'fecha'       => 'Fecha en formato YYYY-MM-DD (requerido)',
+                    'ubicacion'   => 'Lugar donde se realiza',
+                    'categoria'   => 'Categoría (Cultural, Deportivo...)',
+                    'precio'      => 'Precio en COP (0 = gratuito)',
+                    'organizador' => 'Nombre del organizador',
+                    'contacto'    => 'Teléfono o email de contacto',
+                ],
+            ])
+        </div>
     </div>
 
     <div class="table-responsive">
