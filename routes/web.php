@@ -19,6 +19,7 @@ use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ImagenController;
 
 // ── Páginas públicas ─────────────────────────────────────────
+Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas.index');
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/hoteles', [PageController::class, 'hoteles'])->name('hoteles');
 Route::get('/hoteles/{hotel}', [PageController::class, 'detalleHotel'])->name('hoteles.detalle');
@@ -106,6 +107,7 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/eventos/export/excel',[App\Http\Controllers\Admin\EventoController::class, 'exportExcel'])->name('eventos.export.excel');
     Route::get('eventos/export/pdf', [App\Http\Controllers\Admin\EventoController::class, 'exportPdf'])->name('eventos.export.pdf');
     Route::post('/eventos/import/excel', [App\Http\Controllers\Admin\EventoController::class, 'importExcel'])->name('eventos.import.excel');
+   
 
     Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas.index');
     Route::get('/empresas/export/excel', [EmpresaController::class, 'exportExcel'])->name('empresas.export.excel');
@@ -163,3 +165,4 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/usuarios/export/pdf', [App\Http\Controllers\Admin\UsuarioController::class, 'exportPdf'])->name('usuarios.export.pdf');
     Route::post('/usuarios/import/excel', [App\Http\Controllers\Admin\UsuarioController::class, 'importExcel'])->name('usuarios.import.excel');
 });
+

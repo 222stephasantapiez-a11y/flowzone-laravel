@@ -192,6 +192,90 @@
     </div>
 </div>
 
+<!-- BOTÓN FILTRAR -->
+<button onclick="toggleFiltros()" class="btn btn-primary" style="margin-bottom:1rem;">
+    <i class="fa-solid fa-filter"></i> Filtrar
+</button>
+
+<!-- FORMULARIO OCULTO -->
+<form method="GET" action="{{ route('admin.lugares.index') }}"
+      class="admin-form"
+      id="filtrosBox"
+      style="margin-bottom:1rem; display:none;">
+
+    <div class="form-row">
+
+        <!-- NOMBRE -->
+        <div class="form-group">
+            <label>Nombre</label>
+            <input type="text" name="nombre" value="{{ request('nombre') }}">
+        </div>
+
+        <!-- CATEGORÍA (FIJA 🔥) -->
+        <div class="form-group">
+            <label>Categoría</label>
+            <select name="categoria">
+                <option value="">Todas</option>
+
+                <option value="natural" {{ request('categoria') == 'natural' ? 'selected' : '' }}>
+                    Natural
+                </option>
+
+                <option value="cultural" {{ request('categoria') == 'cultural' ? 'selected' : '' }}>
+                    Cultural
+                </option>
+
+                <option value="histórico" {{ request('categoria') == 'histórico' ? 'selected' : '' }}>
+                    Histórico
+                </option>
+
+                <option value="aventura" {{ request('categoria') == 'aventura' ? 'selected' : '' }}>
+                    Aventura
+                </option>
+            </select>
+        </div>
+
+        <!-- UBICACIÓN -->
+        <div class="form-group">
+            <label>Ubicación</label>
+            <input type="text" name="ubicacion" value="{{ request('ubicacion') }}">
+        </div>
+
+        <!-- PRECIO -->
+        <div class="form-group">
+            <label>Precio máximo entrada</label>
+            <input type="number" name="precio_entrada" value="{{ request('precio_entrada') }}">
+        </div>
+
+        <!-- BOTÓN -->
+        <div class="form-group" style="display:flex;align-items:end;">
+            <button type="submit" class="btn btn-primary">
+                Aplicar
+            </button>
+        </div>
+
+    </div>
+</form>
+
+<!-- SCRIPT -->
+<script>
+function toggleFiltros() {
+    const box = document.getElementById('filtrosBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+window.onload = function() {
+    const hasFilters =
+        "{{ request('nombre') }}" ||
+        "{{ request('categoria') }}" ||
+        "{{ request('ubicacion') }}" ||
+        "{{ request('precio_entrada') }}";
+
+    if (hasFilters) {
+        document.getElementById('filtrosBox').style.display = 'block';
+    }
+}
+</script>
 
 {{-- Tabla --}}
 <div class="admin-section">

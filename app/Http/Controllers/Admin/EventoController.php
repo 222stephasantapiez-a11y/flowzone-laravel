@@ -13,6 +13,32 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class EventoController extends Controller
 {
+    public function index(Request $request)
+{
+    $query = Evento::query();
+
+    if ($request->nombre) {
+        $query->where('nombre', 'like', '%' . $request->nombre . '%');
+    }
+
+    if ($request->fecha) {
+        $query->whereDate('fecha', $request->fecha);
+    }
+
+    if ($request->ubicacion) {
+        $query->where('ubicacion', 'like', '%' . $request->ubicacion . '%');
+    }
+
+    if ($request->precio) {
+        $query->where('precio', '<=', $request->precio);
+    }
+
+    $eventos = $query->paginate(10)->withQueryString();
+
+    return view('admin.eventos', compact('eventos'));
+}
+
+
     private function handleImageUpload(Request $request, ?string $currentImage = null): string
     {
         if ($request->hasFile('imagen_file')) {
@@ -43,6 +69,7 @@ class EventoController extends Controller
             'imagen_file'  => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
         ];
     }
+
 
     public function index(Request $request)
     {

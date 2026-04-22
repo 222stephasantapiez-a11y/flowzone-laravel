@@ -2,18 +2,51 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\GastronomiaExport;
-use App\Imports\GastronomiaImport;
-use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\Gastronomia;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\GastronomiaExport;
+use App\Imports\GastronomiaImport;
 
 class GastronomiaController extends Controller
 {
+    public function index(Request $request)
+    {
+        $query = Gastronomia::query();
+
+        if ($request->nombre) {
+            $query->where('nombre', 'like', '%' . $request->nombre . '%');
+        }
+
+        if ($request->tipo) {
+            $query->where('tipo', $request->tipo);
+        }
+
+        if ($request->restaurante) {
+            $query->where('restaurante', 'like', '%' . $request->restaurante . '%');
+        }
+
+        if ($request->precio) {
+            $query->where('precio_promedio', '<=', $request->precio);
+        }
+
+        if ($request->empresa) {
+            $query->where('empresa_id', $request->empresa);
+        }
+
+        $gastronomias = $query->latest()->paginate(10)->withQueryString();
+
+        $empresas = Empresa::where('aprobado', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return view('admin.gastronomia', compact('gastronomias', 'empresas'));
+    }
+
     private function handleImage(Request $request, ?string $current = null): string
     {
         if ($request->hasFile('imagen_file')) {
@@ -22,15 +55,15 @@ class GastronomiaController extends Controller
             }
             return $request->file('imagen_file')->store('uploads/gastronomia', 'public');
         }
+
         if ($request->filled('imagen_url')) {
             if ($current && !str_starts_with($current, 'http')) {
                 Storage::disk('public')->delete($current);
             }
             return $request->imagen_url;
         }
-        return $current ?? '';
-    }
 
+        return $current ?? '';
     public function index(Request $request)
     {
         $perPage  = $request->get('per_page', 10);
@@ -42,10 +75,7 @@ class GastronomiaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nombre'      => 'required|string|max:150',
-            'descripcion' => 'nullable|string',
-            'imagen_url'  => 'nullable|url',
-            'imagen_file' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
+            'nombre' => 'required|string|max:150',
         ]);
 
         Gastronomia::create([
@@ -65,7 +95,7 @@ class GastronomiaController extends Controller
         ]);
 
         return redirect()->route('admin.gastronomia.index')
-                         ->with('success', 'Elemento gastronómico creado.');
+            ->with('success', 'Creado correctamente');
     }
 
     public function edit(Gastronomia $gastronomium)
@@ -78,12 +108,6 @@ class GastronomiaController extends Controller
 
     public function update(Request $request, Gastronomia $gastronomium)
     {
-        $request->validate([
-            'nombre'      => 'required|string|max:150',
-            'imagen_url'  => 'nullable|url',
-            'imagen_file' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
-        ]);
-
         $gastronomium->update([
             'nombre'         => $request->nombre,
             'descripcion'    => $request->descripcion,
@@ -101,7 +125,7 @@ class GastronomiaController extends Controller
         ]);
 
         return redirect()->route('admin.gastronomia.index')
-                         ->with('success', 'Elemento actualizado.');
+            ->with('success', 'Actualizado correctamente');
     }
 
     public function destroy(Gastronomia $gastronomium)
@@ -109,9 +133,11 @@ class GastronomiaController extends Controller
         if ($gastronomium->imagen && !str_starts_with($gastronomium->imagen, 'http')) {
             Storage::disk('public')->delete($gastronomium->imagen);
         }
+
         $gastronomium->delete();
+
         return redirect()->route('admin.gastronomia.index')
-                         ->with('success', 'Elemento eliminado.');
+            ->with('success', 'Eliminado correctamente');
     }
 
     public function exportExcel()
@@ -121,6 +147,10 @@ class GastronomiaController extends Controller
 
     public function exportPdf()
     {
+        $gastronomias = Gastronomia::all();
+
+        $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomias'));
+
         $gastronomia = \App\Models\Gastronomia::all();
         $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomia'));
         return $pdf->download('gastronomia.pdf');

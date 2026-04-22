@@ -13,6 +13,30 @@ use Illuminate\Support\Facades\Storage;
 
 class LugarController extends Controller
 {
+    public function index(Request $request)
+{
+    $query = Lugar::query();
+
+    if ($request->nombre) {
+        $query->where('nombre', 'like', '%' . $request->nombre . '%');
+    }
+
+    if ($request->categoria) {
+        $query->where('categoria', $request->categoria);
+    }
+
+    if ($request->ubicacion) {
+        $query->where('ubicacion', 'like', '%' . $request->ubicacion . '%');
+    }
+
+    if ($request->precio_entrada) {
+        $query->where('precio_entrada', '<=', $request->precio_entrada);
+    }
+
+    $lugares = $query->paginate(10)->withQueryString();
+
+    return view('admin.lugares', compact('lugares'));
+}
     private function handleImageUpload(Request $request, ?string $currentImage = null): string
     {
         if ($request->hasFile('imagen_file')) {
@@ -43,6 +67,7 @@ class LugarController extends Controller
             'imagen_file'  => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
         ];
     }
+}
 
    public function index(Request $request)
 {

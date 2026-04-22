@@ -4,6 +4,28 @@
 @section('body-class', 'no-hero')
 
 @push('styles')
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+@endpush 
+@push('scripts')
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+
+    var map = L.map('mapaaa').setView([3.9377, -75.2230], 14);
+
+     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+         attribution: 'yo'
+     }).addTo(map);
+
+     L.marker([3.9377, -75.2230]).addTo(map)
+         .bindPopup('Aquí estás 📍');
+
+     setTimeout(() => {
+         map.invalidateSize();
+    }, 100);
+
+</script>
+@endpush
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
 @endpush
 
@@ -40,6 +62,12 @@
         </form>
     </div>
 
+    {{-- Mapa --}}
+    <div class="map-container">
+        <div id="mapaaa" style="height: 200px;width: 300px;"></div>
+    </div>
+    
+    {{-- Grid de hoteles --}}
     @if($busqueda)
     <div style="margin-bottom:1.5rem;">
         <div id="mapa-hoteles" style="height:360px;border-radius:var(--radius,8px);border:1px solid var(--border,#e2e8f0);overflow:hidden;"></div>
