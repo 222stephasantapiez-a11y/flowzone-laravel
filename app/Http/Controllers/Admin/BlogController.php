@@ -2,14 +2,48 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
-use App\Models\Empresa;
+use App\Exports\BlogsExport;
+use App\Imports\BlogsImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Empresa;
 use Illuminate\Support\Facades\Storage;
 
 class BlogController extends Controller
 {
+public function index(Request $request)
+{
+    $query = BlogPost::query();
+
+    if ($request->titulo) {
+        $query->where('titulo', 'like', '%' . $request->titulo . '%');
+    }
+
+    if ($request->fecha) {
+        $query->whereDate('fecha_publicacion', $request->fecha);
+    }
+
+    if ($request->autor) {
+        $query->where('autor', 'like', '%' . $request->autor . '%');
+    }
+
+    if ($request->tipo) {
+        $query->where('tipo', $request->tipo);
+    }
+
+    $posts = $query->orderBy('id', 'desc')
+                   ->paginate(10)
+                   ->withQueryString();
+
+    $empresas = Empresa::where('aprobado', true)
+                        ->orderBy('nombre')
+                        ->get();
+
+    return view('admin.blog', compact('posts', 'empresas'));
+}
     private function handleImage(Request $request, ?string $current = null): ?string
     {
         if ($request->hasFile('imagen_file')) {
@@ -27,19 +61,12 @@ class BlogController extends Controller
         return $current;
     }
 
-    public function index()
-    {
-        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->get();
-        $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.blog', compact('posts', 'empresas'));
-    }
-
     public function store(Request $request)
     {
         $request->validate([
             'titulo'     => 'required|string|max:200',
             'contenido'  => 'required|string',
-            'tipo'       => 'required|in:evento,noticia',
+            'tipo'       => 'required|in:evento,noticia,',
             'imagen_url' => 'nullable|url',
             'imagen_file'=> 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
         ]);
@@ -59,6 +86,7 @@ class BlogController extends Controller
         return redirect()->route('admin.blog.index')
                          ->with('success', 'Publicación creada correctamente.');
     }
+    
 
     public function edit(BlogPost $blog)
     {
@@ -108,4 +136,30 @@ class BlogController extends Controller
         $msg = $blog->publicado ? 'Publicación publicada.' : 'Publicación despublicada.';
         return back()->with('success', $msg);
     }
+
+     public function exportExcel()
+{
+    return Excel::download(new BlogsExport, 'blogs.xlsx');
+}
+
+public function importExcel(Request $request)
+{
+    $request->validate([
+        'archivo' => 'required|mimes:xlsx,xls,csv'
+    ]);
+
+    Excel::import(new BlogsImport, $request->file('archivo'));
+
+    return redirect()->back()->with('success', 'Blogs importados correctamente');
+}
+
+public function exportPdf()
+{
+    $blogs = BlogPost::all();
+
+    $pdf = Pdf::loadView('admin.pdf.blog', compact('blogs'));
+
+    return $pdf->download('blogs.pdf');
+}
+
 }

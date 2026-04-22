@@ -17,7 +17,7 @@
     <aside class="admin-sidebar" id="adminSidebar">
         <div class="admin-brand">
             <div class="admin-brand-logo">
-                <div class="admin-brand-icon"><i class="fa-solid fa-mountain-sun"></i></div>
+                <div class=""><i></i></div>
                 <h2>FlowZone</h2>
             </div>
             <span>Panel de Administración</span>

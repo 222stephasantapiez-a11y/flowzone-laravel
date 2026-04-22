@@ -14,10 +14,28 @@
             {{ isset($blog) ? 'Editar: ' . $blog->titulo : 'Blog' }}
         </h2>
         @unless(isset($blog))
-            <a href="{{ route('admin.blog.index') }}" class="btn btn-primary btn-sm">
+           
+            <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
+                 <a href="{{ route('admin.blog.index') }}" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-plus"></i> Nueva Publicación
             </a>
+    <a href="{{ route('admin.blog.export.excel') }}" class="btn btn-success btn-sm">
+        Exportar Excel
+    </a>
+
+    <a href="{{ route('admin.blog.export.pdf') }}" class="btn btn-danger btn-sm">
+        Exportar PDF
+    </a>
+</div>
         @endunless
+
+            <form action="{{ route('admin.blog.import.excel') }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <input type="file" name="archivo" required>
+        <button type="submit" class="btn btn-primary btn-sm">
+            Importar
+        </button>
+    </form>
     </div>
 
     @isset($blog)
@@ -42,6 +60,7 @@
             <select name="tipo" required>
                 <option value="noticia" {{ old('tipo', $blog->tipo ?? '') === 'noticia' ? 'selected' : '' }}>Noticia</option>
                 <option value="evento"  {{ old('tipo', $blog->tipo ?? '') === 'evento'  ? 'selected' : '' }}>Evento</option>
+                
             </select>
         </div>
     </div>
@@ -109,6 +128,60 @@
         <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Publicaciones</h2>
         <span class="badge badge-info">{{ $posts->count() }} total</span>
     </div>
+    {{-- BOTÓN FILTRO --}}
+<button type="button"
+        class="btn btn-primary btn-sm"
+        onclick="toggleFiltrosBlog()">
+    <i class="fa-solid fa-filter"></i> Filtrar
+</button>
+
+{{-- FILTRO --}}
+<form method="GET"
+      action="{{ route('admin.blog.index') }}"
+      id="filtrosBlogBox"
+      style="display:none; margin:10px 0;">
+
+    <input type="text" name="titulo"
+           placeholder="Título"
+           value="{{ request('titulo') }}">
+
+    <input type="date" name="fecha"
+           value="{{ request('fecha') }}">
+
+    <input type="text" name="autor"
+           placeholder="Autor"
+           value="{{ request('autor') }}">
+
+    {{-- TIPO FIJO --}}
+    <select name="tipo">
+        <option value="">Todos</option>
+        <option value="noticia" {{ request('tipo') == 'noticia' ? 'selected' : '' }}>Noticia</option>
+        <option value="evento" {{ request('tipo') == 'evento' ? 'selected' : '' }}>Evento</option>
+        <option value="articulo" {{ request('tipo') == 'articulo' ? 'selected' : '' }}>Artículo</option>
+        <option value="opinión" {{ request('tipo') == 'opinión' ? 'selected' : '' }}>Opinión</option>
+    </select>
+
+    <button type="submit" class="btn btn-primary btn-sm">
+        Aplicar
+    </button>
+
+    <a href="{{ route('admin.blog.index') }}" class="btn btn-outline btn-sm">
+        Limpiar
+    </a>
+</form>
+
+{{-- JS filtro --}}
+<script>
+function toggleFiltrosBlog() {
+    const box = document.getElementById('filtrosBlogBox');
+
+    if (box.style.display === 'none' || box.style.display === '') {
+        box.style.display = 'block';
+    } else {
+        box.style.display = 'none';
+    }
+}
+</script>
     <div class="table-responsive">
         <table class="admin-table">
             <thead>

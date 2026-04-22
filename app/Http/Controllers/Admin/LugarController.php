@@ -13,6 +13,30 @@ use Illuminate\Support\Facades\Storage;
 
 class LugarController extends Controller
 {
+    public function index(Request $request)
+{
+    $query = Lugar::query();
+
+    if ($request->nombre) {
+        $query->where('nombre', 'like', '%' . $request->nombre . '%');
+    }
+
+    if ($request->categoria) {
+        $query->where('categoria', $request->categoria);
+    }
+
+    if ($request->ubicacion) {
+        $query->where('ubicacion', 'like', '%' . $request->ubicacion . '%');
+    }
+
+    if ($request->precio_entrada) {
+        $query->where('precio_entrada', '<=', $request->precio_entrada);
+    }
+
+    $lugares = $query->paginate(10)->withQueryString();
+
+    return view('admin.lugares', compact('lugares'));
+}
     private function handleImageUpload(Request $request, ?string $currentImage = null): string
     {
         if ($request->hasFile('imagen_file')) {
@@ -43,102 +67,4 @@ class LugarController extends Controller
             'imagen_file'  => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
         ];
     }
-
-    public function index()
-    {
-        $lugares = Lugar::orderBy('id', 'desc')->get();
-        return view('admin.lugares', compact('lugares'));
-    }
-
-    public function store(Request $request)
-    {
-        $request->validate($this->rules(), [
-            'imagen_url.required_without' => 'Debes ingresar una URL o subir una imagen.',
-            'imagen_file.mimes'           => 'Solo se permiten imágenes JPG, PNG o WebP.',
-            'imagen_file.max'             => 'La imagen no puede superar 4 MB.',
-        ]);
-
-        $imagen = $this->handleImageUpload($request);
-
-        Lugar::create([
-            'nombre'         => $request->nombre,
-            'descripcion'    => $request->descripcion,
-            'ubicacion'      => $request->ubicacion,
-            'latitud'        => $request->latitud ?: null,
-            'longitud'       => $request->longitud ?: null,
-            'categoria'      => $request->categoria,
-            'imagen'         => $imagen,
-            'precio_entrada' => $request->precio_entrada ?: 0,
-            'horario'        => $request->horario,
-        ]);
-
-        return redirect()->route('admin.lugares.index')
-                         ->with('success', 'Lugar creado correctamente.');
-    }
-
-    public function edit(Lugar $lugar)
-    {
-        $lugares = Lugar::orderBy('id', 'desc')->get();
-        return view('admin.lugares', compact('lugares', 'lugar'));
-    }
-
-    public function update(Request $request, Lugar $lugar)
-    {
-        $request->validate($this->rules(true), [
-            'imagen_file.mimes' => 'Solo se permiten imágenes JPG, PNG o WebP.',
-            'imagen_file.max'   => 'La imagen no puede superar 4 MB.',
-        ]);
-
-        $imagen = $this->handleImageUpload($request, $lugar->imagen);
-
-        $lugar->update([
-            'nombre'         => $request->nombre,
-            'descripcion'    => $request->descripcion,
-            'ubicacion'      => $request->ubicacion,
-            'latitud'        => $request->latitud ?: null,
-            'longitud'       => $request->longitud ?: null,
-            'categoria'      => $request->categoria,
-            'imagen'         => $imagen,
-            'precio_entrada' => $request->precio_entrada ?: 0,
-            'horario'        => $request->horario,
-        ]);
-
-        return redirect()->route('admin.lugares.index')
-                         ->with('success', 'Lugar actualizado correctamente.');
-    }
-
-    public function destroy(Lugar $lugar)
-    {
-        if ($lugar->imagen && !str_starts_with($lugar->imagen, 'http')) {
-            Storage::disk('public')->delete($lugar->imagen);
-        }
-        $lugar->delete();
-        return redirect()->route('admin.lugares.index')
-                         ->with('success', 'Lugar eliminado correctamente.');
-    }
-
-    public function exportExcel()
-{
-    return Excel::download(new LugaresExport, 'lugares.xlsx');
-}
-
-public function exportPdf()
-{
-    $lugares = \App\Models\Lugar::all();
-
-    $pdf = Pdf::loadView('admin.pdf.lugares', compact('lugares'));
-
-    return $pdf->download('lugares.pdf');
-}
-
-public function importExcel(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|mimes:xlsx,xls,csv'
-    ]);
-
-    Excel::import(new LugaresImport, $request->file('archivo'));
-
-    return back()->with('success', 'Lugares importados correctamente');
-}
 }

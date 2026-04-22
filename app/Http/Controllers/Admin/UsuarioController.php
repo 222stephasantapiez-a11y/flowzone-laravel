@@ -12,13 +12,30 @@ use Illuminate\Http\Request;
 
 class UsuarioController extends Controller
 {
-    public function index()
-    {
-        $usuarios = User::latest()->get();
+    public function index(Request $request)
+{
+    $query = User::query(); 
 
-        return view('admin.usuarios', compact('usuarios'));
+    // filtro por ID
+    if ($request->id) {
+        $query->where('id', $request->id);
     }
 
+    // filtro por nombre
+    if ($request->name) {
+        $query->where('name', 'like', '%' . $request->name . '%');
+    }
+
+    // filtro por email
+    if ($request->email) {
+        $query->where('email', 'like', '%' . $request->email . '%');
+    }
+
+    $usuarios = $query->paginate(10);
+
+    return view('admin.usuarios', compact('usuarios'));
+}
+    
     public function exportExcel()
     {
         return Excel::download(new UsuariosExport, 'usuarios.xlsx');

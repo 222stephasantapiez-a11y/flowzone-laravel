@@ -158,6 +158,51 @@
 
     </form>
 </div>
+{{-- filtro --}}
+<form method="GET" action="{{ route('admin.hoteles.index') }}"
+      class="admin-form" style="margin-bottom:1rem;">
+
+    <div class="form-row">
+
+        <div class="form-group">
+            <label>Ubicación</label>
+            <input type="text" name="ubicacion" placeholder="Ej: Bogotá"
+                value="{{ request('ubicacion') }}">
+        </div>
+
+        <div class="form-group">
+            <label>Precio máximo</label>
+            <input type="number" name="precio"
+                value="{{ request('precio') }}">
+        </div>
+
+        <div class="form-group">
+            <label>Capacidad</label>
+            <input type="number" name="capacidad"
+                value="{{ request('capacidad') }}">
+        </div>
+
+        <div class="form-group">
+            <label>Disponibilidad</label>
+            <select name="disponibilidad">
+                <option value="">Todos</option>
+                <option value="1" {{ request('disponibilidad') == '1' ? 'selected' : '' }}>
+                    Disponible
+                </option>
+                <option value="0" {{ request('disponibilidad') == '0' ? 'selected' : '' }}>
+                    No disponible
+                </option>
+            </select>
+        </div>
+
+        <div class="form-group" style="display:flex;align-items:end;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-filter"></i> Filtrar
+            </button>
+        </div>
+
+    </div>
+</form>
 
 {{-- Tabla --}}
 <div class="admin-section">
