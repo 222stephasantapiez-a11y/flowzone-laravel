@@ -32,6 +32,9 @@ Route::get('/blog/{post:slug}', [PageController::class, 'blogPost'])->name('blog
 Route::get('/contacto', [PageController::class, 'contacto'])->name('contacto');
 Route::get('/maps', [PageController::class, 'maps'])->name('maps');
 Route::get('/maps/buscar', [PageController::class, 'mapsBuscar'])->name('maps.buscar');
+Route::get('/generador', function () {
+    return view('pages.generador');
+})->name('generador');
 
 // ── Autenticación ────────────────────────────────────────────
 Route::middleware('guest')->group(function () {

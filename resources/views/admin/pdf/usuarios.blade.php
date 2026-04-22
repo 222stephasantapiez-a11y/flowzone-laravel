@@ -5,6 +5,9 @@
         <th>ID</th>
         <th>Nombre</th>
         <th>Email</th>
+        <th>rol</th>
+        <th>Estado</th>
+        <th>Telefono</th>
     </tr>
 
     @foreach($usuarios as $u)
@@ -12,6 +15,9 @@
         <td>{{ $u->id }}</td>
         <td>{{ $u->name }}</td>
         <td>{{ $u->email }}</td>
+        <td>{{ $u->rol}}</td>
+        <td>{{ $u->estado}}</td>
+        <td>{{ $u->telefono }}</td>
     </tr>
     @endforeach
 </table>

@@ -64,6 +64,12 @@ class GastronomiaController extends Controller
         }
 
         return $current ?? '';
+    public function index(Request $request)
+    {
+        $perPage  = $request->get('per_page', 10);
+        $items    = Gastronomia::with('empresa')->oldest()->paginate($perPage)->withQueryString();
+        $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
+        return view('admin.gastronomia', compact('items', 'empresas', 'perPage'));
     }
 
     public function store(Request $request)
@@ -73,17 +79,19 @@ class GastronomiaController extends Controller
         ]);
 
         Gastronomia::create([
-            'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'tipo' => $request->tipo,
-            'precio_promedio' => $request->precio_promedio,
-            'restaurante' => $request->restaurante,
-            'direccion' => $request->direccion,
-            'ubicacion' => $request->ubicacion,
-            'telefono' => $request->telefono,
-            'ingredientes' => $request->ingredientes,
-            'empresa_id' => $request->empresa_id,
-            'imagen' => $this->handleImage($request),
+            'nombre'         => $request->nombre,
+            'descripcion'    => $request->descripcion,
+            'tipo'           => $request->tipo,
+            'precio_promedio'=> $request->precio_promedio ?: null,
+            'restaurante'    => $request->restaurante,
+            'direccion'      => $request->direccion,
+            'ubicacion'      => $request->ubicacion,
+            'telefono'       => $request->telefono,
+            'ingredientes'   => $request->ingredientes,
+            'empresa_id'     => $request->empresa_id ?: null,
+            'imagen'         => $this->handleImage($request),
+            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
         ]);
 
         return redirect()->route('admin.gastronomia.index')
@@ -92,26 +100,28 @@ class GastronomiaController extends Controller
 
     public function edit(Gastronomia $gastronomium)
     {
-        $gastronomias = Gastronomia::with('empresa')->latest()->paginate(10);
+        $perPage  = 10;
+        $items    = Gastronomia::with('empresa')->oldest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-
-        return view('admin.gastronomia', compact('gastronomias', 'empresas', 'gastronomium'));
+        return view('admin.gastronomia', compact('items', 'empresas', 'gastronomium', 'perPage'));
     }
 
     public function update(Request $request, Gastronomia $gastronomium)
     {
         $gastronomium->update([
-            'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'tipo' => $request->tipo,
-            'precio_promedio' => $request->precio_promedio,
-            'restaurante' => $request->restaurante,
-            'direccion' => $request->direccion,
-            'ubicacion' => $request->ubicacion,
-            'telefono' => $request->telefono,
-            'ingredientes' => $request->ingredientes,
-            'empresa_id' => $request->empresa_id,
-            'imagen' => $this->handleImage($request, $gastronomium->imagen),
+            'nombre'         => $request->nombre,
+            'descripcion'    => $request->descripcion,
+            'tipo'           => $request->tipo,
+            'precio_promedio'=> $request->precio_promedio ?: null,
+            'restaurante'    => $request->restaurante,
+            'direccion'      => $request->direccion,
+            'ubicacion'      => $request->ubicacion,
+            'telefono'       => $request->telefono,
+            'ingredientes'   => $request->ingredientes,
+            'empresa_id'     => $request->empresa_id ?: null,
+            'imagen'         => $this->handleImage($request, $gastronomium->imagen),
+            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
         ]);
 
         return redirect()->route('admin.gastronomia.index')
@@ -141,6 +151,8 @@ class GastronomiaController extends Controller
 
         $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomias'));
 
+        $gastronomia = \App\Models\Gastronomia::all();
+        $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomia'));
         return $pdf->download('gastronomia.pdf');
     }
 
@@ -152,6 +164,6 @@ class GastronomiaController extends Controller
 
         Excel::import(new GastronomiaImport, $request->file('archivo'));
 
-        return back()->with('success', 'Importado correctamente');
+        return back()->with('success', 'Restaurantes importados correctamente');
     }
 }

@@ -149,6 +149,45 @@
 </div>
 @endif
 
+<div class="card mt-4">
+    <div class="card-header">
+        <h3>Reservas por Mes</h3>
+    </div>
+    <div class="card-body">
+        <canvas id="graficaReservasMes"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ctxMes = document.getElementById('graficaReservasMes');
+
+    new Chart(ctxMes, {
+        type: 'bar',
+        data: {
+            labels: [
+                @foreach($mesLabels as $mes)
+                    'Mes {{ $mes }}',
+                @endforeach
+            ],
+            datasets: [{
+                label: 'Total de Reservas',
+                data: [
+                    @foreach($mesData as $total)
+                        {{ $total }},
+                    @endforeach
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+</script>
+
+
 {{-- Charts --}}
 <div class="charts-grid">    <div class="dash-card">
         <div class="dash-card-header">

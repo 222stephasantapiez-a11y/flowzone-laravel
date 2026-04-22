@@ -36,6 +36,12 @@ class UsuarioController extends Controller
     return view('admin.usuarios', compact('usuarios'));
 }
     
+   public function index(Request $request)
+{
+    $perPage = $request->get('per_page', 10);
+    $usuarios = User::orderBy('id', 'asc')->paginate($perPage)->withQueryString();
+    return view('admin.usuarios', compact('usuarios', 'perPage'));
+}
     public function exportExcel()
     {
         return Excel::download(new UsuariosExport, 'usuarios.xlsx');

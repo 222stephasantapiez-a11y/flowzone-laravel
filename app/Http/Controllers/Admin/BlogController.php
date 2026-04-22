@@ -61,6 +61,14 @@ public function index(Request $request)
         return $current;
     }
 
+    public function index(Request $request)
+    {
+        $perPage  = $request->get('per_page', 10);
+        $posts    = BlogPost::with(['empresa', 'usuario'])->oldest()->paginate($perPage)->withQueryString();
+        $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
+        return view('admin.blog', compact('posts', 'empresas', 'perPage'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -90,9 +98,10 @@ public function index(Request $request)
 
     public function edit(BlogPost $blog)
     {
-        $posts    = BlogPost::with(['empresa', 'usuario'])->latest()->get();
+        $perPage  = 10;
+        $posts    = BlogPost::with(['empresa', 'usuario'])->oldest()->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.blog', compact('posts', 'empresas', 'blog'));
+        return view('admin.blog', compact('posts', 'empresas', 'blog', 'perPage'));
     }
 
     public function update(Request $request, BlogPost $blog)
@@ -162,4 +171,5 @@ public function exportPdf()
     return $pdf->download('blogs.pdf');
 }
 
+}
 }
