@@ -35,38 +35,6 @@ class EmpresaController extends Controller
 
         $notifCount = $notificaciones->count();
 
-        // ==========================
-        // GENERADOR DE PLAN
-        // ==========================
-        $plan = null;
-
-        if ($request->has('generar')) {
-            $evento      = DB::table('eventos')->inRandomOrder()->first();
-            $gastronomia = DB::table('gastronomia')->inRandomOrder()->first();
-            $hotel       = DB::table('hoteles')->inRandomOrder()->first();
-            $lugar       = DB::table('lugares')->inRandomOrder()->first();
-
-            if ($evento && $gastronomia && $hotel && $lugar) {
-                $subtotal = ($evento->precio ?? 0)
-                    + ($gastronomia->precio_promedio ?? 0)
-                    + ($hotel->precio ?? 0)
-                    + ($lugar->precio_entrada ?? 0);
-
-                $descuento   = $subtotal * 0.20;
-                $precioFinal = $subtotal - $descuento;
-
-                $plan = [
-                    'evento'       => $evento,
-                    'gastronomia'  => $gastronomia,
-                    'hotel'        => $hotel,
-                    'lugar'        => $lugar,
-                    'subtotal'     => $subtotal,
-                    'descuento'    => $descuento,
-                    'precioFinal'  => $precioFinal,
-                ];
-            }
-        }
-
         return view('admin.empresas', compact(
             'empresas',
             'notificaciones',
