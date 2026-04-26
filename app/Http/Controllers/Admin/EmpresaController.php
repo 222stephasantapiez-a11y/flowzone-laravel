@@ -38,10 +38,9 @@ class EmpresaController extends Controller
         return view('admin.empresas', compact(
             'empresas',
             'notificaciones',
-            'notifCount',
-            'plan',
-            'perPage'
+            'notifCount'
         ));
+                    
     }
 
     // ==========================
