@@ -205,57 +205,70 @@
     </div>
 </div>
 {{-- filtro --}}
-<form method="GET" action="{{ route('admin.hoteles.index') }}"
-      class="admin-form" style="margin-bottom:1rem;">
 
-    <div class="form-row">
-
-        <div class="form-group">
-            <label>Ubicación</label>
-            <input type="text" name="ubicacion" placeholder="Ej: Bogotá"
-                value="{{ request('ubicacion') }}">
-        </div>
-
-        <div class="form-group">
-            <label>Precio máximo</label>
-            <input type="number" name="precio"
-                value="{{ request('precio') }}">
-        </div>
-
-        <div class="form-group">
-            <label>Capacidad</label>
-            <input type="number" name="capacidad"
-                value="{{ request('capacidad') }}">
-        </div>
-
-        <div class="form-group">
-            <label>Disponibilidad</label>
-            <select name="disponibilidad">
-                <option value="">Todos</option>
-                <option value="1" {{ request('disponibilidad') == '1' ? 'selected' : '' }}>
-                    Disponible
-                </option>
-                <option value="0" {{ request('disponibilidad') == '0' ? 'selected' : '' }}>
-                    No disponible
-                </option>
-            </select>
-        </div>
-
-        <div class="form-group" style="display:flex;align-items:end;">
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-filter"></i> Filtrar
-            </button>
-        </div>
-
-    </div>
-</form>
 
 {{-- Tabla --}}
 <div class="admin-section">
-    <div class="admin-section-header">
-        <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Hoteles Registrados</h2>
+  <div class="admin-section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+
+    <h2>
+        <i class="fa-solid fa-list" style="color:var(--primary);"></i> Hoteles Registrados
+    </h2>
+
+    <div style="display:flex; align-items:center; gap:.5rem;">
+
         <span class="badge badge-info">{{ $hoteles->total() }} total</span>
+
+        <button type="button" onclick="toggleFiltrosHoteles()" class="btn btn-success btn-sm">
+            <i class="fa-solid fa-filter"></i><p>Filtro</p>
+        </button>
+
     </div>
+    <div id="filtrosHoteles" style="display:none; margin-bottom:1rem;">
+
+    <form method="GET" action="{{ route('admin.hoteles.index') }}">
+
+        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
+
+            <div>
+                <label>Ubicación</label><br>
+                <input type="text" name="ubicacion" value="{{ request('ubicacion') }}">
+            </div>
+
+            <div>
+                <label>Precio máximo</label><br>
+                <input type="number" name="precio" value="{{ request('precio') }}">
+            </div>
+
+            <div>
+                <label>Capacidad</label><br>
+                <input type="number" name="capacidad" value="{{ request('capacidad') }}">
+            </div>
+
+            <div>
+                <label>Estado</label><br>
+                <select name="disponibilidad">
+                    <option value="">Todos</option>
+                    <option value="1" {{ request('disponibilidad') == '1' ? 'selected' : '' }}>
+                        Disponible
+                    </option>
+                    <option value="0" {{ request('disponibilidad') == '0' ? 'selected' : '' }}>
+                        No disponible
+                    </option>
+                </select>
+            </div>
+
+            <div style="display:flex; gap:.5rem;">
+                <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
+                <a href="{{ route('admin.hoteles.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+
+</div>
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
@@ -399,5 +412,39 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') cerrarModal();
     });
+</script>
+
+<script>
+function toggleFiltrosHoteles() {
+    const box = document.getElementById('filtrosHoteles');
+
+    if (box.style.display === 'none' || box.style.display === '') {
+        box.style.display = 'block';
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+// Mantener abierto si hay filtros activos
+window.addEventListener('load', function () {
+    if (
+        "{{ request('ubicacion') }}" ||
+        "{{ request('precio') }}" ||
+        "{{ request('capacidad') }}" ||
+        "{{ request('disponibilidad') }}"
+    ) {
+        document.getElementById('filtrosHoteles').style.display = 'block';
+    }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // 🔥 SI ESTÁ EDITANDO → ABRIR MODAL
+    @if(isset($hotel))
+        abrirModal();
+    @endif
+
+});
 </script>
 @endpush

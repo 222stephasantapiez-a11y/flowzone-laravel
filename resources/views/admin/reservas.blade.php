@@ -6,309 +6,201 @@
 
 @section('content')
 
-{{-- Barra superior --}}
+{{-- ================= HEADER ================= --}}
 <div class="admin-section">
     <div class="admin-section-header">
         <h2>
             <i class="fa-solid fa-calendar-check" style="color:var(--primary);margin-right:.4rem;"></i>
             Reservas
         </h2>
-        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
             <button onclick="abrirModal()" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-plus"></i> Nueva Reserva
             </button>
+
             <a href="{{ route('admin.reservas.export.excel') }}" class="btn btn-success btn-sm">
                 <i class="fa-solid fa-file-excel"></i> Excel
             </a>
+
             <a href="{{ route('admin.reservas.export.pdf') }}" class="btn btn-danger btn-sm">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
-            @include('partials.import_modal', [
-                'importRoute' => 'admin.reservas.import.excel',
-                'sampleFile'  => 'ejemplo_reservas.xlsx',
-                'modalId'     => 'importReservas',
-                'columns'     => [
-                    'usuario_id'    => 'ID del usuario (requerido)',
-                    'hotel_id'      => 'ID del hotel (requerido)',
-                    'fecha_entrada' => 'Fecha entrada YYYY-MM-DD (requerido)',
-                    'fecha_salida'  => 'Fecha salida YYYY-MM-DD (requerido)',
-                    'num_personas'  => 'Número de personas',
-                    'precio_total'  => 'Precio total en COP',
-                    'estado'        => 'Estado: pendiente, confirmada o cancelada',
-                ],
-            ])
         </div>
-    </form>
-</div>
-
-{{-- Tabla --}}
-<div class="admin-section">
-    <div class="admin-section-header">
-        <h2>
-            <i class="fa-solid fa-list" style="color:var(--primary);"></i>
-            Todas las Reservas
-        </h2>
-    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
-
-    <span class="badge badge-info">
-        {{ $reservas->count() }} total
-    </span>
-     </div>
-     
     </div>
-
-    {{-- Filtros --}}
-    <form method="GET" action="{{ route('admin.reservas.index') }}"
-          class="admin-form" style="margin-top:.75rem;">
-        <div class="form-row">
-            <div class="form-group">
-                <label>Fecha entrada</label>
-                <input type="date" name="fecha_inicio" value="{{ request('fecha_inicio') }}">
-            </div>
-            <div class="form-group">
-                <label>Fecha salida</label>
-                <input type="date" name="fecha_fin" value="{{ request('fecha_fin') }}">
-            </div>
-            <div class="form-group">
-                <label>Estado</label>
-                <select name="estado">
-                    <option value="">Todos</option>
-                    <option value="pendiente"  {{ request('estado') == 'pendiente'  ? 'selected' : '' }}>Pendiente</option>
-                    <option value="confirmada" {{ request('estado') == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
-                    <option value="cancelada"  {{ request('estado') == 'cancelada'  ? 'selected' : '' }}>Cancelada</option>
-                </select>
-            </div>
-            <div class="form-group" style="display:flex;align-items:end;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-filter"></i> Filtrar
-                </button>
-            </div>
-        </div>
-    </form>
 </div>
 
-{{-- ===================== MODAL ===================== --}}
-<div id="modal-reserva" style="
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(4px);
-    z-index: 999;
-    overflow-y: auto;
-    padding: 2rem 1rem;
-">
-    <div style="
-        background: #fff;
-        border-radius: 1rem;
-        max-width: 720px;
-        margin: 0 auto;
-        box-shadow: 0 20px 60px rgba(0,0,0,.25);
-        overflow: hidden;
-    ">
-        {{-- Header modal --}}
-        <div style="
-            background: linear-gradient(135deg, var(--green-900), var(--green-700));
-            padding: 1.25rem 1.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        ">
-            <h3 style="color:#fff;font-size:1.05rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
-                <i class="fa-solid fa-{{ isset($reserva) ? 'pen-to-square' : 'plus-circle' }}"></i>
-                {{ isset($reserva) ? 'Editar Reserva #' . $reserva->id : 'Nueva Reserva' }}
-            </h3>
-            <button onclick="cerrarModal()" style="
-                background: rgba(255,255,255,.15);
-                border: none;
-                color: #fff;
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                cursor: pointer;
-                font-size: 1rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: background .2s;
-            " onmouseover="this.style.background='rgba(255,255,255,.3)'"
-               onmouseout="this.style.background='rgba(255,255,255,.15)'">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
+{{-- ================= MODAL ================= --}}
+@php $editando = isset($reserva); @endphp
+
+<div id="modal-reserva" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:999;padding:2rem;">
+    <div style="background:#fff;border-radius:1rem;max-width:720px;margin:auto;overflow:hidden;">
+
+        <div style="background:linear-gradient(135deg,var(--green-900),var(--green-700));padding:1rem;color:#fff;display:flex;justify-content:space-between;">
+            <strong>{{ $editando ? 'Editar Reserva' : 'Nueva Reserva' }}</strong>
+            <button onclick="cerrarModal()" style="background:none;border:none;color:#fff;">✖</button>
         </div>
 
-        {{-- Body modal --}}
-        <div style="padding: 1.75rem;">
+        <div style="padding:1.5rem;">
+            <form method="POST" action="{{ $editando ? route('admin.reservas.update',$reserva) : route('admin.reservas.store') }}">
+                @csrf
+                @if($editando) @method('PUT') @endif
 
-            @isset($reserva)
-                <form method="POST" action="{{ route('admin.reservas.update', $reserva) }}" class="admin-form">
-                @method('PUT')
-            @else
-                <form method="POST" action="{{ route('admin.reservas.store') }}" class="admin-form">
-            @endisset
-            @csrf
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Usuario</label>
+                        <select name="usuario_id" required>
+                            @foreach($usuarios as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Usuario *</label>
-                    <select name="usuario_id" required>
-                        <option value="">— Seleccionar —</option>
-                        @foreach($usuarios as $u)
-                            <option value="{{ $u->id }}"
-                                {{ old('usuario_id', $reserva->usuario_id ?? '') == $u->id ? 'selected' : '' }}>
-                                {{ $u->name }} ({{ $u->email }})
-                            </option>
-                        @endforeach
+                    <div class="form-group">
+                        <label>Hotel</label>
+                        <select name="hotel_id" required>
+                            @foreach($hoteles as $h)
+                                <option value="{{ $h->id }}">{{ $h->nombre }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <input type="date" name="fecha_entrada" required>
+                    <input type="date" name="fecha_salida" required>
+                    <input type="number" name="num_personas" min="1" value="1">
+                </div>
+
+                <div class="form-row">
+                    <input type="number" name="precio_total" value="0">
+                    <select name="estado">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="confirmada">Confirmada</option>
+                        <option value="cancelada">Cancelada</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Hotel *</label>
-                    <select name="hotel_id" required>
-                        <option value="">— Seleccionar —</option>
-                        @foreach($hoteles as $h)
-                            <option value="{{ $h->id }}"
-                                {{ old('hotel_id', $reserva->hotel_id ?? '') == $h->id ? 'selected' : '' }}>
-                                {{ $h->nombre }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
 
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Fecha Entrada *</label>
-                    <input type="date" name="fecha_entrada" required
-                           value="{{ old('fecha_entrada', isset($reserva) ? $reserva->fecha_entrada->format('Y-m-d') : '') }}">
+                <div style="margin-top:1rem;">
+                    <button class="btn btn-primary">Guardar</button>
                 </div>
-                <div class="form-group">
-                    <label>Fecha Salida *</label>
-                    <input type="date" name="fecha_salida" required
-                           value="{{ old('fecha_salida', isset($reserva) ? $reserva->fecha_salida->format('Y-m-d') : '') }}">
-                </div>
-                <div class="form-group">
-                    <label>Nº Personas *</label>
-                    <input type="number" name="num_personas" min="1" required
-                           value="{{ old('num_personas', $reserva->num_personas ?? '1') }}">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Precio Total (COP) *</label>
-                    <input type="number" step="0.01" name="precio_total" min="0" required
-                           value="{{ old('precio_total', $reserva->precio_total ?? '0') }}">
-                </div>
-                <div class="form-group">
-                    <label>Estado *</label>
-                    <select name="estado" required>
-                        @foreach(['pendiente', 'confirmada', 'cancelada'] as $estado)
-                            <option value="{{ $estado }}"
-                                {{ old('estado', $reserva->estado ?? 'pendiente') === $estado ? 'selected' : '' }}>
-                                {{ ucfirst($estado) }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-{{ isset($reserva) ? 'floppy-disk' : 'plus' }}"></i>
-                    {{ isset($reserva) ? 'Actualizar Reserva' : 'Guardar Reserva' }}
-                </button>
-                @isset($reserva)
-                    <a href="{{ route('admin.reservas.index') }}" class="btn btn-outline">
-                        <i class="fa-solid fa-xmark"></i> Cancelar
-                    </a>
-                @else
-                    <button type="button" onclick="cerrarModal()" class="btn btn-outline">
-                        <i class="fa-solid fa-xmark"></i> Cancelar
-                    </button>
-                @endisset
-            </div>
-
             </form>
         </div>
+
     </div>
 </div>
 
-{{-- Tabla --}}
+{{-- ================= LISTADO ================= --}}
 <div class="admin-section">
+
+    {{-- HEADER TABLA --}}
     <div class="admin-section-header">
-        <h2>
-            <i class="fa-solid fa-list" style="color:var(--primary);"></i>
-            Todas las Reservas
-        </h2>
+        <h2><i class="fa-solid fa-list"></i> Todas las Reservas</h2>
+
+        <div style="display:flex; gap:.5rem;">
+            <span class="badge badge-info">{{ $reservas->total() }} total</span>
+            <button onclick="toggleFiltros()" class="btn btn-success btn-sm">Filtro</button>
+        </div>
     </div>
 
-    <div class="table-responsive">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Usuario</th>
-                    <th>Hotel</th>
-                    <th>Entrada</th>
-                    <th>Salida</th>
-                    <th>Personas</th>
-                    <th>Total</th>
-                    <th>Estado</th>
-                    <th>Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($reservas as $r)
+    {{-- FILTROS --}}
+    <div id="filtrosBox" style="display:none; margin:1rem 0; background:#fff; padding:1rem; border-radius:.8rem;">
+        <form method="GET">
+            <input type="text" name="usuario" placeholder="Usuario" value="{{ request('usuario') }}">
+            <input type="text" name="hotel" placeholder="Hotel" value="{{ request('hotel') }}">
+
+            <select name="estado">
+                <option value="">Estado</option>
+                <option value="pendiente" {{ request('estado')=='pendiente'?'selected':'' }}>Pendiente</option>
+                <option value="confirmada" {{ request('estado')=='confirmada'?'selected':'' }}>Confirmada</option>
+                <option value="cancelada" {{ request('estado')=='cancelada'?'selected':'' }}>Cancelada</option>
+            </select>
+
+            <button class="btn btn-primary btn-sm">Filtrar</button>
+        </form>
+    </div>
+
+    {{-- TABLA --}}
+    <div style="background:#fff;border-radius:1rem;box-shadow:0 10px 30px rgba(0,0,0,.08);overflow:hidden;">
+
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
                     <tr>
-                        <td style="color:var(--gray);font-size:.8rem;">{{ $r->id }}</td>
-                        <td>{{ $r->usuario->name ?? '—' }}</td>
-                        <td>{{ $r->hotel->nombre ?? '—' }}</td>
-                        <td>{{ $r->fecha_entrada->format('d/m/Y') }}</td>
-                        <td>{{ $r->fecha_salida->format('d/m/Y') }}</td>
-                        <td>{{ $r->num_personas }}</td>
-                        <td>${{ number_format($r->precio_total, 0) }}</td>
+                        <th>#</th>
+                        <th>Usuario</th>
+                        <th>Hotel</th>
+                        <th>Entrada</th>
+                        <th>Salida</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($reservas as $r)
+                    <tr>
+                        <td>{{ $r->id }}</td>
+                        <td>{{ $r->usuario->name }}</td>
+                        <td>{{ $r->hotel->nombre }}</td>
+                        <td>{{ $r->fecha_entrada }}</td>
+                        <td>{{ $r->fecha_salida }}</td>
+                        <td>${{ number_format($r->precio_total) }}</td>
+
+                        {{-- ESTADO BONITO --}}
                         <td>
                             <span class="estado-badge estado-{{ $r->estado }}">
                                 {{ ucfirst($r->estado) }}
                             </span>
                         </td>
+
+                        {{-- BOTONES HORIZONTALES --}}
                         <td>
-                            <a href="{{ route('admin.reservas.edit', $r) }}"
-                               class="btn-small btn-edit btn-sm">
-                                <i class="fa-solid fa-pen fa-xs"></i> Editar
-                            </a>
-                            <form method="POST"
-                                  action="{{ route('admin.reservas.destroy', $r) }}"
-                                  style="display:inline"
-                                  onsubmit="return confirm('¿Eliminar esta reserva?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn-small btn-delete btn-sm">
-                                    <i class="fa-solid fa-trash fa-xs"></i> Eliminar
-                                </button>
-                            </form>
+                            <div style="display:flex; gap:.5rem; flex-wrap:nowrap;">
+
+                                <a href="{{ route('admin.reservas.edit',$r) }}"
+                                   class="btn-small btn-edit btn-sm"
+                                   style="background:#d4a017;color:#fff;">
+                                    Editar
+                                </a>
+
+                                <form method="POST"
+                                      action="{{ route('admin.reservas.destroy',$r) }}"
+                                      style="margin:0;">
+                                    @csrf @method('DELETE')
+
+                                    <button class="btn-small btn-delete btn-sm"
+                                            style="background:#e53935;color:#fff;">
+                                        Eliminar
+                                    </button>
+                                </form>
+
+                            </div>
                         </td>
+
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="9" style="text-align:center;color:var(--gray);padding:2.5rem;">
-                            No hay reservas registradas aún.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                    @empty
+                        <tr><td colspan="8">Sin registros</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
-    {{-- Paginación --}}
+    {{-- PAGINACIÓN PRO --}}
     @if($reservas->hasPages())
     <div class="pagination-bar">
+
         <div class="pagination-info">
-            Mostrando <strong>{{ $reservas->firstItem() }}</strong>–<strong>{{ $reservas->lastItem() }}</strong>
-            de <strong>{{ $reservas->total() }}</strong> registros
+            Mostrando <strong>{{ $reservas->firstItem() }}</strong>–
+            <strong>{{ $reservas->lastItem() }}</strong>
+            de <strong>{{ $reservas->total() }}</strong>
         </div>
 
         <div class="pagination-links">
+
             @if($reservas->onFirstPage())
                 <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
             @else
@@ -328,47 +220,55 @@
             @else
                 <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
             @endif
+
         </div>
 
-        <form method="GET" class="per-page-form">
+        <form method="GET">
             @foreach(request()->except(['page','per_page']) as $k => $v)
                 <input type="hidden" name="{{ $k }}" value="{{ $v }}">
             @endforeach
-            <label class="per-page-label">Filas:</label>
-            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
-                @foreach([5,10,25,50,100] as $n)
-                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
+
+            <select name="per_page" onchange="this.form.submit()">
+                @foreach([5,10,25,50] as $n)
+                    <option value="{{ $n }}" {{ ($perPage ?? 10)==$n?'selected':'' }}>
+                        {{ $n }}
+                    </option>
                 @endforeach
             </select>
         </form>
+
     </div>
     @endif
 
 </div>
 
+{{-- ================= ESTILOS ================= --}}
+<style>
+.estado-badge{
+    padding:.3rem .7rem;
+    border-radius:999px;
+    font-size:.75rem;
+    font-weight:600;
+}
+.estado-pendiente{background:#fff3cd;color:#856404;}
+.estado-confirmada{background:#d4edda;color:#155724;}
+.estado-cancelada{background:#f8d7da;color:#721c24;}
+</style>
+
+{{-- ================= SCRIPTS ================= --}}
 @push('scripts')
 <script>
-function abrirModal() {
-    document.getElementById('modal-reserva').style.display = 'block';
-    document.body.style.overflow = 'hidden';
+function abrirModal(){document.getElementById('modal-reserva').style.display='block';}
+function cerrarModal(){document.getElementById('modal-reserva').style.display='none';}
+
+function toggleFiltros(){
+    let box=document.getElementById('filtrosBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 
-function cerrarModal() {
-    document.getElementById('modal-reserva').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-document.getElementById('modal-reserva').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModal();
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') cerrarModal();
-});
-
-@isset($reserva)
-    abrirModal();
-@endisset
+@if(isset($reserva))
+abrirModal();
+@endif
 </script>
 @endpush
 

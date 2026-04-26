@@ -2851,4 +2851,15 @@ body.no-hero .navbar {
         flex-direction: column;
         align-items: flex-start;
     }
+}  
+
+/* FORZAR INPUTS REDONDEADOS */
+
+/* EFECTO FOCUS */
+
+
+.filtrosBox {
+   border-radius: 20px !important;
+    padding: 8px 10px !important;
+    border: 1px solid #ccc !important;
 }

@@ -2,110 +2,140 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\EmpresasExport;
-use App\Imports\EmpresasImport;
-use App\Models\User;
-use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\NotificacionAdmin;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Exports\EmpresasExport;
+use App\Imports\EmpresasImport;
 
 class EmpresaController extends Controller
 {
-   // Busca la función index y cámbiala por esta:
-public function index(Request $request)
-{
-    $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
-    $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
-    $notifCount     = $notificaciones->count();
+    // ==========================
+    // LISTAR + GENERADOR + PAGINACIÓN
+    // ==========================
+    public function index(Request $request)
+    {
+        $perPage = $request->get('per_page', 10);
 
-    // LÓGICA DEL GENERADOR
-    $plan = null;
-    if ($request->has('generar')) {
-        $evento = \DB::table('eventos')->inRandomOrder()->first();
-        $gastronomia = \DB::table('gastronomia')->inRandomOrder()->first();
-        $hotel = \DB::table('hoteles')->inRandomOrder()->first();
-        $lugar = \DB::table('lugares')->inRandomOrder()->first();
+        $empresas = Empresa::with('usuario')
+            ->orderBy('aprobado')
+            ->orderBy('id', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
 
-        // Si existen los registros, calculamos
-        if ($evento && $gastronomia && $hotel && $lugar) {
-            $subtotal = ($evento->precio ?? 0) + 
-                        ($gastronomia->precio_promedio ?? 0) + 
-                        ($hotel->precio ?? 0) + 
-                        ($lugar->precio_entrada ?? 0);
+        $notificaciones = NotificacionAdmin::with('empresa')
+            ->where('leido', false)
+            ->latest()
+            ->get();
 
-            $descuento = $subtotal * 0.20;
-            $precioFinal = $subtotal - $descuento;
+        $notifCount = $notificaciones->count();
 
-            $plan = [
-                'evento' => $evento,
-                'gastronomia' => $gastronomia,
-                'hotel' => $hotel,
-                'lugar' => $lugar,
-                'subtotal' => $subtotal,
-                'descuento' => $descuento,
-                'precioFinal' => $precioFinal
-            ];
+        // ==========================
+        // GENERADOR DE PLAN
+        // ==========================
+        $plan = null;
+
+        if ($request->has('generar')) {
+            $evento      = DB::table('eventos')->inRandomOrder()->first();
+            $gastronomia = DB::table('gastronomia')->inRandomOrder()->first();
+            $hotel       = DB::table('hoteles')->inRandomOrder()->first();
+            $lugar       = DB::table('lugares')->inRandomOrder()->first();
+
+            if ($evento && $gastronomia && $hotel && $lugar) {
+                $subtotal = ($evento->precio ?? 0)
+                    + ($gastronomia->precio_promedio ?? 0)
+                    + ($hotel->precio ?? 0)
+                    + ($lugar->precio_entrada ?? 0);
+
+                $descuento   = $subtotal * 0.20;
+                $precioFinal = $subtotal - $descuento;
+
+                $plan = [
+                    'evento'       => $evento,
+                    'gastronomia'  => $gastronomia,
+                    'hotel'        => $hotel,
+                    'lugar'        => $lugar,
+                    'subtotal'     => $subtotal,
+                    'descuento'    => $descuento,
+                    'precioFinal'  => $precioFinal,
+                ];
+            }
         }
+
+        return view('admin.empresas', compact(
+            'empresas',
+            'notificaciones',
+            'notifCount',
+            'plan',
+            'perPage'
+        ));
     }
 
-    // Añadimos 'plan' al compact
-    return view('admin.empresas', compact('empresas', 'notificaciones', 'notifCount', 'plan'));
-}
-
-    public function create()
-    {
-        $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
-        $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
-        $notifCount     = $notificaciones->count();
-   public function index(Request $request)
-{
-    $perPage        = $request->get('per_page', 10);
-    $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'asc')->paginate($perPage)->withQueryString();
-    $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
-    $notifCount     = $notificaciones->count();
-
-    return view('admin.empresas', compact('empresas', 'notificaciones', 'notifCount', 'perPage'));
-}
-
+    // ==========================
+    // APROBAR EMPRESA
+    // ==========================
     public function aprobar(Empresa $empresa)
     {
         $empresa->update(['aprobado' => true]);
 
-        // Activar el usuario asociado para que pueda iniciar sesión
         if ($empresa->usuario) {
             $empresa->usuario->update(['estado' => 'activo']);
         }
 
         return redirect()->route('admin.empresas.index')
-                         ->with('success', "Empresa \"{$empresa->nombre}\" aprobada.");
+            ->with('success', "Empresa \"{$empresa->nombre}\" aprobada.");
     }
 
+    // ==========================
+    // RECHAZAR EMPRESA
+    // ==========================
     public function rechazar(Empresa $empresa)
     {
         $nombre = $empresa->nombre;
 
-        // Bloquear el usuario asociado
         if ($empresa->usuario) {
             $empresa->usuario->update(['estado' => 'bloqueado']);
         }
 
         $empresa->delete();
+
         return redirect()->route('admin.empresas.index')
-                         ->with('success', "Empresa \"{$nombre}\" rechazada y eliminada.");
+            ->with('success', "Empresa \"{$nombre}\" rechazada y eliminada.");
     }
 
+    // ==========================
+    // EDITAR
+    // ==========================
     public function edit(Empresa $empresa)
     {
-        $empresas       = Empresa::with('usuario')->orderBy('aprobado')->orderBy('id', 'desc')->get();
-        $notificaciones = NotificacionAdmin::with('empresa')->where('leido', false)->latest()->get();
-        $notifCount     = $notificaciones->count();
+        $empresas = Empresa::with('usuario')
+            ->orderBy('aprobado')
+            ->orderBy('id', 'desc')
+            ->get();
 
-        return view('admin.empresas', compact('empresas', 'empresa', 'notificaciones', 'notifCount'));
+        $notificaciones = NotificacionAdmin::with('empresa')
+            ->where('leido', false)
+            ->latest()
+            ->get();
+
+        $notifCount = $notificaciones->count();
+
+        return view('admin.empresas', compact(
+            'empresas',
+            'empresa',
+            'notificaciones',
+            'notifCount'
+        ));
     }
 
+    // ==========================
+    // ACTUALIZAR
+    // ==========================
     public function update(Request $request, Empresa $empresa)
     {
         $request->validate([
@@ -114,55 +144,76 @@ public function index(Request $request)
             'direccion' => 'nullable|string|max:400',
         ]);
 
-        $empresa->update($request->only(['nombre', 'telefono', 'direccion']));
+        $empresa->update($request->only([
+            'nombre',
+            'telefono',
+            'direccion'
+        ]));
 
         return redirect()->route('admin.empresas.index')
-                         ->with('success', 'Empresa actualizada correctamente.');
+            ->with('success', 'Empresa actualizada correctamente.');
     }
 
+    // ==========================
+    // ELIMINAR
+    // ==========================
     public function destroy(Empresa $empresa)
     {
         $empresa->delete();
+
         return redirect()->route('admin.empresas.index')
-                         ->with('success', 'Empresa eliminada correctamente.');
+            ->with('success', 'Empresa eliminada correctamente.');
     }
 
-    // Marcar notificación como leída
+    // ==========================
+    // NOTIFICACIONES
+    // ==========================
     public function marcarLeida(NotificacionAdmin $notificacion)
     {
         $notificacion->update(['leido' => true]);
+
         return back()->with('success', 'Notificación marcada como leída.');
     }
 
-    // Marcar todas como leídas
     public function marcarTodasLeidas()
     {
-        NotificacionAdmin::where('leido', false)->update(['leido' => true]);
+        NotificacionAdmin::where('leido', false)
+            ->update(['leido' => true]);
+
         return back()->with('success', 'Todas las notificaciones marcadas como leídas.');
     }
-     public function exportExcel()
-{
-    return Excel::download(new EmpresasExport, 'empresas.xlsx');
-}
 
-public function importExcel(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|mimes:xlsx,xls,csv'
-    ]);
+    // ==========================
+    // EXPORTAR EXCEL
+    // ==========================
+    public function exportExcel()
+    {
+        return Excel::download(new EmpresasExport, 'empresas.xlsx');
+    }
 
-    Excel::import(new EmpresasImport, $request->file('archivo'));
+    // ==========================
+    // IMPORTAR EXCEL
+    // ==========================
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:xlsx,xls,csv'
+        ]);
 
-    return redirect()->back()->with('success', 'Empresas importadas correctamente');
-}
+        Excel::import(new EmpresasImport, $request->file('archivo'));
 
-public function exportPdf()
-{
-    $empresas = User::where('rol', 'empresa')->get();
+        return back()->with('success', 'Empresas importadas correctamente');
+    }
 
-    $pdf = Pdf::loadView('admin.pdf.empresa', compact('empresas'));
+    // ==========================
+    // EXPORTAR PDF
+    // ==========================
+    public function exportPdf()
+    {
+        $empresas = User::where('rol', 'empresa')->get();
 
-    return $pdf->download('empresas.pdf');
-}
+        $pdf = Pdf::loadView('admin.pdf.empresa', compact('empresas'));
 
+        return $pdf->download('empresas.pdf');
+    }
 }

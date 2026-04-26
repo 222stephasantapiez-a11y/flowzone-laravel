@@ -13,30 +13,39 @@ use Illuminate\Support\Facades\Storage;
 
 class LugarController extends Controller
 {
+    // ✅ INDEX (FILTROS + PAGINACIÓN)
     public function index(Request $request)
-{
-    $query = Lugar::query();
+    {
+        $query = Lugar::query();
 
-    if ($request->nombre) {
-        $query->where('nombre', 'like', '%' . $request->nombre . '%');
+        // 🔎 FILTROS
+        if ($request->filled('nombre')) {
+            $query->where('nombre', 'like', '%' . $request->nombre . '%');
+        }
+
+        if ($request->filled('categoria')) {
+            $query->where('categoria', $request->categoria);
+        }
+
+        if ($request->filled('ubicacion')) {
+            $query->where('ubicacion', 'like', '%' . $request->ubicacion . '%');
+        }
+
+        if ($request->filled('precio_entrada')) {
+            $query->where('precio_entrada', '<=', $request->precio_entrada);
+        }
+
+        // 📄 PAGINACIÓN
+        $perPage = $request->get('per_page', 10);
+
+        $lugares = $query->orderBy('id', 'asc')
+                         ->paginate($perPage)
+                         ->withQueryString(); // 🔥 mantiene filtros
+
+        return view('admin.lugares', compact('lugares', 'perPage'));
     }
 
-    if ($request->categoria) {
-        $query->where('categoria', $request->categoria);
-    }
-
-    if ($request->ubicacion) {
-        $query->where('ubicacion', 'like', '%' . $request->ubicacion . '%');
-    }
-
-    if ($request->precio_entrada) {
-        $query->where('precio_entrada', '<=', $request->precio_entrada);
-    }
-
-    $lugares = $query->paginate(10)->withQueryString();
-
-    return view('admin.lugares', compact('lugares'));
-}
+    // 📸 IMAGEN
     private function handleImageUpload(Request $request, ?string $currentImage = null): string
     {
         if ($request->hasFile('imagen_file')) {
@@ -56,31 +65,27 @@ class LugarController extends Controller
         return $currentImage ?? '';
     }
 
+    // ✅ VALIDACIONES
     private function rules(bool $isUpdate = false): array
     {
         $imgRequired = $isUpdate ? 'nullable' : 'required_without:imagen_file';
+
         return [
             'nombre'       => 'required|string|max:150',
             'descripcion'  => 'required|string',
             'categoria'    => 'required|string|max:100',
             'imagen_url'   => "$imgRequired|nullable|url",
             'imagen_file'  => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
+            'ubicacion'    => 'nullable|string|max:200',
+            'precio_entrada' => 'nullable|numeric|min:0',
         ];
     }
-}
 
-   public function index(Request $request)
-{
-    $perPage = $request->get('per_page', 10);
-    $lugares = Lugar::orderBy('id', 'asc')->paginate($perPage)->withQueryString();
-    return view('admin.lugares', compact('lugares', 'perPage'));
-}
+    // ✅ CREAR
     public function store(Request $request)
     {
         $request->validate($this->rules(), [
             'imagen_url.required_without' => 'Debes ingresar una URL o subir una imagen.',
-            'imagen_file.mimes'           => 'Solo se permiten imágenes JPG, PNG o WebP.',
-            'imagen_file.max'             => 'La imagen no puede superar 4 MB.',
         ]);
 
         $imagen = $this->handleImageUpload($request);
@@ -101,18 +106,17 @@ class LugarController extends Controller
                          ->with('success', 'Lugar creado correctamente.');
     }
 
+    // ✏️ EDITAR
     public function edit(Lugar $lugar)
     {
-        $lugares = Lugar::orderBy('id', 'desc')->get();
+        $lugares = Lugar::orderBy('id', 'desc')->paginate(10);
         return view('admin.lugares', compact('lugares', 'lugar'));
     }
 
+    // 🔄 ACTUALIZAR
     public function update(Request $request, Lugar $lugar)
     {
-        $request->validate($this->rules(true), [
-            'imagen_file.mimes' => 'Solo se permiten imágenes JPG, PNG o WebP.',
-            'imagen_file.max'   => 'La imagen no puede superar 4 MB.',
-        ]);
+        $request->validate($this->rules(true));
 
         $imagen = $this->handleImageUpload($request, $lugar->imagen);
 
@@ -132,38 +136,44 @@ class LugarController extends Controller
                          ->with('success', 'Lugar actualizado correctamente.');
     }
 
+    // 🗑️ ELIMINAR
     public function destroy(Lugar $lugar)
     {
         if ($lugar->imagen && !str_starts_with($lugar->imagen, 'http')) {
             Storage::disk('public')->delete($lugar->imagen);
         }
+
         $lugar->delete();
+
         return redirect()->route('admin.lugares.index')
                          ->with('success', 'Lugar eliminado correctamente.');
     }
 
+    // 📤 EXCEL
     public function exportExcel()
-{
-    return Excel::download(new LugaresExport, 'lugares.xlsx');
-}
+    {
+        return Excel::download(new LugaresExport, 'lugares.xlsx');
+    }
 
-public function exportPdf()
-{
-    $lugares = \App\Models\Lugar::all();
+    // 📄 PDF
+    public function exportPdf()
+    {
+        $lugares = Lugar::all();
 
-    $pdf = Pdf::loadView('admin.pdf.lugares', compact('lugares'));
+        $pdf = Pdf::loadView('admin.pdf.lugares', compact('lugares'));
 
-    return $pdf->download('lugares.pdf');
-}
+        return $pdf->download('lugares.pdf');
+    }
 
-public function importExcel(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|mimes:xlsx,xls,csv'
-    ]);
+    // 📥 IMPORTAR
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:xlsx,xls,csv'
+        ]);
 
-    Excel::import(new LugaresImport, $request->file('archivo'));
+        Excel::import(new LugaresImport, $request->file('archivo'));
 
-    return back()->with('success', 'Lugares importados correctamente');
-}
+        return back()->with('success', 'Lugares importados correctamente');
+    }
 }

@@ -13,40 +13,39 @@ use Illuminate\Http\Request;
 class UsuarioController extends Controller
 {
     public function index(Request $request)
-{
-    $query = User::query(); 
+    {
+        $query = User::query();
 
-    // filtro por ID
-    if ($request->id) {
-        $query->where('id', $request->id);
+        // 🔎 FILTROS
+        if ($request->filled('id')) {
+            $query->where('id', $request->id);
+        }
+
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('email')) {
+            $query->where('email', 'like', '%' . $request->email . '%');
+        }
+
+        // 📄 PAGINACIÓN
+        $perPage = $request->get('per_page', 10);
+
+        $usuarios = $query->orderBy('id', 'asc')
+                          ->paginate($perPage)
+                          ->withQueryString(); // 🔥 mantiene filtros
+
+        return view('admin.usuarios', compact('usuarios', 'perPage'));
     }
 
-    // filtro por nombre
-    if ($request->name) {
-        $query->where('name', 'like', '%' . $request->name . '%');
-    }
-
-    // filtro por email
-    if ($request->email) {
-        $query->where('email', 'like', '%' . $request->email . '%');
-    }
-
-    $usuarios = $query->paginate(10);
-
-    return view('admin.usuarios', compact('usuarios'));
-}
-    
-   public function index(Request $request)
-{
-    $perPage = $request->get('per_page', 10);
-    $usuarios = User::orderBy('id', 'asc')->paginate($perPage)->withQueryString();
-    return view('admin.usuarios', compact('usuarios', 'perPage'));
-}
+    // 📤 EXPORTAR A EXCEL
     public function exportExcel()
     {
         return Excel::download(new UsuariosExport, 'usuarios.xlsx');
     }
 
+    // 📄 EXPORTAR A PDF
     public function exportPdf()
     {
         $usuarios = User::all();
@@ -56,6 +55,7 @@ class UsuarioController extends Controller
         return $pdf->download('usuarios.pdf');
     }
 
+    // 📥 IMPORTAR EXCEL
     public function importExcel(Request $request)
     {
         $request->validate([

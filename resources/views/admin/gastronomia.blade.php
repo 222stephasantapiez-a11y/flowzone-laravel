@@ -1,3 +1,4 @@
+
 @php use Illuminate\Support\Facades\Storage; @endphp
 @extends('layouts.admin')
 
@@ -7,42 +8,13 @@
 
 @section('content')
 
+{{-- ================= HEADER SUPERIOR ================= --}}
+@section('content')
+
 {{-- Barra superior --}}
 <div class="admin-section">
-
     <div class="admin-section-header">
         <h2>
-            <i class="fa-solid fa-{{ isset($gastronomium) ? 'pen-to-square' : 'plus-circle' }}"
-               style="color:var(--primary);margin-right:.4rem;"></i>
-
-            {{ isset($gastronomium) ? 'Editar: ' . $gastronomium->nombre : 'Gastronomía' }}
-        </h2>
-
-        @unless(isset($gastronomium))
-        <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
-            <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-plus"></i> Nuevo Elemento
-            </a>
-
-            <a href="{{ route('admin.gastronomia.export.excel') }}" class="btn btn-success btn-sm">
-                Excel
-            </a>
-
-            <a href="{{ route('admin.gastronomia.export.pdf') }}" class="btn btn-danger btn-sm">
-                PDF
-            </a>
-        </div>
-        @endunless
-
-        <form action="{{ route('admin.gastronomia.import.excel') }}"
-              method="POST"
-              enctype="multipart/form-data">
-            @csrf
-            <input type="file" name="archivo" required>
-            <button type="submit" class="btn btn-primary btn-sm">
-                Importar Excel
-            </button>
-        </form>
             <i class="fa-solid fa-utensils" style="color:var(--primary);margin-right:.4rem;"></i>
             Gastronomía
         </h2>
@@ -75,21 +47,6 @@
     </div>
 </div>
 
-    {{-- FORMULARIO --}}
-    @isset($gastronomium)
-        <form method="POST"
-              action="{{ route('admin.gastronomia.update', $gastronomium) }}"
-              class="admin-form"
-              enctype="multipart/form-data">
-        @method('PUT')
-    @else
-        <form method="POST"
-              action="{{ route('admin.gastronomia.store') }}"
-              class="admin-form"
-              enctype="multipart/form-data">
-    @endisset
-
-    @csrf
 
 {{-- ===================== MODAL ===================== --}}
 <div id="modal-gastronomia" style="
@@ -155,36 +112,60 @@
     <div class="form-row">
         <div class="form-group">
             <label>Nombre *</label>
-            <input type="text" name="nombre"
+            <input type="text" name="nombre" required maxlength="150"
+                   placeholder="Ej: Lechona Tolimense"
                    value="{{ old('nombre', $gastronomium->nombre ?? '') }}">
         </div>
-
         <div class="form-group">
             <label>Tipo</label>
             <select name="tipo">
                 <option value="">— Seleccionar —</option>
                 @foreach(['Plato típico','Bebida','Postre','Restaurante','Cafetería','Snack'] as $t)
                     <option value="{{ $t }}"
-                        {{ old('tipo', $gastronomium->tipo ?? '') == $t ? 'selected' : '' }}>
-                        {{ $t }}
-                    </option>
+                        {{ old('tipo', $gastronomium->tipo ?? '') === $t ? 'selected' : '' }}>{{ $t }}</option>
                 @endforeach
             </select>
         </div>
     </div>
 
-    {{-- 🔥 AGREGADO RESTAURANTE Y PRECIO --}}
+    <div class="form-group">
+        <label>Descripción</label>
+        <textarea name="descripcion" rows="3"
+                  placeholder="Describe el plato, ingredientes principales, historia...">{{ old('descripcion', $gastronomium->descripcion ?? '') }}</textarea>
+    </div>
+
     <div class="form-row">
         <div class="form-group">
-            <label>Restaurante</label>
-            <input type="text" name="restaurante"
+            <label>Precio (COP)</label>
+            <input type="number" step="0.01" name="precio_promedio"
+                   placeholder="Ej: 25000"
+                   value="{{ old('precio_promedio', $gastronomium->precio_promedio ?? '') }}">
+        </div>
+        <div class="form-group">
+            <label>Restaurante / Establecimiento</label>
+            <input type="text" name="restaurante" maxlength="150"
+                   placeholder="Nombre del lugar"
                    value="{{ old('restaurante', $gastronomium->restaurante ?? '') }}">
         </div>
+    </div>
 
+    <div class="form-row">
         <div class="form-group">
-            <label>Precio promedio (COP)</label>
-            <input type="number" name="precio_promedio"
-                   value="{{ old('precio_promedio', $gastronomium->precio_promedio ?? '') }}">
+            <label>Dirección</label>
+            <input type="text" name="direccion"
+                   placeholder="Ej: Calle 5 #10-20, Ortega"
+                   value="{{ old('direccion', $gastronomium->direccion ?? '') }}">
+        </div>
+        <div class="form-group">
+            <label>Ubicación</label>
+            <input type="text" name="ubicacion"
+                   placeholder="Barrio o zona"
+                   value="{{ old('ubicacion', $gastronomium->ubicacion ?? '') }}">
+        </div>
+        <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" maxlength="20"
+                   value="{{ old('telefono', $gastronomium->telefono ?? '') }}">
         </div>
     </div>
 
@@ -196,8 +177,10 @@
     ])
 
     <div class="form-group">
-        <label>Descripción</label>
-        <textarea name="descripcion">{{ old('descripcion', $gastronomium->descripcion ?? '') }}</textarea>
+        <label>Ingredientes principales <span class="form-hint" style="display:inline">(separados por coma)</span></label>
+        <input type="text" name="ingredientes"
+               placeholder="Ej: Cerdo, Arroz, Arveja, Zanahoria"
+               value="{{ old('ingredientes', $gastronomium->ingredientes ?? '') }}">
     </div>
 
     <div class="form-group">
@@ -213,11 +196,11 @@
         </select>
     </div>
 
-    <button type="submit">
-        {{ isset($gastronomium) ? 'Actualizar' : 'Guardar' }}
-    </button>
+    @include('partials.imagen_field', [
+        'currentImage' => $gastronomium->imagen ?? null,
+        'fieldId'      => 'gastro',
+    ])
 
-    </form>
             <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-{{ isset($gastronomium) ? 'floppy-disk' : 'plus' }}"></i>
@@ -238,64 +221,66 @@
         </div>
     </div>
 </div>
-
-{{-- LISTADO --}}
+{{-- ================= LISTADO ================= --}}
 <div class="admin-section">
 
-    <div class="admin-section-header">
-        <h2>Elementos Registrados</h2>
+    {{-- HEADER TABLA + FILTRO DERECHA --}}
+    <div class="admin-section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
 
-        <span class="badge badge-info">
-            {{ $gastronomias->total() }} total
-        </span>
+        <h2>
+            <i class="fa-solid fa-list" style="color:var(--primary);"></i> Elementos
+        </h2>
 
-        {{-- 🔥 BOTÓN FILTRO (MISMO ESTILO QUE USABAS) --}}
-        <button type="button"
-                class="btn btn-primary btn-sm"
-                onclick="toggleFiltros()">
-            <i class="fa-solid fa-filter"></i> Filtrar
-        </button>
-        <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Elementos Registrados</h2>
-        <span class="badge badge-info">{{ $items->total() }} total</span>
+        <div style="display:flex; align-items:center; gap:.5rem;">
+            <span class="badge badge-info">{{ $gastronomias->total() }} total</span>
+
+            <button type="button" onclick="toggleFiltros()" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-filter"></i> Filtro
+            </button>
+        </div>
+
     </div>
 
-    {{-- FILTROS --}}
-    <form method="GET"
-          action="{{ route('admin.gastronomia.index') }}"
-          id="filtrosBox"
-          style="display:none; margin:10px 0;">
+    {{-- FILTROS HORIZONTALES --}}
+    <div id="filtrosBox" style="display:none; margin-bottom:1rem;">
+        <form method="GET" action="{{ route('admin.gastronomia.index') }}">
 
-        <input type="text" name="nombre" placeholder="Nombre"
-               value="{{ request('nombre') }}">
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
 
-        <select name="tipo">
-            <option value="">Todos</option>
-            <option value="comida rapida">Comida rápida</option>
-            <option value="gourmet">Gourmet</option>
-            <option value="tradicional">Tradicional</option>
-            <option value="internacional">Internacional</option>
-        </select>
+                <div>
+                    <label>Nombre</label><br>
+                    <input type="text" name="nombre" value="{{ request('nombre') }}">
+                </div>
 
-        <input type="text" name="restaurante" placeholder="Restaurante"
-               value="{{ request('restaurante') }}">
+                <div>
+                    <label>Tipo</label><br>
+                    <input type="text" name="tipo" value="{{ request('tipo') }}">
+                </div>
 
-        <input type="number" name="precio" placeholder="Precio máximo"
-               value="{{ request('precio') }}">
+                <div>
+                    <label>Restaurante</label><br>
+                    <input type="text" name="restaurante" value="{{ request('restaurante') }}">
+                </div>
 
+                 <div>
+                    <label>Empresa </label><br>
+                    <input type="number" name="precio" value="{{ request('empresa') }}">
+                </div>
 
-      <select name="empresa">
-      <option value="">Todas las empresas</option>
-    @foreach($empresas as $emp)
-        <option value="{{ $emp->id }}"
-            {{ request('empresa') == $emp->id ? 'selected' : '' }}>
-            {{ $emp->nombre }}
-        </option>
-    @endforeach
-   </select>
-    
+                <div>
+                    <label>Precio </label><br>
+                    <input type="number" name="precio" value="{{ request('precio') }}">
+                </div>
 
-        <button type="submit">Aplicar</button>
-    </form>
+                <div style="display:flex; gap:.5rem;">
+                    <button class="btn btn-primary btn-sm">Aplicar</button>
+                    <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+                </div>
+
+            </div>
+
+        </form>
+    </div>
 
     {{-- TABLA --}}
     <div class="table-responsive">
@@ -307,147 +292,102 @@
                     <th>Nombre</th>
                     <th>Tipo</th>
                     <th>Restaurante</th>
+                     <th>Empresa</th>
                     <th>Precio</th>
-                    <th>Empresa</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
 
             <tbody>
                 @forelse($gastronomias as $item)
-                    <tr>
-                        <td>{{ $item->id }}</td>
+                <tr>
+                    <td>{{ $item->id }}</td>
 
-                        <td>
-                            @if($item->imagen)
-                                <img src="{{ str_starts_with($item->imagen,'http')
-                                    ? $item->imagen
-                                    : Storage::disk('public')->url($item->imagen) }}"
-                                     width="50">
-                            @else
-                                —
-                            @endif
-                        </td>
+                    <td>
+                        @if($item->imagen)
+                            <img src="{{ Storage::url($item->imagen) }}" width="50">
+                        @endif
+                    </td>
 
-                        <td>{{ $item->nombre }}</td>
-                        <td>{{ $item->tipo }}</td>
-                        <td>{{ $item->restaurante }}</td>
-                        <td>{{ $item->precio_promedio }}</td>
-                        <td>{{ $item->empresa?->nombre }}</td>
+                    <td>{{ $item->nombre }}</td>
+                    <td>{{ $item->tipo }}</td>
+                    <td>{{ $item->restaurante }}</td>
+                   <td>{{ $item->empresa?->nombre }}</td>
+                    <td>{{ $item->precio_promedio }}</td>
 
-                        <td>
-                            <a href="{{ route('admin.gastronomia.edit', $item) }}">Editar</a>
+                    <td>
+                        <a href="{{ route('admin.gastronomia.edit',$item) }}" class="btn-small btn-edit btn-sm">  <i class="fa-solid fa-pen fa-xs"></i> 
+                            Editar
+                        </a>
 
-                            <form method="POST"
-                                  action="{{ route('admin.gastronomia.destroy', $item) }}">
-                                @csrf
-                                @method('DELETE')
-                                <button onclick="return confirm('¿Eliminar?')">
-                                    Eliminar
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
+                        <form method="POST" action="{{ route('admin.gastronomia.destroy',$item) }}" style="display:inline"
+                              onsubmit="return confirm('¿Eliminar este elemento?')">
+                            @csrf @method('DELETE')
+                            <button class="btn-small btn-delete btn-sm"> <i class="fa-solid fa-trash fa-xs"></i>Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
                 @empty
-                    <tr>
-                        <td colspan="8">No hay datos</td>
-                    </tr>
+                <tr>
+                    <td colspan="7">Sin datos</td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
     {{ $gastronomias->links() }}
-</div>
-
-{{-- JS --}}
-<script>
-function toggleFiltros() {
-    const box = document.getElementById('filtrosBox');
-
-    if (box.style.display === 'none' || box.style.display === '') {
-        box.style.display = 'block';
-    } else {
-        box.style.display = 'none';
-    }
-}
-</script>
-
-@endsection 
-    {{-- Paginación --}}
-    @if($items->hasPages())
-    <div class="pagination-bar">
-        <div class="pagination-info">
-            Mostrando <strong>{{ $items->firstItem() }}</strong>–<strong>{{ $items->lastItem() }}</strong>
-            de <strong>{{ $items->total() }}</strong> registros
-        </div>
-
-        <div class="pagination-links">
-            @if($items->onFirstPage())
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
-            @else
-                <a href="{{ $items->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
-            @endif
-
-            @foreach($items->getUrlRange(max(1,$items->currentPage()-2), min($items->lastPage(),$items->currentPage()+2)) as $page => $url)
-                @if($page == $items->currentPage())
-                    <span class="page-btn page-btn--active">{{ $page }}</span>
-                @else
-                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
-                @endif
-            @endforeach
-
-            @if($items->hasMorePages())
-                <a href="{{ $items->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
-            @else
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
-            @endif
-        </div>
-
-        <form method="GET" class="per-page-form">
-            @foreach(request()->except(['page','per_page']) as $k => $v)
-                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-            @endforeach
-            <label class="per-page-label">Filas:</label>
-            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
-                @foreach([5,10,25,50,100] as $n)
-                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
-                @endforeach
-            </select>
-        </form>
-    </div>
-    @endif
 
 </div>
 
 @endsection
 
+{{-- ================= SCRIPTS ================= --}}
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    mapPickerInit(
-        'gastro',
-        {{ old('latitud', isset($gastronomium) && $gastronomium->latitud ? $gastronomium->latitud : 'null') }},
-        {{ old('longitud', isset($gastronomium) && $gastronomium->longitud ? $gastronomium->longitud : 'null') }}
-    );
+function abrirModal() {
+    document.getElementById('modal-gastronomia').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+    document.getElementById('modal-gastronomia').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// cerrar al hacer click fuera
+document.getElementById('modal-gastronomia').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
 });
 
-    function abrirModal() {
-        document.getElementById('modal-gastronomia').style.display = 'block';
-        document.body.style.overflow = 'hidden';
+// cerrar con ESC
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarModal();
+});
+
+// abrir automáticamente en editar
+@isset($gastronomium)
+    abrirModal();
+@endisset
+
+// toggle filtros
+function toggleFiltros() {
+    const box = document.getElementById('filtrosBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+// mantener filtros abiertos
+window.addEventListener('load', function () {
+    if (
+        "{{ request('nombre') }}" ||
+        "{{ request('tipo') }}" ||
+        "{{ request('restaurante') }}" ||
+        "{{ request('empresa') }}" ||
+        "{{ request('precio') }}"
+    ) {
+        document.getElementById('filtrosBox').style.display = 'block';
     }
-
-    function cerrarModal() {
-        document.getElementById('modal-gastronomia').style.display = 'none';
-        document.body.style.overflow = '';
-    }
-
-    document.getElementById('modal-gastronomia').addEventListener('click', function(e) {
-        if (e.target === this) cerrarModal();
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') cerrarModal();
-    });
+});
 </script>
 @endpush
+

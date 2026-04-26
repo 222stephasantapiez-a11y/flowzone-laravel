@@ -4,40 +4,45 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Evento;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use App\Exports\EventosExport;
 use App\Imports\EventosImport;
-use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EventoController extends Controller
 {
     public function index(Request $request)
-{
-    $query = Evento::query();
+    {
+        $query = Evento::query();
 
-    if ($request->nombre) {
-        $query->where('nombre', 'like', '%' . $request->nombre . '%');
+        // Filtros
+        if ($request->filled('nombre')) {
+            $query->where('nombre', 'like', '%' . $request->nombre . '%');
+        }
+
+        if ($request->filled('fecha')) {
+            $query->whereDate('fecha', $request->fecha);
+        }
+
+        if ($request->filled('ubicacion')) {
+            $query->where('ubicacion', 'like', '%' . $request->ubicacion . '%');
+        }
+
+        if ($request->filled('precio')) {
+            $query->where('precio', '<=', $request->precio);
+        }
+
+        // Paginación
+        $perPage = $request->get('per_page', 10);
+
+        $eventos = $query->orderBy('fecha', 'asc')
+                         ->paginate($perPage)
+                         ->withQueryString();
+
+        return view('admin.eventos', compact('eventos', 'perPage'));
     }
-
-    if ($request->fecha) {
-        $query->whereDate('fecha', $request->fecha);
-    }
-
-    if ($request->ubicacion) {
-        $query->where('ubicacion', 'like', '%' . $request->ubicacion . '%');
-    }
-
-    if ($request->precio) {
-        $query->where('precio', '<=', $request->precio);
-    }
-
-    $eventos = $query->paginate(10)->withQueryString();
-
-    return view('admin.eventos', compact('eventos'));
-}
-
 
     private function handleImageUpload(Request $request, ?string $currentImage = null): string
     {
@@ -45,6 +50,7 @@ class EventoController extends Controller
             if ($currentImage && !str_starts_with($currentImage, 'http')) {
                 Storage::disk('public')->delete($currentImage);
             }
+
             return $request->file('imagen_file')->store('uploads/eventos', 'public');
         }
 
@@ -52,6 +58,7 @@ class EventoController extends Controller
             if ($currentImage && !str_starts_with($currentImage, 'http')) {
                 Storage::disk('public')->delete($currentImage);
             }
+
             return $request->imagen_url;
         }
 
@@ -61,21 +68,20 @@ class EventoController extends Controller
     private function rules(bool $isUpdate = false): array
     {
         $imgRequired = $isUpdate ? 'nullable' : 'required_without:imagen_file';
+
         return [
-            'nombre'       => 'required|string|max:150',
-            'descripcion'  => 'required|string',
-            'fecha'        => 'required|date',
-            'imagen_url'   => "$imgRequired|nullable|url",
-            'imagen_file'  => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
+            'nombre'      => 'required|string|max:150',
+            'descripcion' => 'required|string',
+            'fecha'       => 'required|date',
+            'hora'        => 'nullable',
+            'ubicacion'   => 'nullable|string|max:255',
+            'categoria'   => 'nullable|string|max:100',
+            'imagen_url'  => $imgRequired . '|nullable|url',
+            'imagen_file' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
+            'precio'      => 'nullable|numeric|min:0',
+            'organizador' => 'nullable|string|max:150',
+            'contacto'    => 'nullable|string|max:150',
         ];
-    }
-
-
-    public function index(Request $request)
-    {
-        $perPage = $request->get('per_page', 10);
-        $eventos = Evento::orderBy('fecha', 'asc')->paginate($perPage)->withQueryString();
-        return view('admin.eventos', compact('eventos', 'perPage'));
     }
 
     public function store(Request $request)
@@ -108,7 +114,11 @@ class EventoController extends Controller
     public function edit(Evento $evento)
     {
         $perPage = 10;
-        $eventos = Evento::orderBy('fecha', 'desc')->paginate($perPage)->withQueryString();
+
+        $eventos = Evento::orderBy('fecha', 'asc')
+                         ->paginate($perPage)
+                         ->withQueryString();
+
         return view('admin.eventos', compact('eventos', 'evento', 'perPage'));
     }
 
@@ -143,7 +153,9 @@ class EventoController extends Controller
         if ($evento->imagen && !str_starts_with($evento->imagen, 'http')) {
             Storage::disk('public')->delete($evento->imagen);
         }
+
         $evento->delete();
+
         return redirect()->route('admin.eventos.index')
                          ->with('success', 'Evento eliminado correctamente.');
     }
@@ -155,7 +167,7 @@ class EventoController extends Controller
 
     public function exportPdf()
     {
-        $eventos = \App\Models\Evento::all();
+        $eventos = Evento::all();
 
         $pdf = Pdf::loadView('admin.pdf.eventos', compact('eventos'));
 

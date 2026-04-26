@@ -159,17 +159,6 @@
         'fieldId'      => 'lugar',
     ])
 
-    <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
-        <button type="submit" class="btn btn-primary">
-            <i class="fa-solid fa-{{ isset($lugar) ? 'floppy-disk' : 'plus' }}"></i>
-            {{ isset($lugar) ? 'Actualizar Lugar' : 'Guardar Lugar' }}
-        </button>
-        @isset($lugar)
-            <a href="{{ route('admin.lugares.index') }}" class="btn btn-outline">
-                <i class="fa-solid fa-xmark"></i> Cancelar
-            </a>
-        @endisset
-    </div>
 
             <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">
@@ -193,69 +182,7 @@
 </div>
 
 <!-- BOTÓN FILTRAR -->
-<button onclick="toggleFiltros()" class="btn btn-primary" style="margin-bottom:1rem;">
-    <i class="fa-solid fa-filter"></i> Filtrar
-</button>
 
-<!-- FORMULARIO OCULTO -->
-<form method="GET" action="{{ route('admin.lugares.index') }}"
-      class="admin-form"
-      id="filtrosBox"
-      style="margin-bottom:1rem; display:none;">
-
-    <div class="form-row">
-
-        <!-- NOMBRE -->
-        <div class="form-group">
-            <label>Nombre</label>
-            <input type="text" name="nombre" value="{{ request('nombre') }}">
-        </div>
-
-        <!-- CATEGORÍA (FIJA 🔥) -->
-        <div class="form-group">
-            <label>Categoría</label>
-            <select name="categoria">
-                <option value="">Todas</option>
-
-                <option value="natural" {{ request('categoria') == 'natural' ? 'selected' : '' }}>
-                    Natural
-                </option>
-
-                <option value="cultural" {{ request('categoria') == 'cultural' ? 'selected' : '' }}>
-                    Cultural
-                </option>
-
-                <option value="histórico" {{ request('categoria') == 'histórico' ? 'selected' : '' }}>
-                    Histórico
-                </option>
-
-                <option value="aventura" {{ request('categoria') == 'aventura' ? 'selected' : '' }}>
-                    Aventura
-                </option>
-            </select>
-        </div>
-
-        <!-- UBICACIÓN -->
-        <div class="form-group">
-            <label>Ubicación</label>
-            <input type="text" name="ubicacion" value="{{ request('ubicacion') }}">
-        </div>
-
-        <!-- PRECIO -->
-        <div class="form-group">
-            <label>Precio máximo entrada</label>
-            <input type="number" name="precio_entrada" value="{{ request('precio_entrada') }}">
-        </div>
-
-        <!-- BOTÓN -->
-        <div class="form-group" style="display:flex;align-items:end;">
-            <button type="submit" class="btn btn-primary">
-                Aplicar
-            </button>
-        </div>
-
-    </div>
-</form>
 
 <!-- SCRIPT -->
 <script>
@@ -278,76 +205,136 @@ window.onload = function() {
 </script>
 
 {{-- Tabla --}}
+{{-- Tabla --}}
 <div class="admin-section">
-    <div class="admin-section-header">
-        <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Lugares Registrados</h2>
+
+  {{-- HEADER SUPERIOR --}}
+  <div class="admin-section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+
+    <h2>
+        <i class="fa-solid fa-list" style="color:var(--primary);"></i> Lugares Registrados
+    </h2>
+
+    <div style="display:flex; align-items:center; gap:.5rem;">
         <span class="badge badge-info">{{ $lugares->total() }} total</span>
+
+        <button type="button" onclick="toggleFiltrosLugares()" class="btn btn-success btn-sm">
+            <i class="fa-solid fa-filter"></i> Filtro
+        </button>
     </div>
-    <div class="table-responsive">
-        <table class="admin-table">
-            <thead>
+
+  </div>
+
+  {{-- FILTROS (SEPARADO DEL HEADER 🔥) --}}
+  <div id="filtrosLugares" style="display:none; margin-bottom:1rem;">
+    <form method="GET" action="{{ route('admin.lugares.index') }}">
+
+        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
+
+            <div>
+                <label>Nombre</label><br>
+                <input type="text" name="nombre" value="{{ request('nombre') }}">
+            </div>
+
+            <div>
+                <label>Categoría</label><br>
+                <select name="categoria">
+                    <option value="">Todas</option>
+                    <option value="natural" {{ request('categoria') == 'natural' ? 'selected' : '' }}>Natural</option>
+                    <option value="cultural" {{ request('categoria') == 'cultural' ? 'selected' : '' }}>Cultural</option>
+                    <option value="histórico" {{ request('categoria') == 'histórico' ? 'selected' : '' }}>Histórico</option>
+                    <option value="aventura" {{ request('categoria') == 'aventura' ? 'selected' : '' }}>Aventura</option>
+                </select>
+            </div>
+
+            <div>
+                <label>Ubicación</label><br>
+                <input type="text" name="ubicacion" value="{{ request('ubicacion') }}">
+            </div>
+
+            <div>
+                <label>Precio Entrada</label><br>
+                <input type="number" name="precio_entrada" value="{{ request('precio_entrada') }}">
+            </div>
+
+            <div style="display:flex; gap:.5rem;">
+                <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
+                <a href="{{ route('admin.lugares.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+            </div>
+
+        </div>
+
+    </form>
+  </div>
+
+  {{-- TABLA --}}
+  <div class="table-responsive">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Imagen</th>
+                <th>Nombre</th>
+                <th>Categoría</th>
+                <th>Ubicación</th>
+                <th>Precio Entrada</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @forelse($lugares as $l)
                 <tr>
-                    <th>#</th>
-                    <th>Imagen</th>
-                    <th>Nombre</th>
-                    <th>Categoría</th>
-                    <th>Ubicación</th>
-                    <th>Precio Entrada</th>
-                    <th>Acciones</th>
+                    <td style="color:var(--gray);font-size:.8rem;">{{ $l->id }}</td>
+                    <td class="td-img">
+                        @if($l->imagen)
+                            @php
+                                $src = str_starts_with($l->imagen, 'http')
+                                    ? $l->imagen
+                                    : Storage::disk('public')->url($l->imagen);
+                            @endphp
+                            <img src="{{ $src }}" alt="{{ $l->nombre }}"
+                                 onerror="this.style.display='none'">
+                        @else
+                            <span style="color:var(--gray-lt);font-size:.78rem;">Sin imagen</span>
+                        @endif
+                    </td>
+                    <td><strong>{{ $l->nombre }}</strong></td>
+                    <td><span class="badge badge-info">{{ $l->categoria }}</span></td>
+                    <td>{{ $l->ubicacion ?? '—' }}</td>
+                    <td>
+                        @if($l->precio_entrada > 0)
+                            ${{ number_format($l->precio_entrada, 0) }}
+                        @else
+                            <span class="badge badge-success">Gratuito</span>
+                        @endif
+                    </td>
+                    <td>
+                        <a href="{{ route('admin.lugares.edit', $l) }}" class="btn-small btn-edit btn-sm">
+                            <i class="fa-solid fa-pen fa-xs"></i> Editar
+                        </a>
+                        <form method="POST" action="{{ route('admin.lugares.destroy', $l) }}"
+                              style="display:inline"
+                              onsubmit="return confirm('¿Eliminar este lugar?')">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn-small btn-delete btn-sm">
+                                <i class="fa-solid fa-trash fa-xs"></i> Eliminar
+                            </button>
+                        </form>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @forelse($lugares as $l)
-                    <tr>
-                        <td style="color:var(--gray);font-size:.8rem;">{{ $l->id }}</td>
-                        <td class="td-img">
-                            @if($l->imagen)
-                                @php
-                                    $src = str_starts_with($l->imagen, 'http')
-                                        ? $l->imagen
-                                        : Storage::disk('public')->url($l->imagen);
-                                @endphp
-                                <img src="{{ $src }}" alt="{{ $l->nombre }}"
-                                     onerror="this.style.display='none'">
-                            @else
-                                <span style="color:var(--gray-lt);font-size:.78rem;">Sin imagen</span>
-                            @endif
-                        </td>
-                        <td><strong>{{ $l->nombre }}</strong></td>
-                        <td><span class="badge badge-info">{{ $l->categoria }}</span></td>
-                        <td>{{ $l->ubicacion ?? '—' }}</td>
-                        <td>
-                            @if($l->precio_entrada > 0)
-                                ${{ number_format($l->precio_entrada, 0) }}
-                            @else
-                                <span class="badge badge-success">Gratuito</span>
-                            @endif
-                        </td>
-                        <td>
-                            <a href="{{ route('admin.lugares.edit', $l) }}" class="btn-small btn-edit btn-sm">
-                                <i class="fa-solid fa-pen fa-xs"></i> Editar
-                            </a>
-                            <form method="POST" action="{{ route('admin.lugares.destroy', $l) }}"
-                                  style="display:inline"
-                                  onsubmit="return confirm('¿Eliminar este lugar?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn-small btn-delete btn-sm">
-                                    <i class="fa-solid fa-trash fa-xs"></i> Eliminar
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" style="text-align:center;color:var(--gray);padding:2.5rem;">
-                            <i class="fa-solid fa-inbox" style="font-size:1.5rem;display:block;margin-bottom:.5rem;opacity:.4;"></i>
-                            No hay lugares registrados aún.
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
+            @empty
+                <tr>
+                    <td colspan="7" style="text-align:center;color:var(--gray);padding:2.5rem;">
+                        <i class="fa-solid fa-inbox" style="font-size:1.5rem;display:block;margin-bottom:.5rem;opacity:.4;"></i>
+                        No hay lugares registrados aún.
+                    </td>
+                </tr>
+            @endforelse
+        </tbody>
+    </table>
+  </div>
+
+</div>
 
     {{-- Paginación --}}
     @if($lugares->hasPages())
@@ -424,5 +411,40 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') cerrarModal();
     });
+</script>
+
+<script>
+function toggleFiltrosLugares() {
+    const box = document.getElementById('filtrosLugares');
+
+    if (box.style.display === 'none' || box.style.display === '') {
+        box.style.display = 'block';
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+// Mantener abierto si hay filtros activos
+window.addEventListener('load', function () {
+    if (
+        "{{ request('nombre') }}" ||
+        "{{ request('categoria') }}" ||
+        "{{ request('ubicacion') }}" ||
+        "{{ request('precio_entrada') }}"
+    ) {
+        document.getElementById('filtrosLugares').style.display = 'block';
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // 🔥 SI ESTÁ EDITANDO → ABRIR MODAL
+    @if(isset($lugar))
+        abrirModal();
+    @endif
+
+});
 </script>
 @endpush

@@ -14,64 +14,75 @@ use App\Imports\GastronomiaImport;
 
 class GastronomiaController extends Controller
 {
+    // ==========================
+    // LISTAR + FILTROS + PAGINACIÓN
+    // ==========================
     public function index(Request $request)
     {
-        $query = Gastronomia::query();
+        $query = Gastronomia::with('empresa');
 
-        if ($request->nombre) {
+        if ($request->filled('nombre')) {
             $query->where('nombre', 'like', '%' . $request->nombre . '%');
         }
 
-        if ($request->tipo) {
+        if ($request->filled('tipo')) {
             $query->where('tipo', $request->tipo);
         }
 
-        if ($request->restaurante) {
+        if ($request->filled('restaurante')) {
             $query->where('restaurante', 'like', '%' . $request->restaurante . '%');
         }
 
-        if ($request->precio) {
+        if ($request->filled('precio')) {
             $query->where('precio_promedio', '<=', $request->precio);
         }
 
-        if ($request->empresa) {
+        if ($request->filled('empresa')) {
             $query->where('empresa_id', $request->empresa);
         }
 
-        $gastronomias = $query->latest()->paginate(10)->withQueryString();
+        $perPage = $request->get('per_page', 10);
+
+        $gastronomias = $query->orderBy('id', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
 
         $empresas = Empresa::where('aprobado', true)
             ->orderBy('nombre')
             ->get();
 
-        return view('admin.gastronomia', compact('gastronomias', 'empresas'));
+        return view('admin.gastronomia', compact('gastronomias', 'empresas', 'perPage'));
     }
 
-    private function handleImage(Request $request, ?string $current = null): string
+    // ==========================
+    // MANEJO DE IMAGEN
+    // ==========================
+    private function handleImage(Request $request, ?string $current = null): ?string
     {
         if ($request->hasFile('imagen_file')) {
+
             if ($current && !str_starts_with($current, 'http')) {
                 Storage::disk('public')->delete($current);
             }
+
             return $request->file('imagen_file')->store('uploads/gastronomia', 'public');
         }
 
         if ($request->filled('imagen_url')) {
+
             if ($current && !str_starts_with($current, 'http')) {
                 Storage::disk('public')->delete($current);
             }
+
             return $request->imagen_url;
         }
 
-        return $current ?? '';
-    public function index(Request $request)
-    {
-        $perPage  = $request->get('per_page', 10);
-        $items    = Gastronomia::with('empresa')->oldest()->paginate($perPage)->withQueryString();
-        $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.gastronomia', compact('items', 'empresas', 'perPage'));
+        return $current;
     }
 
+    // ==========================
+    // CREAR
+    // ==========================
     public function store(Request $request)
     {
         $request->validate([
@@ -79,55 +90,76 @@ class GastronomiaController extends Controller
         ]);
 
         Gastronomia::create([
-            'nombre'         => $request->nombre,
-            'descripcion'    => $request->descripcion,
-            'tipo'           => $request->tipo,
-            'precio_promedio'=> $request->precio_promedio ?: null,
-            'restaurante'    => $request->restaurante,
-            'direccion'      => $request->direccion,
-            'ubicacion'      => $request->ubicacion,
-            'telefono'       => $request->telefono,
-            'ingredientes'   => $request->ingredientes,
-            'empresa_id'     => $request->empresa_id ?: null,
-            'imagen'         => $this->handleImage($request),
-            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
-            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
+            'nombre'          => $request->nombre,
+            'descripcion'     => $request->descripcion,
+            'tipo'            => $request->tipo,
+            'precio_promedio' => $request->precio_promedio ?: null,
+            'restaurante'     => $request->restaurante,
+            'direccion'       => $request->direccion,
+            'ubicacion'       => $request->ubicacion,
+            'telefono'        => $request->telefono,
+            'ingredientes'    => $request->ingredientes,
+            'empresa_id'      => $request->empresa_id ?: null,
+            'imagen'          => $this->handleImage($request),
+            'latitud'         => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'        => $request->filled('longitud') ? $request->longitud : null,
         ]);
 
         return redirect()->route('admin.gastronomia.index')
             ->with('success', 'Creado correctamente');
     }
 
+    // ==========================
+    // EDITAR
+    // ==========================
     public function edit(Gastronomia $gastronomium)
     {
-        $perPage  = 10;
-        $items    = Gastronomia::with('empresa')->oldest()->paginate($perPage)->withQueryString();
-        $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.gastronomia', compact('items', 'empresas', 'gastronomium', 'perPage'));
+        $perPage = 10;
+
+        $gastronomias = Gastronomia::with('empresa')
+            ->orderBy('id', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        $empresas = Empresa::where('aprobado', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return view('admin.gastronomia', compact('gastronomias', 'empresas', 'gastronomium', 'perPage'));
     }
 
+    // ==========================
+    // ACTUALIZAR
+    // ==========================
     public function update(Request $request, Gastronomia $gastronomium)
     {
+        $request->validate([
+            'nombre' => 'required|string|max:150',
+        ]);
+
         $gastronomium->update([
-            'nombre'         => $request->nombre,
-            'descripcion'    => $request->descripcion,
-            'tipo'           => $request->tipo,
-            'precio_promedio'=> $request->precio_promedio ?: null,
-            'restaurante'    => $request->restaurante,
-            'direccion'      => $request->direccion,
-            'ubicacion'      => $request->ubicacion,
-            'telefono'       => $request->telefono,
-            'ingredientes'   => $request->ingredientes,
-            'empresa_id'     => $request->empresa_id ?: null,
-            'imagen'         => $this->handleImage($request, $gastronomium->imagen),
-            'latitud'        => $request->filled('latitud') ? $request->latitud : null,
-            'longitud'       => $request->filled('longitud') ? $request->longitud : null,
+            'nombre'          => $request->nombre,
+            'descripcion'     => $request->descripcion,
+            'tipo'            => $request->tipo,
+            'precio_promedio' => $request->precio_promedio ?: null,
+            'restaurante'     => $request->restaurante,
+            'direccion'       => $request->direccion,
+            'ubicacion'       => $request->ubicacion,
+            'telefono'        => $request->telefono,
+            'ingredientes'    => $request->ingredientes,
+            'empresa_id'      => $request->empresa_id ?: null,
+            'imagen'          => $this->handleImage($request, $gastronomium->imagen),
+            'latitud'         => $request->filled('latitud') ? $request->latitud : null,
+            'longitud'        => $request->filled('longitud') ? $request->longitud : null,
         ]);
 
         return redirect()->route('admin.gastronomia.index')
             ->with('success', 'Actualizado correctamente');
     }
 
+    // ==========================
+    // ELIMINAR
+    // ==========================
     public function destroy(Gastronomia $gastronomium)
     {
         if ($gastronomium->imagen && !str_starts_with($gastronomium->imagen, 'http')) {
@@ -140,22 +172,17 @@ class GastronomiaController extends Controller
             ->with('success', 'Eliminado correctamente');
     }
 
+    // ==========================
+    // EXPORTAR EXCEL
+    // ==========================
     public function exportExcel()
     {
         return Excel::download(new GastronomiaExport, 'gastronomia.xlsx');
     }
 
-    public function exportPdf()
-    {
-        $gastronomias = Gastronomia::all();
-
-        $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomias'));
-
-        $gastronomia = \App\Models\Gastronomia::all();
-        $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomia'));
-        return $pdf->download('gastronomia.pdf');
-    }
-
+    // ==========================
+    // IMPORTAR EXCEL
+    // ==========================
     public function importExcel(Request $request)
     {
         $request->validate([
@@ -165,5 +192,17 @@ class GastronomiaController extends Controller
         Excel::import(new GastronomiaImport, $request->file('archivo'));
 
         return back()->with('success', 'Restaurantes importados correctamente');
+    }
+
+    // ==========================
+    // EXPORTAR PDF
+    // ==========================
+    public function exportPdf()
+    {
+        $gastronomias = Gastronomia::all();
+
+        $pdf = Pdf::loadView('admin.pdf.gastronomia', compact('gastronomias'));
+
+        return $pdf->download('gastronomia.pdf');
     }
 }

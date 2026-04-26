@@ -190,58 +190,64 @@
     </div>
 </div>
 <!-- BOTÓN FILTRAR -->
-<button onclick="toggleFiltros()" class="btn btn-primary" style="margin-bottom:1rem;">
-    <i class="fa-solid fa-filter"></i> Filtrar
-</button>
-
-<!-- FORMULARIO OCULTO -->
-<form method="GET" action="{{ route('admin.eventos.index') }}"
-      id="filtrosBox"
-      style="display:none; margin-bottom:1rem;">
-
-    <input type="text" name="nombre" placeholder="Nombre"
-        value="{{ request('nombre') }}">
-
-    <input type="date" name="fecha"
-        value="{{ request('fecha') }}">
-
-    <input type="text" name="ubicacion" placeholder="Ubicación"
-        value="{{ request('ubicacion') }}">
-
-    <input type="number" name="precio" placeholder="Precio máximo"
-        value="{{ request('precio') }}">
-
-    <button type="submit">Aplicar</button>
-</form>
 
 <!-- SCRIPT -->
-<script>
-function toggleFiltros() {
-    const box = document.getElementById('filtrosBox');
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
-}
-
-window.onload = function() {
-    const hasFilters =
-        "{{ request('nombre') }}" ||
-        "{{ request('fecha') }}" ||
-        "{{ request('ubicacion') }}" ||
-        "{{ request('precio') }}";
-
-    if (hasFilters) {
-        document.getElementById('filtrosBox').style.display = 'block';
-    }
-}
-</script>
 
 
 
 {{-- Tabla --}}  
 <div class="admin-section">
-    <div class="admin-section-header">
-        <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Eventos Registrados</h2>
+    <div class="admin-section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+
+    <h2>
+        <i class="fa-solid fa-list" style="color:var(--primary);"></i> Eventos Registrados
+    </h2>
+
+    <div style="display:flex; align-items:center; gap:.5rem;">
         <span class="badge badge-info">{{ $eventos->total() }} total</span>
+
+        <button type="button" onclick="toggleFiltrosEventos()" class="btn btn-success btn-sm">
+            <i class="fa-solid fa-filter"></i> Filtro
+        </button>
     </div>
+
+  </div>
+
+  {{-- FILTROS --}}
+  <div id="filtrosEventos" style="display:none; margin-bottom:1rem;">
+    <form method="GET" action="{{ route('admin.eventos.index') }}">
+
+        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
+
+            <div>
+                <label>Nombre</label><br>
+                <input type="text" name="nombre" value="{{ request('nombre') }}">
+            </div>
+
+            <div>
+                <label>Fecha</label><br>
+                <input type="date" name="fecha" value="{{ request('fecha') }}">
+            </div>
+
+            <div>
+                <label>Ubicación</label><br>
+                <input type="text" name="ubicacion" value="{{ request('ubicacion') }}">
+            </div>
+
+            <div>
+                <label>Precio</label><br>
+                <input type="number" name="precio" value="{{ request('precio') }}">
+            </div>
+
+            <div style="display:flex; gap:.5rem;">
+                <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
+                <a href="{{ route('admin.eventos.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+            </div>
+
+        </div>
+
+    </form>
+  </div>
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
@@ -377,6 +383,30 @@ document.addEventListener('keydown', function(e) {
 @isset($evento)
     abrirModal();
 @endisset
+</script>
+
+<script>
+function toggleFiltrosEventos() {
+    const box = document.getElementById('filtrosEventos');
+
+    if (box.style.display === 'none' || box.style.display === '') {
+        box.style.display = 'block';
+    } else {
+        box.style.display = 'none';
+    }
+}
+
+// Mantener abierto si hay filtros activos
+window.addEventListener('load', function () {
+    if (
+        "{{ request('nombre') }}" ||
+        "{{ request('fecha') }}" ||
+        "{{ request('ubicacion') }}" ||
+        "{{ request('precio') }}"
+    ) {
+        document.getElementById('filtrosEventos').style.display = 'block';
+    }
+});
 </script>
 @endpush
 

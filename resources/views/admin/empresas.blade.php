@@ -294,26 +294,7 @@
         </table>
 
         
-        <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
-    <a href="{{ route('admin.empresas.export.excel') }}" class="btn btn-success btn-sm">
-        Excel
-    </a>
-
-    <a href="{{ route('admin.empresas.export.pdf') }}" class="btn btn-danger btn-sm">
-        PDF
-    </a>
-
-    <form action="{{ route('admin.empresas.import.excel') }}"
-          method="POST"
-          enctype="multipart/form-data">
-        @csrf
-        <input type="file" name="archivo" required>
-        <button type="submit" class="btn btn-primary btn-sm">
-            Importar
-        </button>
-    </form>
-</div>
-
+       
     </div>
 
     {{-- Paginación --}}

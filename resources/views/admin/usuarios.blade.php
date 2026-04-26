@@ -8,21 +8,19 @@
 
 <div class="admin-section">
 
-    <div class="admin-section-header">
-        <h2>Usuarios registrados</h2>
+    <!-- HEADER PRINCIPAL -->
+    <div class="admin-section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+        <h2 style="margin:0;"><i class="fa-solid fa-users"></i> Usuarios</h2>
 
-        <div style="display:flex; gap:.5rem;">
+        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
             <a href="{{ route('admin.usuarios.export.excel') }}" class="btn btn-success btn-sm">
-                Excel
+                <i class="fa-solid fa-file-excel"></i> Excel
             </a>
 
             <a href="{{ route('admin.usuarios.export.pdf') }}" class="btn btn-danger btn-sm">
-                PDF
+                <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
 
-            <span class="badge badge-info">
-                {{ $usuarios->total() }} total
-            </span>
             @include('partials.import_modal', [
                 'importRoute' => 'admin.usuarios.import.excel',
                 'sampleFile'  => 'ejemplo_usuarios.xlsx',
@@ -35,124 +33,105 @@
         </div>
     </div>
 
-    <form action="{{ route('admin.usuarios.import.excel') }}"
-          method="POST"
-          enctype="multipart/form-data"
-          style="margin-bottom:1rem;">
-        @csrf
-
-        <div style="display:flex; gap:.5rem;">
-            <input type="file" name="archivo" required>
-
-            <button type="submit" class="btn btn-primary btn-sm">
-                Importar Excel
-            </button>
-        </div>
-    </form>
-
-<!-- BOTÓN FILTRAR -->
-
-
-<!-- FORMULARIO OCULTO -->
-
-
-    <div class="table-responsive">
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Email</th>
-                    <th>rol</th>
-                    <th>estado</th>
-                    <th>telefono</th>
-                    <th>Fecha registro</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @forelse($usuarios as $u)
-                    <tr>
-                        <td>{{ $u->id }}</td>
-                        <td>{{ $u->name }}</td>
-                        <td>{{ $u->email }}</td>
-                        <td>{{ $u->rol }}</td>
-                        <td>{{ $u->estado}}</td>
-                        <td>{{ $u->telefono}}</td>
-                        <td>{{ $u->created_at }}</td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="4">No hay usuarios</td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
-        <form method="GET" action="{{ route('admin.usuarios.index') }}"
-      class="admin-form"
-      id="filtrosBox"
-      style="margin-bottom:1rem;">
-
-      <button onclick="toggleFiltros()" class="btn btn-primary" style="margin-bottom:1rem;">
-    <i class="fa-solid fa-filter"></i> Filtrar
-</button>
-
-    <div class="form-row">
-
-        <!-- ID -->
-        <div class="form-group">
-            <label>ID</label>
-            <input type="number" name="id"
-                value="{{ request('id') }}">
-        </div>
-
-        <!-- NOMBRE -->
-        <div class="form-group">
-            <label>Nombre</label>
-            <input type="text" name="nombre"
-                value="{{ request('nombre') }}">
-        </div>
-
-        <!-- EMAIL -->
-        <div class="form-group">
-            <label>Email</label>
-            <input type="text" name="email"
-                value="{{ request('email') }}">
-        </div>
-
-        <!-- BOTÓN -->
-        <div class="form-group" style="display:flex;align-items:end;">
-            <button type="submit" class="btn btn-primary">
-                Aplicar
-            </button>
-        </div>
+    <!-- CARD -->
 
     </div>
-</form>
 
-<!-- SCRIPT -->
-<script>
-function toggleFiltros() {
-    const box = document.getElementById('filtrosBox');
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
-}
+     <div class="admin-section" >
 
-window.onload = function() {
-    const hasFilters =
-        "{{ request('id') }}" ||
-        "{{ request('nombre') }}" ||
-        "{{ request('email') }}";
+        <!-- HEADER TABLA --> <div style="padding: 1.75rem;">
+        <div class="admin-section-header">
+        <h2>
+            <i class="fa-solid fa-list" style="color:var(--primary);"></i>
+            Usuarios Registrados
+        </h2>
+    <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+                <span class="badge badge-info">
+                    {{ $usuarios->total() }} total
+                </span>
 
-    if (hasFilters) {
-        document.getElementById('filtrosBox').style.display = 'block';
-    }
-}
-</script>
-    </div>
+                <button type="button" onclick="toggleFiltros()" class="btn btn-success btn-sm">
+                    <i class="fa-solid fa-filter"></i><p>Filtro</p>
+                </button>
+            </div>
 
-    {{-- Paginación --}}
+        </div>
+
+        <!-- FILTROS -->
+        <div id="filtrosBox" style="display:none; margin-bottom:1rem;">
+            <form method="GET" action="{{ route('admin.usuarios.index') }}">
+
+                <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
+
+                    <div>
+                        <label>ID</label><br>
+                        <input type="number" name="id" value="{{ request('id') }}">
+                    </div>
+
+                    <div>
+                        <label>Nombre</label><br>
+                        <input type="text" name="name" value="{{ request('name') }}">
+                    </div>
+
+                    <div>
+                        <label>Email</label><br>
+                        <input type="text" name="email" value="{{ request('email') }}">
+                    </div>
+
+                    <div style="display:flex; gap:.5rem;">
+                        <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
+                        <a href="{{ route('admin.usuarios.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+                    </div>
+
+                </div>
+
+            </form>
+        </div>
+
+        <!-- TABLA -->
+       
+        <div class="table-responsive">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Rol</th>
+                        <th>Estado</th>
+                        <th>Teléfono</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @forelse($usuarios as $u)
+                        <tr>
+                            <td>{{ $u->id }}</td>
+                            <td>{{ $u->name }}</td>
+                            <td>{{ $u->email }}</td>
+                            <td>{{ $u->rol }}</td>
+                            <td>
+                                <span class="badge {{ $u->estado == 'activo' ? 'badge-success' : 'badge-warning' }}">
+                                    {{ $u->estado }}
+                                </span>
+                            </td>
+                            <td>{{ $u->telefono }}</td>
+                            <td>{{ $u->created_at }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="7">No hay usuarios</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+    <!-- PAGINACIÓN -->
     @if($usuarios->hasPages())
     <div class="pagination-bar">
+
         <div class="pagination-info">
             Mostrando <strong>{{ $usuarios->firstItem() }}</strong>–<strong>{{ $usuarios->lastItem() }}</strong>
             de <strong>{{ $usuarios->total() }}</strong> registros
@@ -160,9 +139,9 @@ window.onload = function() {
 
         <div class="pagination-links">
             @if($usuarios->onFirstPage())
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
+                <span class="page-btn page-btn--disabled">‹</span>
             @else
-                <a href="{{ $usuarios->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
+                <a href="{{ $usuarios->previousPageUrl() }}" class="page-btn">‹</a>
             @endif
 
             @foreach($usuarios->getUrlRange(max(1,$usuarios->currentPage()-2), min($usuarios->lastPage(),$usuarios->currentPage()+2)) as $page => $url)
@@ -174,26 +153,48 @@ window.onload = function() {
             @endforeach
 
             @if($usuarios->hasMorePages())
-                <a href="{{ $usuarios->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
+                <a href="{{ $usuarios->nextPageUrl() }}" class="page-btn">›</a>
             @else
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
+                <span class="page-btn page-btn--disabled">›</span>
             @endif
         </div>
 
-        <form method="GET" class="per-page-form">
+        <form method="GET">
             @foreach(request()->except(['page','per_page']) as $k => $v)
                 <input type="hidden" name="{{ $k }}" value="{{ $v }}">
             @endforeach
-            <label class="per-page-label">Filas:</label>
-            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
+
+            <label>Filas:</label>
+            <select name="per_page" onchange="this.form.submit()">
                 @foreach([5,10,25,50,100] as $n)
                     <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
                 @endforeach
             </select>
         </form>
+
     </div>
     @endif
 
 </div>
+
+<!-- SCRIPT -->
+<script>
+function toggleFiltros() {
+    const box = document.getElementById('filtrosBox');
+    box.style.display = (box.style.display === 'none' || box.style.display === '') 
+        ? 'block' 
+        : 'none';
+}
+
+window.addEventListener('load', function () {
+    if (
+        "{{ request('id') }}" ||
+        "{{ request('name') }}" ||
+        "{{ request('email') }}"
+    ) {
+        document.getElementById('filtrosBox').style.display = 'block';
+    }
+});
+</script>
 
 @endsection

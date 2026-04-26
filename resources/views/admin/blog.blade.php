@@ -7,36 +7,43 @@
 
 @section('content')
 
-{{-- Barra superior --}}
+{{-- ================= HEADER SUPERIOR ================= --}}
 <div class="admin-section">
     <div class="admin-section-header">
         <h2>
             <i class="fa-solid fa-newspaper" style="color:var(--primary);margin-right:.4rem;"></i>
             Blog
         </h2>
+
         @unless(isset($blog))
-           
-            <div style="display:flex; gap:.5rem; margin-bottom:1rem;">
-                 <a href="{{ route('admin.blog.index') }}" class="btn btn-primary btn-sm">
+        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+            <button onclick="abrirModal()" class="btn btn-primary btn-sm">
                 <i class="fa-solid fa-plus"></i> Nueva Publicación
+            </button>
+
+            <a href="{{ route('admin.blog.export.excel') }}" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-file-excel"></i> Excel
             </a>
-    <a href="{{ route('admin.blog.export.excel') }}" class="btn btn-success btn-sm">
-        Exportar Excel
-    </a>
 
-    <a href="{{ route('admin.blog.export.pdf') }}" class="btn btn-danger btn-sm">
-        Exportar PDF
-    </a>
-</div>
+            <a href="{{ route('admin.blog.export.pdf') }}" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+            </a>
+
+            @include('partials.import_modal', [
+                'importRoute' => 'admin.blog.import.excel',
+                'sampleFile'  => 'ejemplo_blog.xlsx',
+                'modalId'     => 'importBlog',
+                'columns'     => [
+                    'titulo'            => 'Título de la publicación (requerido)',
+                    'contenido'         => 'Contenido completo (requerido)',
+                    'tipo'              => 'Tipo: noticia o evento (requerido)',
+                    'autor'             => 'Nombre del autor',
+                    'publicado'         => 'Publicado: 1 = sí, 0 = borrador',
+                    'fecha_publicacion' => 'Fecha en formato YYYY-MM-DD HH:MM:SS',
+                ],
+            ])
+        </div>
         @endunless
-
-            <form action="{{ route('admin.blog.import.excel') }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        <input type="file" name="archivo" required>
-        <button type="submit" class="btn btn-primary btn-sm">
-            Importar
-        </button>
-    </form>
     </div>
 </div>
 
@@ -59,7 +66,7 @@
         box-shadow: 0 20px 60px rgba(0,0,0,.25);
         overflow: hidden;
     ">
-        {{-- Header modal --}}
+
         <div style="
             background: linear-gradient(135deg, var(--indigo-900), var(--indigo-700));
             padding: 1.25rem 1.75rem;
@@ -71,6 +78,7 @@
                 <i class="fa-solid fa-{{ isset($blog) ? 'pen-to-square' : 'plus-circle' }}"></i>
                 {{ isset($blog) ? 'Editar Publicación' : 'Nueva Publicación' }}
             </h3>
+
             <button onclick="cerrarModal()" style="
                 background: rgba(255,255,255,.15);
                 border: none;
@@ -79,18 +87,11 @@
                 height: 32px;
                 border-radius: 50%;
                 cursor: pointer;
-                font-size: 1rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: background .2s;
-            " onmouseover="this.style.background='rgba(255,255,255,.3)'"
-               onmouseout="this.style.background='rgba(255,255,255,.15)'">
+            ">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
 
-        {{-- Body modal --}}
         <div style="padding: 1.75rem;max-height:calc(90vh - 120px);overflow-y:auto;">
 
             @isset($blog)
@@ -101,72 +102,71 @@
             @endisset
             @csrf
 
-    <div class="form-row">
-        <div class="form-group" style="flex:2;">
-            <label>Título *</label>
-            <input type="text" name="titulo" required maxlength="200"
-                   placeholder="Título de la publicación"
-                   value="{{ old('titulo', $blog->titulo ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Tipo *</label>
-            <select name="tipo" required>
-                <option value="noticia" {{ old('tipo', $blog->tipo ?? '') === 'noticia' ? 'selected' : '' }}>Noticia</option>
-                <option value="evento"  {{ old('tipo', $blog->tipo ?? '') === 'evento'  ? 'selected' : '' }}>Evento</option>
-                
-            </select>
-        </div>
-    </div>
+            <div class="form-row">
+                <div class="form-group" style="flex:2;">
+                    <label>Título *</label>
+                    <input type="text" name="titulo" required maxlength="200"
+                           value="{{ old('titulo', $blog->titulo ?? '') }}">
+                </div>
 
-    <div class="form-group">
-        <label>Contenido *</label>
-        <textarea name="contenido" rows="8" required
-                  placeholder="Escribe el contenido completo de la publicación...">{{ old('contenido', $blog->contenido ?? '') }}</textarea>
-    </div>
+                <div class="form-group">
+                    <label>Tipo *</label>
+                    <select name="tipo" required>
+                        <option value="noticia" {{ old('tipo', $blog->tipo ?? '') === 'noticia' ? 'selected' : '' }}>Noticia</option>
+                        <option value="evento" {{ old('tipo', $blog->tipo ?? '') === 'evento' ? 'selected' : '' }}>Evento</option>
+                    </select>
+                </div>
+            </div>
 
-    <div class="form-row">
-        <div class="form-group">
-            <label>Autor</label>
-            <input type="text" name="autor" maxlength="150"
-                   placeholder="Nombre del autor"
-                   value="{{ old('autor', $blog->autor ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Empresa asociada</label>
-            <select name="empresa_id">
-                <option value="">— Sin empresa —</option>
-                @foreach($empresas as $emp)
-                    <option value="{{ $emp->id }}"
-                        {{ old('empresa_id', $blog->empresa_id ?? '') == $emp->id ? 'selected' : '' }}>
-                        {{ $emp->nombre }}
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Fecha de publicación</label>
-            <input type="datetime-local" name="fecha_publicacion"
-                   value="{{ old('fecha_publicacion', isset($blog) ? $blog->fecha_publicacion?->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i')) }}">
-        </div>
-    </div>
+            <div class="form-group">
+                <label>Contenido *</label>
+                <textarea name="contenido" rows="8" required>{{ old('contenido', $blog->contenido ?? '') }}</textarea>
+            </div>
 
-    @include('partials.imagen_field', [
-        'currentImage' => $blog->imagen ?? null,
-        'fieldId'      => 'blog',
-    ])
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Autor</label>
+                    <input type="text" name="autor" value="{{ old('autor', $blog->autor ?? '') }}">
+                </div>
 
-    <div class="form-group" style="display:flex;align-items:center;gap:.6rem;">
-        <input type="checkbox" name="publicado" id="publicado"
-               style="width:18px;height:18px;accent-color:var(--primary);flex-shrink:0;"
-               {{ old('publicado', $blog->publicado ?? true) ? 'checked' : '' }}>
-        <label for="publicado" style="margin:0;cursor:pointer;">Publicar inmediatamente</label>
-    </div>
+                <div class="form-group">
+                    <label>Empresa</label>
+                    <select name="empresa_id">
+                        <option value="">— Sin empresa —</option>
+                        @foreach($empresas as $emp)
+                            <option value="{{ $emp->id }}"
+                                {{ old('empresa_id', $blog->empresa_id ?? '') == $emp->id ? 'selected' : '' }}>
+                                {{ $emp->nombre }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
 
-            <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
+                <div class="form-group">
+                    <label>Fecha</label>
+                    <input type="datetime-local" name="fecha_publicacion"
+                           value="{{ old('fecha_publicacion', isset($blog) ? $blog->fecha_publicacion?->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i')) }}">
+                </div>
+            </div>
+
+            @include('partials.imagen_field', [
+                'currentImage' => $blog->imagen ?? null,
+                'fieldId'      => 'blog',
+            ])
+
+            <div class="form-group">
+                <input type="checkbox" name="publicado"
+                    {{ old('publicado', $blog->publicado ?? true) ? 'checked' : '' }}>
+                Publicar
+            </div>
+
+            {{-- BOTONES --}}
+            <div style="display:flex; gap:.7rem; margin-top:1rem; flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-{{ isset($blog) ? 'floppy-disk' : 'plus' }}"></i>
                     {{ isset($blog) ? 'Actualizar' : 'Publicar' }}
                 </button>
+
                 @isset($blog)
                     <a href="{{ route('admin.blog.index') }}" class="btn btn-outline">
                         <i class="fa-solid fa-xmark"></i> Cancelar
@@ -177,74 +177,72 @@
                     </button>
                 @endisset
             </div>
+
             </form>
         </div>
     </div>
 </div>
 
-{{-- TABLA --}}
-<div class="admin-section">
-    <div class="admin-section-header">
-        <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Publicaciones</h2>
-        <div style="display:flex; gap:.5rem; align-items:center;">
+{{-- ================= LISTADO ================= --}}
+<div class="admin-section" style="margin-top:1.5rem;">
+
+    {{-- HEADER TABLA --}}
+    <div class="admin-section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
+
+        <h2>
+            <i class="fa-solid fa-list" style="color:var(--primary);"></i> Publicaciones
+        </h2>
+
+        <div style="display:flex; align-items:center; gap:.5rem;">
             <span class="badge badge-info">{{ $posts->total() }} total</span>
+
+            <button type="button" onclick="toggleFiltros()" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-filter"></i> Filtro
+            </button>
         </div>
+
     </div>
-    {{-- BOTÓN FILTRO --}}
-<button type="button"
-        class="btn btn-primary btn-sm"
-        onclick="toggleFiltrosBlog()">
-    <i class="fa-solid fa-filter"></i> Filtrar
-</button>
 
-{{-- FILTRO --}}
-<form method="GET"
-      action="{{ route('admin.blog.index') }}"
-      id="filtrosBlogBox"
-      style="display:none; margin:10px 0;">
+    {{-- FILTROS --}}
+    <div id="filtrosBox" style="display:none; margin-bottom:1rem;">
+        <form method="GET" action="{{ route('admin.blog.index') }}">
+            
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
 
-    <input type="text" name="titulo"
-           placeholder="Título"
-           value="{{ request('titulo') }}">
+                <div>
+                    <label>Título</label><br>
+                    <input type="text" name="titulo" value="{{ request('titulo') }}">
+                </div>
 
-    <input type="date" name="fecha"
-           value="{{ request('fecha') }}">
+                <div>
+                    <label>Autor</label><br>
+                    <input type="text" name="autor" value="{{ request('autor') }}">
+                </div>
 
-    <input type="text" name="autor"
-           placeholder="Autor"
-           value="{{ request('autor') }}">
+                <div>
+                    <label>Fecha</label><br>
+                    <input type="date" name="fecha" value="{{ request('fecha') }}">
+                </div>
 
-    {{-- TIPO FIJO --}}
-    <select name="tipo">
-        <option value="">Todos</option>
-        <option value="noticia" {{ request('tipo') == 'noticia' ? 'selected' : '' }}>Noticia</option>
-        <option value="evento" {{ request('tipo') == 'evento' ? 'selected' : '' }}>Evento</option>
-        <option value="articulo" {{ request('tipo') == 'articulo' ? 'selected' : '' }}>Artículo</option>
-        <option value="opinión" {{ request('tipo') == 'opinión' ? 'selected' : '' }}>Opinión</option>
-    </select>
+                <div>
+                    <label>Tipo</label><br>
+                    <select name="tipo">
+                        <option value="">Todos</option>
+                        <option value="noticia" {{ request('tipo') == 'noticia' ? 'selected' : '' }}>Noticia</option>
+                        <option value="evento" {{ request('tipo') == 'evento' ? 'selected' : '' }}>Evento</option>
+                    </select>
+                </div>
 
-    <button type="submit" class="btn btn-primary btn-sm">
-        Aplicar
-    </button>
+                <div>
+                    <button class="btn btn-primary btn-sm">Aplicar</button>
+                    <a href="{{ route('admin.blog.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+                </div>
 
-    <a href="{{ route('admin.blog.index') }}" class="btn btn-outline btn-sm">
-        Limpiar
-    </a>
-</form>
+            </div>
+        </form>
+    </div>
 
-{{-- JS filtro --}}
-<script>
-function toggleFiltrosBlog() {
-    const box = document.getElementById('filtrosBlogBox');
-
-    if (box.style.display === 'none' || box.style.display === '') {
-        box.style.display = 'block';
-    } else {
-        box.style.display = 'none';
-    }
-}
-</script>
-
+    {{-- TABLA (NO TOCADA) --}}
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
@@ -257,34 +255,16 @@ function toggleFiltrosBlog() {
             <tbody>
                 @forelse($posts as $p)
                     <tr>
-                        <td style="color:var(--gray);font-size:.8rem;">{{ $p->id }}</td>
-
-                        <td class="td-img">
+                        <td>{{ $p->id }}</td>
+                        <td>
                             @if($p->imagen)
-                                @php
-                                    $src = str_starts_with($p->imagen,'http')
-                                        ? $p->imagen
-                                        : Storage::disk('public')->url($p->imagen);
-                                @endphp
-                                <img src="{{ $src }}" alt="{{ $p->titulo }}">
-                            @else
-                                <span>—</span>
+                                <img src="{{ str_starts_with($p->imagen,'http') ? $p->imagen : Storage::url($p->imagen) }}" width="90   ">
                             @endif
                         </td>
-
-                        <td><strong>{{ \Illuminate\Support\Str::limit($p->titulo, 45) }}</strong></td>
-
-                        <td>
-                            <span class="blog-tipo-{{ $p->tipo }}">
-                                {{ ucfirst($p->tipo) }}
-                            </span>
-                        </td>
-
+                        <td>{{ $p->titulo }}</td>
+                        <td>{{ $p->tipo }}</td>
                         <td>{{ $p->autor_nombre }}</td>
-
-                        <td style="white-space:nowrap;font-size:.82rem;">
-                            {{ $p->fecha_publicacion?->format('d/m/Y') }}
-                        </td>
+                        <td>{{ $p->fecha_publicacion?->format('d/m/Y') }}</td>
 
                         <td>
                             @if($p->publicado)
@@ -295,105 +275,37 @@ function toggleFiltrosBlog() {
                         </td>
 
                         <td>
-                            <form method="POST" action="{{ route('admin.blog.publicar', $p) }}" style="display:inline">
-                                @csrf @method('PATCH')
-                                <button type="submit" class="btn-small btn-sm">
-                                    {{ $p->publicado ? 'Ocultar' : 'Publicar' }}
-                                </button>
-                            </form>
+                            <a href="{{ route('admin.blog.edit',$p) }}" class="btn-small btn-edit btn-sm">Editar</a>
 
-                            <a href="{{ route('admin.blog.edit', $p) }}" class="btn-small btn-edit btn-sm">
-                                Editar
-                            </a>
-
-                            <form method="POST" action="{{ route('admin.blog.destroy', $p) }}" style="display:inline">
+                            <form method="POST" action="{{ route('admin.blog.destroy',$p) }}" style="display:inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn-small btn-delete btn-sm">
-                                    Eliminar
-                                </button>
+                                <button class="btn-small btn-delete btn-sm">Eliminar</button>
                             </form>
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="8" style="text-align:center;">
-                            No hay publicaciones aún.
-                        </td>
-                    </tr>
+                    <tr><td colspan="8">Sin datos</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
-    {{-- Paginación --}}
-    @if($posts->hasPages())
-    <div class="pagination-bar">
-        <div class="pagination-info">
-            Mostrando <strong>{{ $posts->firstItem() }}</strong>–<strong>{{ $posts->lastItem() }}</strong>
-            de <strong>{{ $posts->total() }}</strong> registros
-        </div>
-
-        <div class="pagination-links">
-            @if($posts->onFirstPage())
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
-            @else
-                <a href="{{ $posts->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
-            @endif
-
-            @foreach($posts->getUrlRange(max(1,$posts->currentPage()-2), min($posts->lastPage(),$posts->currentPage()+2)) as $page => $url)
-                @if($page == $posts->currentPage())
-                    <span class="page-btn page-btn--active">{{ $page }}</span>
-                @else
-                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
-                @endif
-            @endforeach
-
-            @if($posts->hasMorePages())
-                <a href="{{ $posts->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
-            @else
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
-            @endif
-        </div>
-
-        <form method="GET" class="per-page-form">
-            @foreach(request()->except(['page','per_page']) as $k => $v)
-                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-            @endforeach
-            <label class="per-page-label">Filas:</label>
-            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
-                @foreach([5,10,25,50,100] as $n)
-                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
-                @endforeach
-            </select>
-        </form>
-    </div>
-    @endif
-
+    {{ $posts->links() }}
 </div>
 
+
+{{-- ================= SCRIPTS ================= --}}
 @push('scripts')
 <script>
-function abrirModal() {
-    document.getElementById('modal-blog').style.display = 'block';
-    document.body.style.overflow = 'hidden';
+function abrirModal(){document.getElementById('modal-blog').style.display='block';}
+function cerrarModal(){document.getElementById('modal-blog').style.display='none';}
+
+@isset($blog) abrirModal(); @endisset
+
+function toggleFiltros(){
+    let box=document.getElementById('filtrosBox');
+    box.style.display=(box.style.display==='none')?'block':'none';
 }
-
-function cerrarModal() {
-    document.getElementById('modal-blog').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-document.getElementById('modal-blog').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModal();
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') cerrarModal();
-});
-
-@isset($blog)
-    abrirModal();
-@endisset
 </script>
 @endpush
 
