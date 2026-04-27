@@ -1,13 +1,12 @@
-
 @php use Illuminate\Support\Facades\Storage; @endphp
 @extends('layouts.admin')
-
+ 
 @section('title', 'Gastronomía')
 @section('page-title', 'Gastronomía')
 @section('page-subtitle', 'Administra platos, restaurantes y servicios gastronómicos')
-
+ 
 @section('content')
-
+ 
 {{-- Barra superior --}}
 <div class="admin-section">
     <div class="admin-section-header">
@@ -43,8 +42,7 @@
         </div>
     </div>
 </div>
-
-
+ 
 {{-- ===================== MODAL ===================== --}}
 <div id="modal-gastronomia" style="
     display: none;
@@ -66,7 +64,7 @@
     ">
         {{-- Header modal --}}
         <div style="
-            background: linear-gradient(135deg, var(--orange-900), var(--orange-700));
+            background: linear-gradient(135deg, var(--green-900), var(--green-700));
             padding: 1.25rem 1.75rem;
             display: flex;
             align-items: center;
@@ -94,10 +92,10 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-
+ 
         {{-- Body modal --}}
         <div style="padding: 1.75rem;max-height:calc(90vh - 120px);overflow-y:auto;">
-
+ 
             @isset($gastronomium)
                 <form method="POST" action="{{ route('admin.gastronomia.update', $gastronomium) }}" class="admin-form" enctype="multipart/form-data">
                 @method('PUT')
@@ -105,7 +103,7 @@
                 <form method="POST" action="{{ route('admin.gastronomia.store') }}" class="admin-form" enctype="multipart/form-data">
             @endisset
             @csrf
-
+ 
     <div class="form-row">
         <div class="form-group">
             <label>Nombre *</label>
@@ -124,13 +122,13 @@
             </select>
         </div>
     </div>
-
+ 
     <div class="form-group">
         <label>Descripción</label>
         <textarea name="descripcion" rows="3"
                   placeholder="Describe el plato, ingredientes principales, historia...">{{ old('descripcion', $gastronomium->descripcion ?? '') }}</textarea>
     </div>
-
+ 
     <div class="form-row">
         <div class="form-group">
             <label>Precio (COP)</label>
@@ -145,7 +143,7 @@
                    value="{{ old('restaurante', $gastronomium->restaurante ?? '') }}">
         </div>
     </div>
-
+ 
     <div class="form-row">
         <div class="form-group">
             <label>Dirección</label>
@@ -165,21 +163,21 @@
                    value="{{ old('telefono', $gastronomium->telefono ?? '') }}">
         </div>
     </div>
-
+ 
     @include('partials.map_picker', [
         'mapId'        => 'gastro',
         'latValue'     => old('latitud', $gastronomium->latitud ?? ''),
         'lngValue'     => old('longitud', $gastronomium->longitud ?? ''),
         'addressValue' => old('direccion', $gastronomium->direccion ?? ''),
     ])
-
+ 
     <div class="form-group">
         <label>Ingredientes principales <span class="form-hint" style="display:inline">(separados por coma)</span></label>
         <input type="text" name="ingredientes"
                placeholder="Ej: Cerdo, Arroz, Arveja, Zanahoria"
                value="{{ old('ingredientes', $gastronomium->ingredientes ?? '') }}">
     </div>
-
+ 
     <div class="form-group">
         <label>Empresa asociada</label>
         <select name="empresa_id">
@@ -192,12 +190,12 @@
             @endforeach
         </select>
     </div>
-
+ 
     @include('partials.imagen_field', [
         'currentImage' => $gastronomium->imagen ?? null,
         'fieldId'      => 'gastro',
     ])
-
+ 
             <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-{{ isset($gastronomium) ? 'floppy-disk' : 'plus' }}"></i>
@@ -213,72 +211,72 @@
                     </button>
                 @endisset
             </div>
-
+ 
             </form>
         </div>
     </div>
 </div>
+ 
 {{-- ================= LISTADO ================= --}}
 <div class="admin-section">
-
-    {{-- HEADER TABLA + FILTRO DERECHA --}}
+ 
     <div class="admin-section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-
+ 
         <h2>
             <i class="fa-solid fa-list" style="color:var(--primary);"></i> Elementos
         </h2>
-
+ 
         <div style="display:flex; align-items:center; gap:.5rem;">
             <span class="badge badge-info">{{ $gastronomias->total() }} total</span>
-
+ 
             <button type="button" onclick="toggleFiltros()" class="btn btn-success btn-sm">
                 <i class="fa-solid fa-filter"></i> Filtro
             </button>
         </div>
-
+ 
     </div>
-
-    {{-- FILTROS HORIZONTALES --}}
+ 
+    {{-- FILTROS --}}
     <div id="filtrosBox" style="display:none; margin-bottom:1rem;">
         <form method="GET" action="{{ route('admin.gastronomia.index') }}">
-
+ 
             <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
-
+ 
                 <div>
                     <label>Nombre</label><br>
                     <input type="text" name="nombre" value="{{ request('nombre') }}">
                 </div>
-
+ 
                 <div>
                     <label>Tipo</label><br>
                     <input type="text" name="tipo" value="{{ request('tipo') }}">
                 </div>
-
+ 
                 <div>
                     <label>Restaurante</label><br>
                     <input type="text" name="restaurante" value="{{ request('restaurante') }}">
                 </div>
-
-                 <div>
+ 
+                <div>
                     <label>Empresa</label><br>
                     <input type="number" name="empresa" value="{{ request('empresa') }}">
                 </div>
-
+ 
                 <div>
                     <label>Precio máximo</label><br>
                     <input type="number" name="precio" value="{{ request('precio') }}">
                 </div>
-
+ 
                 <div style="display:flex; gap:.5rem;">
                     <button class="btn btn-primary btn-sm">Aplicar</button>
                     <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
                 </div>
-
+ 
             </div>
-
+ 
         </form>
     </div>
-
+ 
     {{-- TABLA --}}
     <div class="table-responsive">
         <table class="admin-table">
@@ -323,12 +321,11 @@
                     <th>Acciones</th>
                 </tr>
             </thead>
-
+ 
             <tbody>
                 @forelse($gastronomias as $item)
                 <tr>
                     <td>{{ $item->id }}</td>
-
                     <td>
                         @if($item->imagen)
                             @php
@@ -341,7 +338,6 @@
                             <span style="color:var(--gray-lt);font-size:.78rem;">Sin imagen</span>
                         @endif
                     </td>
-
                     <td><strong>{{ $item->nombre }}</strong></td>
                     <td>{{ $item->tipo ?? '—' }}</td>
                     <td>{{ $item->restaurante ?? '—' }}</td>
@@ -353,12 +349,10 @@
                             —
                         @endif
                     </td>
-
                     <td>
                         <a href="{{ route('admin.gastronomia.edit', $item) }}" class="btn-small btn-edit btn-sm">
                             <i class="fa-solid fa-pen fa-xs"></i> Editar
                         </a>
-
                         <form method="POST" action="{{ route('admin.gastronomia.destroy', $item) }}" style="display:inline"
                               onsubmit="return confirm('¿Eliminar este elemento?')">
                             @csrf @method('DELETE')
@@ -379,13 +373,13 @@
             </tbody>
         </table>
     </div>
-
+ 
     @include('partials.pagination', ['paginator' => $gastronomias, 'perPage' => $perPage])
-
+ 
 </div>
-
+ 
 @endsection
-
+ 
 {{-- ================= SCRIPTS ================= --}}
 @push('scripts')
 <script>
@@ -393,34 +387,29 @@ function abrirModal() {
     document.getElementById('modal-gastronomia').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
-
+ 
 function cerrarModal() {
     document.getElementById('modal-gastronomia').style.display = 'none';
     document.body.style.overflow = '';
 }
-
-// cerrar al hacer click fuera
+ 
 document.getElementById('modal-gastronomia').addEventListener('click', function(e) {
     if (e.target === this) cerrarModal();
 });
-
-// cerrar con ESC
+ 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') cerrarModal();
 });
-
-// abrir automáticamente en editar
+ 
 @isset($gastronomium)
     abrirModal();
 @endisset
-
-// toggle filtros
+ 
 function toggleFiltros() {
     const box = document.getElementById('filtrosBox');
     box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
-
-// mantener filtros abiertos
+ 
 window.addEventListener('load', function () {
     if (
         "{{ request('nombre') }}" ||
@@ -434,4 +423,3 @@ window.addEventListener('load', function () {
 });
 </script>
 @endpush
-
