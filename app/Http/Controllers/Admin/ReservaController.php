@@ -126,4 +126,15 @@ class ReservaController extends Controller
 
         return $pdf->download('reservas.pdf');
     }
+    public function cambiarEstado(Request $request, Reserva $reserva)
+{
+    $request->validate([
+        'estado' => 'required|in:pendiente,confirmada,cancelada',
+    ]);
+
+    $reserva->update(['estado' => $request->estado]);
+
+    return redirect()->route('admin.reservas.index')
+                     ->with('success', 'Estado actualizado correctamente.');
+}
 }
