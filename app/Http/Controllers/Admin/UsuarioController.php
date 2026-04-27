@@ -32,9 +32,20 @@ class UsuarioController extends Controller
         // 📄 PAGINACIÓN
         $perPage = $request->get('per_page', 10);
 
-        $usuarios = $query->orderBy('id', 'asc')
-                          ->paginate($perPage)
-                          ->withQueryString(); // 🔥 mantiene filtros
+        // ORDENAMIENTO (AGREGAR AQUÍ)
+        $sort = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'asc');
+
+        // (opcional pero recomendado)
+        $allowedSorts = ['id', 'name', 'email', 'created_at'];
+        if (!in_array($sort, $allowedSorts)) {
+        $sort = 'id';
+        }
+
+        // 🔁 CAMBIAR ESTA LÍNEA
+        $usuarios = $query->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString(); // mantiene filtros
 
         return view('admin.usuarios', compact('usuarios', 'perPage'));
     }

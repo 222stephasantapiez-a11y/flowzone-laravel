@@ -91,16 +91,52 @@
         <!-- TABLA -->
        
         <div class="table-responsive">
+            @php
+            $sort = request('sort', 'id');
+            $direction = request('direction', 'asc');
+            @endphp
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
-                        <th>Rol</th>
-                        <th>Estado</th>
-                        <th>Teléfono</th>
-                        <th>Fecha</th>
+                        <th>
+            <a href="{{ route('admin.usuarios.index', array_merge(request()->all(), [
+                'sort' => 'id',
+                'direction' => ($sort == 'id' && $direction == 'asc') ? 'desc' : 'asc'
+            ])) }}">
+                ID
+            </a>
+        </th>
+
+        <th>
+            <a href="{{ route('admin.usuarios.index', array_merge(request()->all(), [
+                'sort' => 'name',
+                'direction' => ($sort == 'name' && $direction == 'asc') ? 'desc' : 'asc'
+            ])) }}">
+                Nombre
+            </a>
+        </th>
+
+        <th>
+            <a href="{{ route('admin.usuarios.index', array_merge(request()->all(), [
+                'sort' => 'email',
+                'direction' => ($sort == 'email' && $direction == 'asc') ? 'desc' : 'asc'
+            ])) }}">
+                Email
+            </a>
+        </th>
+
+        <th>Rol</th>
+        <th>Estado</th>
+        <th>Teléfono</th>
+
+        <th>
+            <a href="{{ route('admin.usuarios.index', array_merge(request()->all(), [
+                'sort' => 'created_at',
+                'direction' => ($sort == 'created_at' && $direction == 'asc') ? 'desc' : 'asc'
+            ])) }}">
+                Fecha
+            </a>
+        </th>
                     </tr>
                 </thead>
 
