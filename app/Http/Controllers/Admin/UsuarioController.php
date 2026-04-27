@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\HandlesImport;
 use App\Models\User;
 use App\Exports\UsuariosExport;
 use App\Imports\UsuariosImport;
@@ -12,6 +13,7 @@ use Illuminate\Http\Request;
 
 class UsuarioController extends Controller
 {
+    use HandlesImport;
     public function index(Request $request)
     {
         $query = User::query();
@@ -32,11 +34,22 @@ class UsuarioController extends Controller
         // 📄 PAGINACIÓN
         $perPage = $request->get('per_page', 10);
 
-        $usuarios = $query->orderBy('id', 'asc')
-                          ->paginate($perPage)
-                          ->withQueryString(); // 🔥 mantiene filtros
+        // ORDENAMIENTO (AGREGAR AQUÍ)
+        $sort = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'asc');
 
-        return view('admin.usuarios', compact('usuarios', 'perPage'));
+        // (opcional pero recomendado)
+        $allowedSorts = ['id', 'name', 'email', 'created_at'];
+        if (!in_array($sort, $allowedSorts)) {
+        $sort = 'id';
+        }
+
+        // 🔁 CAMBIAR ESTA LÍNEA
+        $usuarios = $query->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString(); // mantiene filtros
+
+        return view('admin.usuarios', compact('usuarios', 'perPage', 'sort', 'direction'));
     }
 
     // 📤 EXPORTAR A EXCEL
@@ -55,15 +68,8 @@ class UsuarioController extends Controller
         return $pdf->download('usuarios.pdf');
     }
 
-    // 📥 IMPORTAR EXCEL
     public function importExcel(Request $request)
     {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        Excel::import(new UsuariosImport, $request->file('archivo'));
-
-        return back()->with('success', 'Usuarios importados correctamente');
+        return $this->runImport($request, new UsuariosImport, 'admin.usuarios.index');
     }
 }

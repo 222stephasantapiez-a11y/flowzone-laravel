@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\HandlesImport;
 use App\Models\Empresa;
 use App\Models\NotificacionAdmin;
 use App\Models\User;
@@ -15,15 +16,29 @@ use App\Imports\EmpresasImport;
 
 class EmpresaController extends Controller
 {
+    use HandlesImport;
+
     // ==========================
     // LISTAR + GENERADOR + PAGINACIÓN
     // ==========================
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
+        $perPage = (int) $request->get('per_page', 10);
+
+        // Ordenamiento
+        $sort      = $request->get('sort', 'aprobado');
+        $direction = $request->get('direction', 'asc');
+
+        $allowedSorts = ['id', 'nombre', 'aprobado', 'created_at'];
+
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'aprobado';
+        }
+
+        $direction = $direction === 'desc' ? 'desc' : 'asc';
 
         $empresas = Empresa::with('usuario')
-            ->orderBy('aprobado')
+            ->orderBy($sort, $direction)
             ->orderBy('id', 'desc')
             ->paginate($perPage)
             ->withQueryString();
@@ -38,7 +53,11 @@ class EmpresaController extends Controller
         return view('admin.empresas', compact(
             'empresas',
             'notificaciones',
-            'notifCount'
+            'notifCount',
+            'perPage',
+            'sort',
+            'direction'
+
         ));
                     
     }
@@ -80,10 +99,12 @@ class EmpresaController extends Controller
     // ==========================
     public function edit(Empresa $empresa)
     {
+        $perPage = 10;
+
         $empresas = Empresa::with('usuario')
             ->orderBy('aprobado')
             ->orderBy('id', 'desc')
-            ->get();
+            ->paginate($perPage);
 
         $notificaciones = NotificacionAdmin::with('empresa')
             ->where('leido', false)
@@ -96,7 +117,8 @@ class EmpresaController extends Controller
             'empresas',
             'empresa',
             'notificaciones',
-            'notifCount'
+            'notifCount',
+            'perPage'
         ));
     }
 
@@ -163,13 +185,7 @@ class EmpresaController extends Controller
     // ==========================
     public function importExcel(Request $request)
     {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        Excel::import(new EmpresasImport, $request->file('archivo'));
-
-        return back()->with('success', 'Empresas importadas correctamente');
+        return $this->runImport($request, new EmpresasImport, 'admin.empresas.index');
     }
 
     // ==========================
