@@ -83,4 +83,5 @@ class EmpresaDashboardController extends Controller
 
         return back()->with('success', 'Solicitud enviada. El administrador la revisará pronto.');
     }
+    
 }

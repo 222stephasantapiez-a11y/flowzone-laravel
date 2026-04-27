@@ -58,6 +58,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->group(function () {
     Route::get('/dashboard', [EmpresaDashboardController::class, 'index'])->name('dashboard');
     Route::post('/solicitud', [EmpresaDashboardController::class, 'enviarSolicitud'])->name('solicitud');
+    
 
     // Blog empresa
     Route::get('/blog', [BlogEmpresaController::class, 'index'])->name('blog.index');
