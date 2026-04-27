@@ -1,37 +1,11 @@
 @extends('layouts.app')
-
+ 
 @section('title', 'Eventos y Actividades')
 @section('body-class', 'no-hero')
-@push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-@endpush  
-@push('scripts')
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<script>
-
-    var map = L.map('mapaaa').setView([3.9377, -75.2230], 14);
-
-     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-         attribution: 'yo'
-     }).addTo(map);
-
-     L.marker([3.9377, -75.2230]).addTo(map)
-         .bindPopup('Aquí estás 📍');
-
-     setTimeout(() => {
-         map.invalidateSize();
-    }, 100);
-
-</script>
-@endpush
-@push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-@endpush
-
+ 
 @section('content')
 <main>
-
+ 
 <section class="page-hero" style="background:linear-gradient(135deg,var(--green-900) 0%,var(--green-700) 100%);">
     <div class="container">
         <div class="page-hero-content">
@@ -48,9 +22,9 @@
 </section>
  
 {{-- Contenido --}}
-
+ 
 <section class="container section">
-
+ 
     <div class="filters">
         <form method="GET" action="{{ route('eventos') }}" class="filter-form">
             <input type="text" name="busqueda" placeholder="Buscar eventos..."
@@ -67,19 +41,8 @@
             <a href="{{ route('eventos') }}" class="btn btn-outline">Limpiar</a>
         </form>
     </div>
-{{-- Mapa --}}
-<div class="map-container">
-        <div id="mapaaa" style="height: 200px;width: 300px;"></div>
-    </div>
+ 
     {{-- Grid de eventos --}}
-
-    @if($busqueda)
-    <div style="margin-bottom:1.5rem;">
-        <div id="mapa-eventos" style="height:360px;border-radius:var(--radius,8px);border:1px solid var(--border,#e2e8f0);overflow:hidden;"></div>
-        <p id="mapa-coords" style="font-size:.82rem;color:var(--gray);margin-top:.4rem;min-height:1.2em;"></p>
-    </div>
-    @endif
-
     <div class="grid">
         @forelse($eventos as $evento)
             <article class="card animate-on-scroll">
@@ -136,110 +99,7 @@
             </div>
         @endforelse
     </div>
-
+ 
 </section>
 </main>
 @endsection
-
-@push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-@php
-    $mapaEventos = $eventos->map(function($e) {
-        return [
-            'nombre'    => $e->nombre,
-            'ubicacion' => $e->ubicacion,
-        ];
-    })->values();
-@endphp
-<script>
-(function () {
-    var busqueda = {!! json_encode($busqueda ?? '') !!};
-    var eventos  = {!! json_encode($mapaEventos) !!};
-
-    if (!busqueda || !document.getElementById('mapa-eventos')) return;
-
-    var map = L.map('mapa-eventos');
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19
-    }).addTo(map);
-
-    map.setView([3.9278, -75.2561], 10);
-
-    var coordsEl = document.getElementById('mapa-coords');
-    if (coordsEl) coordsEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-xs"></i> Buscando ubicacion...';
-
-    function mostrarCoordenadas(lat, lng, label) {
-        if (coordsEl) {
-            coordsEl.innerHTML = '<i class="fa-solid fa-location-dot fa-xs"></i> ' + label +
-                ' &nbsp;|&nbsp; <strong>Lat:</strong> ' + lat.toFixed(6) +
-                ' &nbsp;<strong>Lng:</strong> ' + lng.toFixed(6);
-        }
-    }
-
-    function geocodificar(query, callback) {
-        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(query + ', Colombia'), {
-            headers: { 'Accept-Language': 'es' }
-        })
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            if (data && data.length) {
-                callback(null, { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), display: data[0].display_name });
-            } else {
-                callback('not_found', null);
-            }
-        })
-        .catch(function() { callback('error', null); });
-    }
-
-    var eventosConUbicacion = eventos.filter(function(e) { return e.ubicacion; });
-    var bounds = [];
-    var pendientes = eventosConUbicacion.length;
-
-    if (pendientes === 0) {
-        // Sin ubicaciones en eventos, geocodificar la búsqueda directamente
-        geocodificar(busqueda, function(err, coords) {
-            if (!err && coords) {
-                var m = L.marker([coords.lat, coords.lng]).addTo(map);
-                m.bindPopup('<strong>' + busqueda + '</strong><br><small>' + coords.display + '</small>');
-                map.setView([coords.lat, coords.lng], 13);
-                mostrarCoordenadas(coords.lat, coords.lng, busqueda);
-            } else {
-                if (coordsEl) coordsEl.innerHTML = '<i class="fa-solid fa-circle-exclamation fa-xs" style="color:var(--danger)"></i> Ubicacion no encontrada para "' + busqueda + '"';
-            }
-        });
-    } else {
-        eventosConUbicacion.forEach(function(ev) {
-            geocodificar(ev.ubicacion, function(err, coords) {
-                pendientes--;
-                if (!err && coords) {
-                    var m = L.marker([coords.lat, coords.lng]).addTo(map);
-                    m.bindPopup('<strong>' + ev.nombre + '</strong><br><small>' + ev.ubicacion + '</small>');
-                    m.on('click', function() { mostrarCoordenadas(coords.lat, coords.lng, ev.nombre); });
-                    bounds.push([coords.lat, coords.lng]);
-                }
-                if (pendientes === 0) {
-                    if (bounds.length > 0) {
-                        mostrarCoordenadas(bounds[0][0], bounds[0][1], eventosConUbicacion[0].nombre);
-                        if (bounds.length === 1) { map.setView(bounds[0], 14); }
-                        else { map.fitBounds(bounds, { padding: [40, 40] }); }
-                    } else {
-                        // Fallback a geocodificar la búsqueda
-                        geocodificar(busqueda, function(err2, coords2) {
-                            if (!err2 && coords2) {
-                                var m2 = L.marker([coords2.lat, coords2.lng]).addTo(map);
-                                m2.bindPopup('<strong>' + busqueda + '</strong>');
-                                map.setView([coords2.lat, coords2.lng], 13);
-                                mostrarCoordenadas(coords2.lat, coords2.lng, busqueda);
-                            } else {
-                                if (coordsEl) coordsEl.innerHTML = '<i class="fa-solid fa-circle-exclamation fa-xs" style="color:var(--danger)"></i> Ubicacion no encontrada.';
-                            }
-                        });
-                    }
-                }
-            });
-        });
-    }
-})();
-</script>
-@endpush

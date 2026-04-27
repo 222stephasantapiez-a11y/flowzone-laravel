@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\HandlesImport;
 use App\Models\Gastronomia;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ use App\Imports\GastronomiaImport;
 
 class GastronomiaController extends Controller
 {
+    use HandlesImport;
     // ==========================
     // LISTAR + FILTROS + PAGINACIÓN
     // ==========================
@@ -41,9 +43,21 @@ class GastronomiaController extends Controller
             $query->where('empresa_id', $request->empresa);
         }
 
-        $perPage = $request->get('per_page', 10);
+        $perPage = (int) $request->get('per_page', 10);
 
-        $gastronomias = $query->orderBy('id', 'desc')
+        // Ordenamiento
+        $sort      = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'desc');
+
+        $allowedSorts = ['id', 'nombre', 'tipo', 'restaurante', 'precio_promedio'];
+
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'id';
+        }
+
+        $direction = $direction === 'desc' ? 'desc' : 'asc';
+
+        $gastronomias = $query->orderBy($sort, $direction)
             ->paginate($perPage)
             ->withQueryString();
 
@@ -51,7 +65,7 @@ class GastronomiaController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return view('admin.gastronomia', compact('gastronomias', 'empresas', 'perPage'));
+        return view('admin.gastronomia', compact('gastronomias', 'empresas', 'perPage', 'sort', 'direction'));
     }
 
     // ==========================
@@ -185,13 +199,7 @@ class GastronomiaController extends Controller
     // ==========================
     public function importExcel(Request $request)
     {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        Excel::import(new GastronomiaImport, $request->file('archivo'));
-
-        return back()->with('success', 'Restaurantes importados correctamente');
+        return $this->runImport($request, new GastronomiaImport, 'admin.gastronomia.index');
     }
 
     // ==========================

@@ -32,7 +32,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: url('https://th.bing.com/th/id/OIP.ZnOpbBwzMNPumOarX1JeUgHaEK?w=263&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3') center/cover no-repeat;
+            background: url('https://i.pinimg.com/736x/88/56/0e/88560eacc1be906f0925fc8dfc234d06.jpg') center/cover no-repeat;
         }
 
         .auth-panel-left::after {

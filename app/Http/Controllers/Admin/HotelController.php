@@ -8,11 +8,14 @@ use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\HandlesImport;
 use App\Models\Hotel;
 use Illuminate\Support\Facades\Storage;
 
 class HotelController extends Controller
 {
+    use HandlesImport;
+
     // ✅ INDEX UNIFICADO (FILTROS + PAGINACIÓN)
     public function index(Request $request)
     {
@@ -42,11 +45,22 @@ class HotelController extends Controller
         // 📄 PAGINACIÓN
         $perPage = $request->get('per_page', 10);
 
-        $hoteles = $query->orderBy('id', 'asc')
-                         ->paginate($perPage)
-                         ->withQueryString(); // 🔥 mantiene filtros
+        // ORDENAMIENTO DINÁMICO
+        $sort = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'asc');
 
-        return view('admin.hoteles', compact('hoteles', 'perPage'));
+        // Seguridad
+        $allowedSorts = ['id', 'nombre', 'precio', 'ubicacion', 'capacidad'];
+
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'id';
+        }
+
+        $hoteles = $query->orderBy($sort, $direction)
+                         ->paginate($perPage)
+                         ->withQueryString();
+
+        return view('admin.hoteles', compact('hoteles', 'perPage', 'sort', 'direction'));
     }
 
     // 📸 MANEJO DE IMAGEN
@@ -93,12 +107,12 @@ class HotelController extends Controller
     private function messages(): array
     {
         return [
-            'latitud.between' => 'La latitud debe estar entre -90 y 90.',
-            'longitud.between' => 'La longitud debe estar entre -180 y 180.',
-            'imagen_url.url' => 'La URL de imagen debe ser válida.',
-            'imagen_file.mimes' => 'Solo imágenes JPG, PNG o WebP.',
-            'imagen_file.max' => 'Máximo 4 MB.',
-            'imagen_url.required_without' => 'Debes subir o colocar una imagen.',
+            'latitud.between'              => 'La latitud debe estar entre -90 y 90.',
+            'longitud.between'             => 'La longitud debe estar entre -180 y 180.',
+            'imagen_url.url'               => 'La URL de imagen debe ser válida.',
+            'imagen_file.mimes'            => 'Solo imágenes JPG, PNG o WebP.',
+            'imagen_file.max'              => 'Máximo 4 MB.',
+            'imagen_url.required_without'  => 'Debes subir o colocar una imagen.',
         ];
     }
 
@@ -131,8 +145,10 @@ class HotelController extends Controller
     // ✏️ EDITAR
     public function edit(Hotel $hotel)
     {
-        $hoteles = Hotel::orderBy('id', 'desc')->paginate(10);
-        return view('admin.hoteles', compact('hoteles', 'hotel'));
+        $perPage = 10;
+        $hoteles = Hotel::orderBy('id', 'desc')->paginate($perPage);
+
+        return view('admin.hoteles', compact('hoteles', 'hotel', 'perPage'));
     }
 
     // 🔄 ACTUALIZAR
@@ -190,15 +206,9 @@ class HotelController extends Controller
         return $pdf->download('hoteles.pdf');
     }
 
-    // 📥 IMPORTAR
+    // 📥 IMPORTAR EXCEL
     public function importExcel(Request $request)
     {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        Excel::import(new HotelesImport, $request->file('archivo'));
-
-        return back()->with('success', 'Hoteles importados correctamente');
+        return $this->runImport($request, new HotelesImport, 'admin.hoteles.index');
     }
 }

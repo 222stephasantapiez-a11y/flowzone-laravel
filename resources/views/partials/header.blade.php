@@ -34,9 +34,9 @@
                 <a href="{{ route('favoritos') }}" class="btn btn-glass btn-sm">
                     <i class="fa-solid fa-heart"></i>
                 </a>
-                <a href="{{ route('mis-reservas') }}" class="btn btn-glass btn-sm">
-                    <i class="fa-solid fa-calendar-check"></i>
-                </a>
+                <a href="{{ route('dashboard') }}" class="btn btn-glass btn-sm" title="Mi Panel">
+                  <i class="fa-solid fa-circle-user"></i>
+                    </a>
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
                     @csrf
                     <button type="submit" class="btn btn-white btn-sm">

@@ -272,13 +272,42 @@
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
+                @php
+                    $sort      = $sort ?? 'id';
+                    $direction = $direction ?? 'asc';
+                @endphp
                 <tr>
-                    <th>#</th>
+                    <th>
+                        <a href="{{ route('admin.hoteles.index', array_merge(request()->all(), ['sort' => 'id', 'direction' => ($sort === 'id' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            # @if($sort === 'id') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
                     <th>Imagen</th>
-                    <th>Nombre</th>
-                    <th>Precio / noche</th>
-                    <th>Ubicación</th>
-                    <th>Capacidad</th>
+                    <th>
+                        <a href="{{ route('admin.hoteles.index', array_merge(request()->all(), ['sort' => 'nombre', 'direction' => ($sort === 'nombre' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Nombre @if($sort === 'nombre') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.hoteles.index', array_merge(request()->all(), ['sort' => 'precio', 'direction' => ($sort === 'precio' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Precio / noche @if($sort === 'precio') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.hoteles.index', array_merge(request()->all(), ['sort' => 'ubicacion', 'direction' => ($sort === 'ubicacion' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Ubicación @if($sort === 'ubicacion') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.hoteles.index', array_merge(request()->all(), ['sort' => 'capacidad', 'direction' => ($sort === 'capacidad' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Capacidad @if($sort === 'capacidad') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
                     <th>Estado</th>
                     <th>Acciones</th>
                 </tr>
@@ -338,48 +367,7 @@
     </div>
 
     {{-- Paginación --}}
-    @if($hoteles->hasPages())
-    <div class="pagination-bar">
-        <div class="pagination-info">
-            Mostrando <strong>{{ $hoteles->firstItem() }}</strong>–<strong>{{ $hoteles->lastItem() }}</strong>
-            de <strong>{{ $hoteles->total() }}</strong> registros
-        </div>
-
-        <div class="pagination-links">
-            @if($hoteles->onFirstPage())
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
-            @else
-                <a href="{{ $hoteles->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
-            @endif
-
-            @foreach($hoteles->getUrlRange(max(1,$hoteles->currentPage()-2), min($hoteles->lastPage(),$hoteles->currentPage()+2)) as $page => $url)
-                @if($page == $hoteles->currentPage())
-                    <span class="page-btn page-btn--active">{{ $page }}</span>
-                @else
-                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
-                @endif
-            @endforeach
-
-            @if($hoteles->hasMorePages())
-                <a href="{{ $hoteles->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
-            @else
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
-            @endif
-        </div>
-
-        <form method="GET" class="per-page-form">
-            @foreach(request()->except(['page','per_page']) as $k => $v)
-                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-            @endforeach
-            <label class="per-page-label">Filas:</label>
-            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
-                @foreach([5,10,25,50,100] as $n)
-                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
-                @endforeach
-            </select>
-        </form>
-    </div>
-    @endif
+    @include('partials.pagination', ['paginator' => $hoteles, 'perPage' => $perPage])
 
 </div>
 

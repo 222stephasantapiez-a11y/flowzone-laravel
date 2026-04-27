@@ -246,9 +246,49 @@
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
+                @php
+                    $sort      = $sort ?? 'id';
+                    $direction = $direction ?? 'desc';
+                @endphp
                 <tr>
-                    <th>#</th><th>Imagen</th><th>Título</th><th>Tipo</th>
-                    <th>Autor</th><th>Fecha</th><th>Estado</th><th>Acciones</th>
+                    <th>
+                        <a href="{{ route('admin.blog.index', array_merge(request()->all(), ['sort' => 'id', 'direction' => ($sort === 'id' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            # @if($sort === 'id') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>Imagen</th>
+                    <th>
+                        <a href="{{ route('admin.blog.index', array_merge(request()->all(), ['sort' => 'titulo', 'direction' => ($sort === 'titulo' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Título @if($sort === 'titulo') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.blog.index', array_merge(request()->all(), ['sort' => 'tipo', 'direction' => ($sort === 'tipo' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Tipo @if($sort === 'tipo') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.blog.index', array_merge(request()->all(), ['sort' => 'autor', 'direction' => ($sort === 'autor' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Autor @if($sort === 'autor') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.blog.index', array_merge(request()->all(), ['sort' => 'fecha_publicacion', 'direction' => ($sort === 'fecha_publicacion' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Fecha @if($sort === 'fecha_publicacion') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.blog.index', array_merge(request()->all(), ['sort' => 'publicado', 'direction' => ($sort === 'publicado' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Estado @if($sort === 'publicado') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
 
@@ -290,7 +330,7 @@
         </table>
     </div>
 
-    {{ $posts->links() }}
+    @include('partials.pagination', ['paginator' => $posts, 'perPage' => $perPage])
 </div>
 
 
