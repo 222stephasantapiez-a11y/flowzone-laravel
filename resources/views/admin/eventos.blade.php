@@ -1,12 +1,12 @@
 @php use Illuminate\Support\Facades\Storage; @endphp
 @extends('layouts.admin')
-
+ 
 @section('title', 'Eventos')
 @section('page-title', 'Eventos')
 @section('page-subtitle', 'Administra los eventos culturales y turísticos')
-
+ 
 @section('content')
-
+ 
 {{-- Barra superior --}}
 <div class="admin-section">
     <div class="admin-section-header">
@@ -42,7 +42,7 @@
         </div>
     </div>
 </div>
-
+ 
 {{-- ===================== MODAL ===================== --}}
 <div id="modal-evento" style="
     display: none;
@@ -64,7 +64,7 @@
     ">
         {{-- Header modal --}}
         <div style="
-            background: linear-gradient(135deg, var(--purple-900), var(--purple-700));
+            background: linear-gradient(135deg, var(--green-900), var(--green-700));
             padding: 1.25rem 1.75rem;
             display: flex;
             align-items: center;
@@ -92,10 +92,10 @@
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-
+ 
         {{-- Body modal --}}
         <div style="padding: 1.75rem;max-height:calc(90vh - 120px);overflow-y:auto;">
-
+ 
             @isset($evento)
                 <form method="POST" action="{{ route('admin.eventos.update', $evento) }}" class="admin-form" enctype="multipart/form-data">
                 @method('PUT')
@@ -103,7 +103,7 @@
                 <form method="POST" action="{{ route('admin.eventos.store') }}" class="admin-form" enctype="multipart/form-data">
             @endisset
             @csrf
-
+ 
     <div class="form-row">
         <div class="form-group">
             <label>Nombre *</label>
@@ -118,13 +118,13 @@
                    value="{{ old('categoria', $evento->categoria ?? '') }}">
         </div>
     </div>
-
+ 
     <div class="form-group">
         <label>Descripción *</label>
         <textarea name="descripcion" rows="3" required
                   placeholder="Describe el evento, actividades y detalles...">{{ old('descripcion', $evento->descripcion ?? '') }}</textarea>
     </div>
-
+ 
     <div class="form-row">
         <div class="form-group">
             <label>Fecha *</label>
@@ -143,7 +143,7 @@
                    value="{{ old('precio', $evento->precio ?? '0') }}">
         </div>
     </div>
-
+ 
     <div class="form-row">
         <div class="form-group">
             <label>Ubicación</label>
@@ -163,12 +163,12 @@
                    value="{{ old('contacto', $evento->contacto ?? '') }}">
         </div>
     </div>
-
+ 
     @include('partials.imagen_field', [
         'currentImage' => $evento->imagen ?? null,
         'fieldId'      => 'evento',
     ])
-
+ 
             <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-{{ isset($evento) ? 'floppy-disk' : 'plus' }}"></i>
@@ -184,70 +184,66 @@
                     </button>
                 @endisset
             </div>
-
+ 
             </form>
         </div>
     </div>
 </div>
-<!-- BOTÓN FILTRAR -->
-
-<!-- SCRIPT -->
-
-
-
-{{-- Tabla --}}  
+ 
+{{-- Tabla --}}
 <div class="admin-section">
     <div class="admin-section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
-
+ 
     <h2>
         <i class="fa-solid fa-list" style="color:var(--primary);"></i> Eventos Registrados
     </h2>
-
+ 
     <div style="display:flex; align-items:center; gap:.5rem;">
         <span class="badge badge-info">{{ $eventos->total() }} total</span>
-
+ 
         <button type="button" onclick="toggleFiltrosEventos()" class="btn btn-success btn-sm">
             <i class="fa-solid fa-filter"></i> Filtro
         </button>
     </div>
-
+ 
   </div>
-
+ 
   {{-- FILTROS --}}
   <div id="filtrosEventos" style="display:none; margin-bottom:1rem;">
     <form method="GET" action="{{ route('admin.eventos.index') }}">
-
+ 
         <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
-
+ 
             <div>
                 <label>Nombre</label><br>
                 <input type="text" name="nombre" value="{{ request('nombre') }}">
             </div>
-
+ 
             <div>
                 <label>Fecha</label><br>
                 <input type="date" name="fecha" value="{{ request('fecha') }}">
             </div>
-
+ 
             <div>
                 <label>Ubicación</label><br>
                 <input type="text" name="ubicacion" value="{{ request('ubicacion') }}">
             </div>
-
+ 
             <div>
                 <label>Precio</label><br>
                 <input type="number" name="precio" value="{{ request('precio') }}">
             </div>
-
+ 
             <div style="display:flex; gap:.5rem;">
                 <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
                 <a href="{{ route('admin.eventos.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
             </div>
-
+ 
         </div>
-
+ 
     </form>
   </div>
+ 
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
@@ -342,48 +338,50 @@
             </tbody>
         </table>
     </div>
-
+ 
     {{-- Paginación --}}
     @include('partials.pagination', ['paginator' => $eventos, 'perPage' => $perPage])
-
+ 
 </div>
-
+ 
+@endsection
+ 
 @push('scripts')
 <script>
 function abrirModal() {
     document.getElementById('modal-evento').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
-
+ 
 function cerrarModal() {
     document.getElementById('modal-evento').style.display = 'none';
     document.body.style.overflow = '';
 }
-
+ 
 document.getElementById('modal-evento').addEventListener('click', function(e) {
     if (e.target === this) cerrarModal();
 });
-
+ 
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') cerrarModal();
 });
-
+ 
 @isset($evento)
     abrirModal();
 @endisset
 </script>
-
+ 
 <script>
 function toggleFiltrosEventos() {
     const box = document.getElementById('filtrosEventos');
-
+ 
     if (box.style.display === 'none' || box.style.display === '') {
         box.style.display = 'block';
     } else {
         box.style.display = 'none';
     }
 }
-
+ 
 // Mantener abierto si hay filtros activos
 window.addEventListener('load', function () {
     if (
@@ -397,5 +395,3 @@ window.addEventListener('load', function () {
 });
 </script>
 @endpush
-
-@endsection
