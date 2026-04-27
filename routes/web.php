@@ -6,6 +6,7 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\FavoritoController;
 use App\Http\Controllers\EmpresaDashboardController;
+use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\Empresa\BlogEmpresaController;
 use App\Http\Controllers\Empresa\GastronomiaEmpresaController;
 use App\Http\Controllers\Admin\HotelController;
@@ -45,6 +46,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 // ── Área de usuario autenticado ──────────────────────────────
 Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
+    Route::post('/dashboard/cancelar/{id}', [UserDashboardController::class, 'cancelarReserva'])->name('dashboard.cancelar');
+    Route::put('/dashboard/profile', [UserDashboardController::class, 'updateProfile'])->name('dashboard.profile');
     Route::get('/reservar', [PageController::class, 'reservaForm'])->name('reservar');
     Route::post('/reservar', [PageController::class, 'reservaStore'])->name('reservar.store');
     Route::get('/mis-reservas', [PageController::class, 'misReservas'])->name('mis-reservas');
@@ -136,6 +140,23 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::post('/gastronomia/import/excel',[GastronomiaController::class, 'importExcel'])->name('gastronomia.import.excel');
     Route::get('/gastronomia',              [GastronomiaController::class, 'index'])->name('gastronomia.index');
     Route::post('/gastronomia',             [GastronomiaController::class, 'store'])->name('gastronomia.store');
+    Route::patch('/empresas/{empresa}/rechazar', [EmpresaController::class, 'rechazar'])->name('empresas.rechazar');
+    Route::delete('/empresas/{empresa}', [EmpresaController::class, 'destroy'])->name('empresas.destroy');
+    Route::patch('/notificaciones/{notificacion}/leer', [EmpresaController::class, 'marcarLeida'])->name('notificaciones.leer');
+    Route::post('/notificaciones/leer-todas', [EmpresaController::class, 'marcarTodasLeidas'])->name('notificaciones.leer-todas');
+
+ Route::get('/reservas', [ReservaController::class, 'index'])->name('reservas.index');
+Route::post('/reservas', [ReservaController::class, 'store'])->name('reservas.store');
+Route::get('/reservas/{reserva}/edit', [ReservaController::class, 'edit'])->name('reservas.edit');
+Route::put('/reservas/{reserva}', [ReservaController::class, 'update'])->name('reservas.update');
+Route::patch('/reservas/{reserva}/estado', [ReservaController::class, 'cambiarEstado'])->name('reservas.estado');
+Route::delete('/reservas/{reserva}', [ReservaController::class, 'destroy'])->name('reservas.destroy');
+Route::get('/reservas/export/excel', [ReservaController::class, 'exportExcel'])->name('reservas.export.excel');
+Route::post('/reservas/import/excel', [ReservaController::class, 'importExcel'])->name('reservas.import.excel');
+Route::get('/reservas/export/pdf', [ReservaController::class, 'exportPdf'])->name('reservas.export.pdf');
+    // Gastronomía admin
+    Route::get('/gastronomia', [GastronomiaController::class, 'index'])->name('gastronomia.index');
+    Route::post('/gastronomia', [GastronomiaController::class, 'store'])->name('gastronomia.store');
     Route::get('/gastronomia/{gastronomium}/edit', [GastronomiaController::class, 'edit'])->name('gastronomia.edit');
     Route::put('/gastronomia/{gastronomium}',      [GastronomiaController::class, 'update'])->name('gastronomia.update');
     Route::delete('/gastronomia/{gastronomium}',   [GastronomiaController::class, 'destroy'])->name('gastronomia.destroy');
