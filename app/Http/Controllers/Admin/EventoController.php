@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\HandlesImport;
 use App\Models\Evento;
 use App\Exports\EventosExport;
 use App\Imports\EventosImport;
@@ -13,6 +14,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class EventoController extends Controller
 {
+    use HandlesImport;
     public function index(Request $request)
     {
         $query = Evento::query();
@@ -37,11 +39,23 @@ class EventoController extends Controller
         // Paginación
         $perPage = $request->get('per_page', 10);
 
-        $eventos = $query->orderBy('fecha', 'asc')
+        // Ordenamiento
+        $sort      = $request->get('sort', 'fecha');
+        $direction = $request->get('direction', 'asc');
+
+        $allowedSorts = ['id', 'nombre', 'fecha', 'ubicacion', 'precio', 'categoria'];
+
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'fecha';
+        }
+
+        $direction = $direction === 'desc' ? 'desc' : 'asc';
+
+        $eventos = $query->orderBy($sort, $direction)
                          ->paginate($perPage)
                          ->withQueryString();
 
-        return view('admin.eventos', compact('eventos', 'perPage'));
+        return view('admin.eventos', compact('eventos', 'perPage', 'sort', 'direction'));
     }
 
     private function handleImageUpload(Request $request, ?string $currentImage = null): string
@@ -176,12 +190,6 @@ class EventoController extends Controller
 
     public function importExcel(Request $request)
     {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        Excel::import(new EventosImport, $request->file('archivo'));
-
-        return back()->with('success', 'Eventos importados correctamente');
+        return $this->runImport($request, new EventosImport, 'admin.eventos.index');
     }
 }

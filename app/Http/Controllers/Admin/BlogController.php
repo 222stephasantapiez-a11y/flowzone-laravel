@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\HandlesImport;
 use App\Models\BlogPost;
 use App\Models\Empresa;
 use Illuminate\Http\Request;
@@ -14,6 +15,7 @@ use App\Imports\BlogsImport;
 
 class BlogController extends Controller
 {
+    use HandlesImport;
     // ==========================
     // LISTAR + FILTROS
     // ==========================
@@ -40,7 +42,19 @@ class BlogController extends Controller
 
         $perPage = $request->get('per_page', 10);
 
-        $posts = $query->orderBy('id', 'desc')
+        // Ordenamiento
+        $sort      = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'desc');
+
+        $allowedSorts = ['id', 'titulo', 'tipo', 'autor', 'fecha_publicacion', 'publicado'];
+
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'id';
+        }
+
+        $direction = $direction === 'desc' ? 'desc' : 'asc';
+
+        $posts = $query->orderBy($sort, $direction)
                        ->paginate($perPage)
                        ->withQueryString();
 
@@ -48,7 +62,7 @@ class BlogController extends Controller
                            ->orderBy('nombre')
                            ->get();
 
-        return view('admin.blog', compact('posts', 'empresas', 'perPage'));
+        return view('admin.blog', compact('posts', 'empresas', 'perPage', 'sort', 'direction'));
     }
 
     // ==========================
@@ -194,13 +208,7 @@ class BlogController extends Controller
     // ==========================
     public function importExcel(Request $request)
     {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        Excel::import(new BlogsImport, $request->file('archivo'));
-
-        return back()->with('success', 'Blogs importados correctamente');
+        return $this->runImport($request, new BlogsImport, 'admin.blog.index');
     }
 
     // ==========================

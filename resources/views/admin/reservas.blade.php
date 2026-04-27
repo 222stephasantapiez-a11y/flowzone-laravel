@@ -105,18 +105,30 @@
 
     {{-- FILTROS --}}
     <div id="filtrosBox" style="display:none; margin:1rem 0; background:#fff; padding:1rem; border-radius:.8rem;">
-        <form method="GET">
-            <input type="text" name="usuario" placeholder="Usuario" value="{{ request('usuario') }}">
-            <input type="text" name="hotel" placeholder="Hotel" value="{{ request('hotel') }}">
-
-            <select name="estado">
-                <option value="">Estado</option>
-                <option value="pendiente" {{ request('estado')=='pendiente'?'selected':'' }}>Pendiente</option>
-                <option value="confirmada" {{ request('estado')=='confirmada'?'selected':'' }}>Confirmada</option>
-                <option value="cancelada" {{ request('estado')=='cancelada'?'selected':'' }}>Cancelada</option>
-            </select>
-
-            <button class="btn btn-primary btn-sm">Filtrar</button>
+        <form method="GET" action="{{ route('admin.reservas.index') }}">
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
+                <div>
+                    <label>Fecha inicio</label><br>
+                    <input type="date" name="fecha_inicio" value="{{ request('fecha_inicio') }}">
+                </div>
+                <div>
+                    <label>Fecha fin</label><br>
+                    <input type="date" name="fecha_fin" value="{{ request('fecha_fin') }}">
+                </div>
+                <div>
+                    <label>Estado</label><br>
+                    <select name="estado">
+                        <option value="">Todos</option>
+                        <option value="pendiente" {{ request('estado')=='pendiente'?'selected':'' }}>Pendiente</option>
+                        <option value="confirmada" {{ request('estado')=='confirmada'?'selected':'' }}>Confirmada</option>
+                        <option value="cancelada" {{ request('estado')=='cancelada'?'selected':'' }}>Cancelada</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:.5rem;">
+                    <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
+                    <a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+                </div>
+            </div>
         </form>
     </div>
 
@@ -126,14 +138,43 @@
         <div class="table-responsive">
             <table class="admin-table">
                 <thead>
+                    @php
+                        $sort      = $sort ?? 'id';
+                        $direction = $direction ?? 'asc';
+                    @endphp
                     <tr>
-                        <th>#</th>
+                        <th>
+                            <a href="{{ route('admin.reservas.index', array_merge(request()->all(), ['sort' => 'id', 'direction' => ($sort === 'id' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                               style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                                # @if($sort === 'id') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                            </a>
+                        </th>
                         <th>Usuario</th>
                         <th>Hotel</th>
-                        <th>Entrada</th>
-                        <th>Salida</th>
-                        <th>Total</th>
-                        <th>Estado</th>
+                        <th>
+                            <a href="{{ route('admin.reservas.index', array_merge(request()->all(), ['sort' => 'fecha_entrada', 'direction' => ($sort === 'fecha_entrada' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                               style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                                Entrada @if($sort === 'fecha_entrada') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('admin.reservas.index', array_merge(request()->all(), ['sort' => 'fecha_salida', 'direction' => ($sort === 'fecha_salida' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                               style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                                Salida @if($sort === 'fecha_salida') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('admin.reservas.index', array_merge(request()->all(), ['sort' => 'precio_total', 'direction' => ($sort === 'precio_total' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                               style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                                Total @if($sort === 'precio_total') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('admin.reservas.index', array_merge(request()->all(), ['sort' => 'estado', 'direction' => ($sort === 'estado' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                               style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                                Estado @if($sort === 'estado') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                            </a>
+                        </th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -189,56 +230,8 @@
 
     </div>
 
-    {{-- PAGINACIÓN PRO --}}
-    @if($reservas->hasPages())
-    <div class="pagination-bar">
-
-        <div class="pagination-info">
-            Mostrando <strong>{{ $reservas->firstItem() }}</strong>–
-            <strong>{{ $reservas->lastItem() }}</strong>
-            de <strong>{{ $reservas->total() }}</strong>
-        </div>
-
-        <div class="pagination-links">
-
-            @if($reservas->onFirstPage())
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
-            @else
-                <a href="{{ $reservas->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
-            @endif
-
-            @foreach($reservas->getUrlRange(max(1,$reservas->currentPage()-2), min($reservas->lastPage(),$reservas->currentPage()+2)) as $page => $url)
-                @if($page == $reservas->currentPage())
-                    <span class="page-btn page-btn--active">{{ $page }}</span>
-                @else
-                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
-                @endif
-            @endforeach
-
-            @if($reservas->hasMorePages())
-                <a href="{{ $reservas->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
-            @else
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
-            @endif
-
-        </div>
-
-        <form method="GET">
-            @foreach(request()->except(['page','per_page']) as $k => $v)
-                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-            @endforeach
-
-            <select name="per_page" onchange="this.form.submit()">
-                @foreach([5,10,25,50] as $n)
-                    <option value="{{ $n }}" {{ ($perPage ?? 10)==$n?'selected':'' }}>
-                        {{ $n }}
-                    </option>
-                @endforeach
-            </select>
-        </form>
-
-    </div>
-    @endif
+    {{-- PAGINACIÓN --}}
+    @include('partials.pagination', ['paginator' => $reservas, 'perPage' => $perPage])
 
 </div>
 

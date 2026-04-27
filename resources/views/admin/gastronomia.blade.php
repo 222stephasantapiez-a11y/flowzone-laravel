@@ -8,9 +8,6 @@
 
 @section('content')
 
-{{-- ================= HEADER SUPERIOR ================= --}}
-@section('content')
-
 {{-- Barra superior --}}
 <div class="admin-section">
     <div class="admin-section-header">
@@ -263,12 +260,12 @@
                 </div>
 
                  <div>
-                    <label>Empresa </label><br>
-                    <input type="number" name="precio" value="{{ request('empresa') }}">
+                    <label>Empresa</label><br>
+                    <input type="number" name="empresa" value="{{ request('empresa') }}">
                 </div>
 
                 <div>
-                    <label>Precio </label><br>
+                    <label>Precio máximo</label><br>
                     <input type="number" name="precio" value="{{ request('precio') }}">
                 </div>
 
@@ -286,14 +283,43 @@
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
+                @php
+                    $sort      = $sort ?? 'id';
+                    $direction = $direction ?? 'desc';
+                @endphp
                 <tr>
-                    <th>#</th>
+                    <th>
+                        <a href="{{ route('admin.gastronomia.index', array_merge(request()->all(), ['sort' => 'id', 'direction' => ($sort === 'id' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            # @if($sort === 'id') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
                     <th>Imagen</th>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
-                    <th>Restaurante</th>
-                     <th>Empresa</th>
-                    <th>Precio</th>
+                    <th>
+                        <a href="{{ route('admin.gastronomia.index', array_merge(request()->all(), ['sort' => 'nombre', 'direction' => ($sort === 'nombre' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Nombre @if($sort === 'nombre') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.gastronomia.index', array_merge(request()->all(), ['sort' => 'tipo', 'direction' => ($sort === 'tipo' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Tipo @if($sort === 'tipo') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.gastronomia.index', array_merge(request()->all(), ['sort' => 'restaurante', 'direction' => ($sort === 'restaurante' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Restaurante @if($sort === 'restaurante') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>Empresa</th>
+                    <th>
+                        <a href="{{ route('admin.gastronomia.index', array_merge(request()->all(), ['sort' => 'precio_promedio', 'direction' => ($sort === 'precio_promedio' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Precio @if($sort === 'precio_promedio') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -305,38 +331,56 @@
 
                     <td>
                         @if($item->imagen)
-                            <img src="{{ Storage::url($item->imagen) }}" width="50">
+                            @php
+                                $src = str_starts_with($item->imagen, 'http')
+                                    ? $item->imagen
+                                    : Storage::disk('public')->url($item->imagen);
+                            @endphp
+                            <img src="{{ $src }}" width="50" style="border-radius:6px;object-fit:cover;height:40px;">
+                        @else
+                            <span style="color:var(--gray-lt);font-size:.78rem;">Sin imagen</span>
                         @endif
                     </td>
 
-                    <td>{{ $item->nombre }}</td>
-                    <td>{{ $item->tipo }}</td>
-                    <td>{{ $item->restaurante }}</td>
-                   <td>{{ $item->empresa?->nombre }}</td>
-                    <td>{{ $item->precio_promedio }}</td>
+                    <td><strong>{{ $item->nombre }}</strong></td>
+                    <td>{{ $item->tipo ?? '—' }}</td>
+                    <td>{{ $item->restaurante ?? '—' }}</td>
+                    <td>{{ $item->empresa?->nombre ?? '—' }}</td>
+                    <td>
+                        @if($item->precio_promedio)
+                            ${{ number_format($item->precio_promedio, 0) }}
+                        @else
+                            —
+                        @endif
+                    </td>
 
                     <td>
-                        <a href="{{ route('admin.gastronomia.edit',$item) }}" class="btn-small btn-edit btn-sm">  <i class="fa-solid fa-pen fa-xs"></i> 
-                            Editar
+                        <a href="{{ route('admin.gastronomia.edit', $item) }}" class="btn-small btn-edit btn-sm">
+                            <i class="fa-solid fa-pen fa-xs"></i> Editar
                         </a>
 
-                        <form method="POST" action="{{ route('admin.gastronomia.destroy',$item) }}" style="display:inline"
+                        <form method="POST" action="{{ route('admin.gastronomia.destroy', $item) }}" style="display:inline"
                               onsubmit="return confirm('¿Eliminar este elemento?')">
                             @csrf @method('DELETE')
-                            <button class="btn-small btn-delete btn-sm"> <i class="fa-solid fa-trash fa-xs"></i>Eliminar</button>
+                            <button class="btn-small btn-delete btn-sm">
+                                <i class="fa-solid fa-trash fa-xs"></i> Eliminar
+                            </button>
                         </form>
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7">Sin datos</td>
+                    <td colspan="8" style="text-align:center;color:var(--gray);padding:2.5rem;">
+                        <i class="fa-solid fa-inbox" style="font-size:1.5rem;display:block;margin-bottom:.5rem;opacity:.4;"></i>
+                        No hay elementos registrados aún.
+                    </td>
                 </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
-    {{ $gastronomias->links() }}
+    @include('partials.pagination', ['paginator' => $gastronomias, 'perPage' => $perPage])
 
 </div>
 

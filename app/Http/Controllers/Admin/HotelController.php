@@ -8,11 +8,13 @@ use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\HandlesImport;
 use App\Models\Hotel;
 use Illuminate\Support\Facades\Storage;
 
 class HotelController extends Controller
 {
+    use HandlesImport;
     // ✅ INDEX UNIFICADO (FILTROS + PAGINACIÓN)
     public function index(Request $request)
     {
@@ -42,11 +44,22 @@ class HotelController extends Controller
         // 📄 PAGINACIÓN
         $perPage = $request->get('per_page', 10);
 
-        $hoteles = $query->orderBy('id', 'asc')
-                         ->paginate($perPage)
-                         ->withQueryString(); // 🔥 mantiene filtros
+        // ORDENAMIENTO DINÁMICO
+        $sort = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'asc');
 
-        return view('admin.hoteles', compact('hoteles', 'perPage'));
+        // seguridad
+        $allowedSorts = ['id', 'nombre', 'precio', 'ubicacion', 'capacidad'];
+
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'id';
+        }
+
+        $hoteles = $query->orderBy($sort, $direction)
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('admin.hoteles', compact('hoteles', 'perPage', 'sort', 'direction'));
     }
 
     // 📸 MANEJO DE IMAGEN
@@ -190,15 +203,8 @@ class HotelController extends Controller
         return $pdf->download('hoteles.pdf');
     }
 
-    // 📥 IMPORTAR
     public function importExcel(Request $request)
     {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        Excel::import(new HotelesImport, $request->file('archivo'));
-
-        return back()->with('success', 'Hoteles importados correctamente');
+        return $this->runImport($request, new HotelesImport, 'admin.hoteles.index');
     }
 }
