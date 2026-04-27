@@ -62,7 +62,7 @@
     ">
         {{-- Header modal --}}
         <div style="
-            background: linear-gradient(135deg, var(--blue-900), var(--blue-700));
+            background: linear-gradient(135deg, var(--green-900), var(--green-700));
             padding: 1.25rem 1.75rem;
             display: flex;
             align-items: center;
@@ -159,7 +159,6 @@
         'fieldId'      => 'lugar',
     ])
 
-
             <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-{{ isset($lugar) ? 'floppy-disk' : 'plus' }}"></i>
@@ -181,30 +180,6 @@
     </div>
 </div>
 
-<!-- BOTÓN FILTRAR -->
-
-
-<!-- SCRIPT -->
-<script>
-function toggleFiltros() {
-    const box = document.getElementById('filtrosBox');
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
-}
-
-window.onload = function() {
-    const hasFilters =
-        "{{ request('nombre') }}" ||
-        "{{ request('categoria') }}" ||
-        "{{ request('ubicacion') }}" ||
-        "{{ request('precio_entrada') }}";
-
-    if (hasFilters) {
-        document.getElementById('filtrosBox').style.display = 'block';
-    }
-}
-</script>
-
-{{-- Tabla --}}
 {{-- Tabla --}}
 <div class="admin-section">
 
@@ -225,7 +200,7 @@ window.onload = function() {
 
   </div>
 
-  {{-- FILTROS (SEPARADO DEL HEADER 🔥) --}}
+  {{-- FILTROS --}}
   <div id="filtrosLugares" style="display:none; margin-bottom:1rem;">
     <form method="GET" action="{{ route('admin.lugares.index') }}">
 
@@ -428,7 +403,7 @@ window.addEventListener('load', function () {
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    // 🔥 SI ESTÁ EDITANDO → ABRIR MODAL
+    // SI ESTÁ EDITANDO → ABRIR MODAL
     @if(isset($lugar))
         abrirModal();
     @endif
