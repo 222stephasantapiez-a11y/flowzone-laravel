@@ -93,14 +93,38 @@
         <div class="table-responsive">
             <table class="admin-table">
                 <thead>
+                    @php
+                        $sort      = $sort ?? 'id';
+                        $direction = $direction ?? 'asc';
+                    @endphp
                     <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Email</th>
+                        <th>
+                            <a href="{{ route('admin.usuarios.index', array_merge(request()->all(), ['sort' => 'id', 'direction' => ($sort === 'id' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                               style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                                ID @if($sort === 'id') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('admin.usuarios.index', array_merge(request()->all(), ['sort' => 'name', 'direction' => ($sort === 'name' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                               style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                                Nombre @if($sort === 'name') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                            </a>
+                        </th>
+                        <th>
+                            <a href="{{ route('admin.usuarios.index', array_merge(request()->all(), ['sort' => 'email', 'direction' => ($sort === 'email' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                               style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                                Email @if($sort === 'email') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                            </a>
+                        </th>
                         <th>Rol</th>
                         <th>Estado</th>
                         <th>Teléfono</th>
-                        <th>Fecha</th>
+                        <th>
+                            <a href="{{ route('admin.usuarios.index', array_merge(request()->all(), ['sort' => 'created_at', 'direction' => ($sort === 'created_at' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                               style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                                Fecha @if($sort === 'created_at') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                            </a>
+                        </th>
                     </tr>
                 </thead>
 
@@ -129,51 +153,7 @@
         </div>
 
     <!-- PAGINACIÓN -->
-    @if($usuarios->hasPages())
-    <div class="pagination-bar">
-
-        <div class="pagination-info">
-            Mostrando <strong>{{ $usuarios->firstItem() }}</strong>–<strong>{{ $usuarios->lastItem() }}</strong>
-            de <strong>{{ $usuarios->total() }}</strong> registros
-        </div>
-
-        <div class="pagination-links">
-            @if($usuarios->onFirstPage())
-                <span class="page-btn page-btn--disabled">‹</span>
-            @else
-                <a href="{{ $usuarios->previousPageUrl() }}" class="page-btn">‹</a>
-            @endif
-
-            @foreach($usuarios->getUrlRange(max(1,$usuarios->currentPage()-2), min($usuarios->lastPage(),$usuarios->currentPage()+2)) as $page => $url)
-                @if($page == $usuarios->currentPage())
-                    <span class="page-btn page-btn--active">{{ $page }}</span>
-                @else
-                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
-                @endif
-            @endforeach
-
-            @if($usuarios->hasMorePages())
-                <a href="{{ $usuarios->nextPageUrl() }}" class="page-btn">›</a>
-            @else
-                <span class="page-btn page-btn--disabled">›</span>
-            @endif
-        </div>
-
-        <form method="GET">
-            @foreach(request()->except(['page','per_page']) as $k => $v)
-                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-            @endforeach
-
-            <label>Filas:</label>
-            <select name="per_page" onchange="this.form.submit()">
-                @foreach([5,10,25,50,100] as $n)
-                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
-                @endforeach
-            </select>
-        </form>
-
-    </div>
-    @endif
+    @include('partials.pagination', ['paginator' => $usuarios, 'perPage' => $perPage])
 
 </div>
 

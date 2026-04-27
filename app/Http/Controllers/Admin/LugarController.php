@@ -8,11 +8,13 @@ use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Admin\Traits\HandlesImport;
 use App\Models\Lugar;
 use Illuminate\Support\Facades\Storage;
 
 class LugarController extends Controller
 {
+    use HandlesImport;
     // ✅ INDEX (FILTROS + PAGINACIÓN)
     public function index(Request $request)
     {
@@ -35,14 +37,29 @@ class LugarController extends Controller
             $query->where('precio_entrada', '<=', $request->precio_entrada);
         }
 
+        // ORDENAMIENTO
+        $sort = $request->get('sort', 'id');
+        $direction = $request->get('direction', 'asc');
+
+        // Validar columnas permitidas (MUY IMPORTANTE)
+        $allowedSorts = ['id', 'nombre', 'categoria', 'ubicacion', 'precio_entrada'];
+
+        if (!in_array($sort, $allowedSorts)) {
+            $sort = 'id';
+        }
+
+        // Validar dirección
+        $direction = $direction === 'desc' ? 'desc' : 'asc';
+
+
         // 📄 PAGINACIÓN
         $perPage = $request->get('per_page', 10);
 
-        $lugares = $query->orderBy('id', 'asc')
-                         ->paginate($perPage)
-                         ->withQueryString(); // 🔥 mantiene filtros
+        $lugares = $query->orderBy($sort, $direction)
+                 ->paginate($perPage)
+                 ->withQueryString();
 
-        return view('admin.lugares', compact('lugares', 'perPage'));
+        return view('admin.lugares', compact('lugares', 'perPage', 'sort', 'direction'));
     }
 
     // 📸 IMAGEN
@@ -165,15 +182,8 @@ class LugarController extends Controller
         return $pdf->download('lugares.pdf');
     }
 
-    // 📥 IMPORTAR
     public function importExcel(Request $request)
     {
-        $request->validate([
-            'archivo' => 'required|mimes:xlsx,xls,csv'
-        ]);
-
-        Excel::import(new LugaresImport, $request->file('archivo'));
-
-        return back()->with('success', 'Lugares importados correctamente');
+        return $this->runImport($request, new LugaresImport, 'admin.lugares.index');
     }
 }

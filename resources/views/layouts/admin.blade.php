@@ -117,10 +117,29 @@
                     {{ session('success') }}
                 </div>
             @endif
+            @if(session('warning'))
+                <div class="alert alert-warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    {{ session('warning') }}
+                </div>
+            @endif
             @if(session('error'))
                 <div class="alert alert-error">
                     <i class="fa-solid fa-circle-exclamation"></i>
                     {{ session('error') }}
+                </div>
+            @endif
+            @if(session('import_errors'))
+                <div class="alert alert-warning" style="margin-top:.5rem;">
+                    <p style="font-weight:600;margin:0 0 .4rem;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        Filas omitidas durante la importación:
+                    </p>
+                    <ul style="margin:0;padding-left:1.2rem;font-size:.85rem;">
+                        @foreach(session('import_errors') as $err)
+                            <li>{{ $err }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             @endif
             @if($errors->any())
