@@ -17,6 +17,7 @@ use App\Imports\EmpresasImport;
 class EmpresaController extends Controller
 {
     use HandlesImport;
+
     // ==========================
     // LISTAR + GENERADOR + PAGINACIÓN
     // ==========================
@@ -96,10 +97,12 @@ class EmpresaController extends Controller
     // ==========================
     public function edit(Empresa $empresa)
     {
+        $perPage = 10;
+
         $empresas = Empresa::with('usuario')
             ->orderBy('aprobado')
             ->orderBy('id', 'desc')
-            ->get();
+            ->paginate($perPage);
 
         $notificaciones = NotificacionAdmin::with('empresa')
             ->where('leido', false)
@@ -112,7 +115,8 @@ class EmpresaController extends Controller
             'empresas',
             'empresa',
             'notificaciones',
-            'notifCount'
+            'notifCount',
+            'perPage'
         ));
     }
 

@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 class LugarController extends Controller
 {
     use HandlesImport;
+
     // ✅ INDEX (FILTROS + PAGINACIÓN)
     public function index(Request $request)
     {
@@ -41,7 +42,7 @@ class LugarController extends Controller
         $sort = $request->get('sort', 'id');
         $direction = $request->get('direction', 'asc');
 
-        // Validar columnas permitidas (MUY IMPORTANTE)
+        // Validar columnas permitidas
         $allowedSorts = ['id', 'nombre', 'categoria', 'ubicacion', 'precio_entrada'];
 
         if (!in_array($sort, $allowedSorts)) {
@@ -51,13 +52,12 @@ class LugarController extends Controller
         // Validar dirección
         $direction = $direction === 'desc' ? 'desc' : 'asc';
 
-
         // 📄 PAGINACIÓN
         $perPage = $request->get('per_page', 10);
 
         $lugares = $query->orderBy($sort, $direction)
-                 ->paginate($perPage)
-                 ->withQueryString();
+                         ->paginate($perPage)
+                         ->withQueryString();
 
         return view('admin.lugares', compact('lugares', 'perPage', 'sort', 'direction'));
     }
@@ -88,12 +88,12 @@ class LugarController extends Controller
         $imgRequired = $isUpdate ? 'nullable' : 'required_without:imagen_file';
 
         return [
-            'nombre'       => 'required|string|max:150',
-            'descripcion'  => 'required|string',
-            'categoria'    => 'required|string|max:100',
-            'imagen_url'   => "$imgRequired|nullable|url",
-            'imagen_file'  => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
-            'ubicacion'    => 'nullable|string|max:200',
+            'nombre'         => 'required|string|max:150',
+            'descripcion'    => 'required|string',
+            'categoria'      => 'required|string|max:100',
+            'imagen_url'     => "$imgRequired|nullable|url",
+            'imagen_file'    => 'nullable|file|mimes:jpg,jpeg,png,webp|max:4096',
+            'ubicacion'      => 'nullable|string|max:200',
             'precio_entrada' => 'nullable|numeric|min:0',
         ];
     }
@@ -126,8 +126,10 @@ class LugarController extends Controller
     // ✏️ EDITAR
     public function edit(Lugar $lugar)
     {
-        $lugares = Lugar::orderBy('id', 'desc')->paginate(10);
-        return view('admin.lugares', compact('lugares', 'lugar'));
+        $perPage = 10;
+        $lugares = Lugar::orderBy('id', 'desc')->paginate($perPage);
+
+        return view('admin.lugares', compact('lugares', 'lugar', 'perPage'));
     }
 
     // 🔄 ACTUALIZAR
@@ -182,6 +184,7 @@ class LugarController extends Controller
         return $pdf->download('lugares.pdf');
     }
 
+    // 📥 IMPORTAR EXCEL
     public function importExcel(Request $request)
     {
         return $this->runImport($request, new LugaresImport, 'admin.lugares.index');
