@@ -93,7 +93,7 @@ class GastronomiaEmpresaController extends Controller
         $empresa = $this->empresa();
         abort_if($gastronomium->empresa_id !== $empresa->id, 403);
         $items = Gastronomia::where('empresa_id', $empresa->id)->latest()->get();
-        return view('empresa.gastronomia', compact('empresa', 'items', 'gastronomium'));
+        $filtros = []; $hayFiltros = false; return view("empresa.gastronomia", compact("empresa", "items", "gastronomium", "filtros", "hayFiltros"));
     }
 
     public function update(Request $request, Gastronomia $gastronomium)
