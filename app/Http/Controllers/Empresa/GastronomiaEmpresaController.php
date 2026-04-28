@@ -57,8 +57,11 @@ class GastronomiaEmpresaController extends Controller
         $items   = $query->latest()->get();
         $filtros = $request->only(['nombre', 'tipo', 'precio_min', 'precio_max']);
         $hayFiltros = collect($filtros)->filter()->isNotEmpty();
+        $planes  = \App\Models\PlanTuristico::where('empresa_id', $empresa->id)
+                    ->with(['evento','gastronomia','hotel','lugar'])
+                    ->latest()->get();
 
-        return view('empresa.gastronomia', compact('empresa', 'items', 'filtros', 'hayFiltros'));
+        return view('empresa.gastronomia', compact('empresa', 'items', 'filtros', 'hayFiltros', 'planes'));
     }
 
     public function store(Request $request)
@@ -93,7 +96,7 @@ class GastronomiaEmpresaController extends Controller
         $empresa = $this->empresa();
         abort_if($gastronomium->empresa_id !== $empresa->id, 403);
         $items = Gastronomia::where('empresa_id', $empresa->id)->latest()->get();
-        $filtros = []; $hayFiltros = false; return view("empresa.gastronomia", compact("empresa", "items", "gastronomium", "filtros", "hayFiltros"));
+        $filtros = []; $hayFiltros = false; $planes = \App\Models\PlanTuristico::where("empresa_id", $empresa->id)->with(["evento","gastronomia","hotel","lugar"])->latest()->get(); return view("empresa.gastronomia", compact("empresa", "items", "gastronomium", "filtros", "hayFiltros", "planes"));
     }
 
     public function update(Request $request, Gastronomia $gastronomium)
