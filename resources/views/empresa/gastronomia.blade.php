@@ -74,13 +74,6 @@
         </div>
     </div>
 
-    @include('partials.map_picker', [
-        'mapId'        => 'emp-gastro',
-        'latValue'     => old('latitud', $gastronomium->latitud ?? ''),
-        'lngValue'     => old('longitud', $gastronomium->longitud ?? ''),
-        'addressValue' => old('direccion', $gastronomium->direccion ?? ''),
-    ])
-
     <div class="form-group">
         <label>Ingredientes <span style="font-size:.78rem;color:var(--gray-400);font-weight:400;">(separados por coma)</span></label>
         <input type="text" name="ingredientes"
@@ -107,12 +100,125 @@
 
 {{-- Lista de platos --}}
 <div class="admin-section">
-    <div class="admin-section-header">
-        <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:.5rem;">
+
+    {{-- Barra superior: título + acciones --}}
+    <div style="display:flex;align-items:center;flex-wrap:wrap;gap:.6rem;margin-bottom:.5rem;">
+        <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:.5rem;margin-right:auto;">
             <i class="fa-solid fa-utensils" style="color:var(--green-600);"></i> Mis platos y servicios
         </h2>
-        <span class="badge badge-info">{{ $items->count() }}</span>
+
+        {{-- Contador --}}
+        <span class="badge badge-info" style="font-size:.82rem;padding:.3rem .75rem;">{{ $items->count() }} total</span>
+
+        {{-- Excel export --}}
+        <a href="{{ route('empresa.gastronomia.export.excel') }}" 
+           style="display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .9rem;font-size:.82rem;font-weight:700;border-radius:var(--radius-full);border:none;background:#1D6F42;color:#fff;cursor:pointer;text-decoration:none;box-shadow:0 2px 6px rgba(29,111,66,.3);">
+            <i class="fa-solid fa-file-excel fa-xs"></i> Excel
+        </a>
+
+        {{-- PDF export --}}
+        <a href="{{ route('empresa.gastronomia.export.pdf') }}"
+           style="display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .9rem;font-size:.82rem;font-weight:700;border-radius:var(--radius-full);border:none;background:#C0392B;color:#fff;cursor:pointer;text-decoration:none;box-shadow:0 2px 6px rgba(192,57,43,.3);">
+            <i class="fa-solid fa-file-pdf fa-xs"></i> PDF
+        </a>
+
+        {{-- Importar Excel --}}
+        <button type="button" onclick="document.getElementById('modalImportar').style.display='flex'"
+                style="display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .9rem;font-size:.82rem;font-weight:700;border-radius:var(--radius-full);border:1.5px solid var(--gray-300);background:#fff;color:var(--gray-700);cursor:pointer;">
+            <i class="fa-solid fa-file-arrow-up fa-xs"></i> Importar CSV/Excel
+        </button>
+
+        {{-- Filtro --}}
+        <button type="button" id="btnFiltro" onclick="toggleFiltro()"
+                style="display:inline-flex;align-items:center;gap:.4rem;padding:.4rem 1rem;font-size:.85rem;font-weight:700;border-radius:var(--radius-full);border:none;background:var(--green-700);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(45,106,79,.25);">
+            <i class="fa-solid fa-filter fa-xs"></i> Filtro
+            @if($hayFiltros)<span style="width:7px;height:7px;background:#fff;border-radius:50%;display:inline-block;opacity:.85;"></span>@endif
+        </button>
     </div>
+
+    {{-- Panel de filtros desplegable --}}
+    <div id="panelFiltro" style="display:{{ $hayFiltros ? 'block' : 'none' }};margin-bottom:1.25rem;padding:1.1rem 1.25rem;background:#f8fffe;border-radius:var(--radius-md);border:1.5px solid #b7e4c7;">
+        <form method="GET" action="{{ route('empresa.gastronomia.index') }}" style="margin:0;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-bottom:.85rem;">
+
+                <div>
+                    <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#40916c;margin-bottom:.35rem;">Nombre</label>
+                    <input type="text" name="nombre" placeholder="Ej: Tamal..."
+                           value="{{ $filtros['nombre'] ?? '' }}"
+                           style="width:100%;padding:.5rem .85rem;font-size:.85rem;border:1.5px solid #b7e4c7;border-radius:var(--radius-md);background:#fff;outline:none;">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#40916c;margin-bottom:.35rem;">Tipo</label>
+                    <select name="tipo"
+                            style="width:100%;padding:.5rem .85rem;font-size:.85rem;border:1.5px solid #b7e4c7;border-radius:var(--radius-md);background:#fff;outline:none;">
+                        <option value="">Todos</option>
+                        @foreach(['Plato típico','Bebida','Postre','Restaurante','Cafetería','Snack'] as $t)
+                            <option value="{{ $t }}" {{ ($filtros['tipo'] ?? '') === $t ? 'selected' : '' }}>{{ $t }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#40916c;margin-bottom:.35rem;">Precio mín (COP)</label>
+                    <input type="number" name="precio_min" placeholder="Ej: 5000"
+                           value="{{ $filtros['precio_min'] ?? '' }}"
+                           style="width:100%;padding:.5rem .85rem;font-size:.85rem;border:1.5px solid #b7e4c7;border-radius:var(--radius-md);background:#fff;outline:none;">
+                </div>
+
+                <div>
+                    <label style="display:block;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#40916c;margin-bottom:.35rem;">Precio máx (COP)</label>
+                    <input type="number" name="precio_max" placeholder="Ej: 50000"
+                           value="{{ $filtros['precio_max'] ?? '' }}"
+                           style="width:100%;padding:.5rem .85rem;font-size:.85rem;border:1.5px solid #b7e4c7;border-radius:var(--radius-md);background:#fff;outline:none;">
+                </div>
+
+            </div>
+            <div style="display:flex;gap:.6rem;">
+                <button type="submit"
+                        style="display:inline-flex;align-items:center;gap:.35rem;padding:.45rem 1.1rem;font-size:.85rem;font-weight:700;border-radius:var(--radius-full);border:none;background:var(--green-700);color:#fff;cursor:pointer;">
+                    <i class="fa-solid fa-magnifying-glass fa-xs"></i> Aplicar
+                </button>
+                <a href="{{ route('empresa.gastronomia.index') }}"
+                   style="display:inline-flex;align-items:center;gap:.35rem;padding:.45rem 1.1rem;font-size:.85rem;font-weight:700;border-radius:var(--radius-full);border:1.5px solid #f87171;background:#fff;color:#c0392b;text-decoration:none;">
+                    <i class="fa-solid fa-xmark fa-xs"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+
+{{-- Modal Importar --}}
+<div id="modalImportar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;align-items:center;justify-content:center;padding:1rem;"
+     onclick="if(event.target===this)this.style.display='none'">
+    <div style="background:#fff;border-radius:var(--radius-lg);width:100%;max-width:420px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.4rem;border-bottom:1px solid var(--gray-100);">
+            <div style="display:flex;align-items:center;gap:.5rem;font-weight:700;color:var(--gray-900);">
+                <i class="fa-solid fa-file-arrow-up" style="color:var(--green-600);"></i> Importar CSV / Excel
+            </div>
+            <button onclick="document.getElementById('modalImportar').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--gray-400);">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form method="POST" action="{{ route('empresa.gastronomia.import.excel') }}" enctype="multipart/form-data" style="padding:1.4rem;">
+            @csrf
+            <p style="font-size:.82rem;color:var(--gray-500);margin-bottom:1rem;">Sube un archivo <strong>.xlsx</strong> o <strong>.csv</strong> con columnas: <code>nombre, tipo, precio_cop, descripcion, direccion, telefono, ingredientes</code></p>
+            <div style="margin-bottom:1rem;">
+                <label style="display:block;font-size:.78rem;font-weight:700;color:var(--gray-700);margin-bottom:.4rem;">Archivo</label>
+                <input type="file" name="archivo" accept=".xlsx,.xls,.csv" required
+                       style="width:100%;padding:.5rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.85rem;">
+            </div>
+            <div style="display:flex;gap:.6rem;justify-content:flex-end;">
+                <button type="button" onclick="document.getElementById('modalImportar').style.display='none'"
+                        style="padding:.45rem 1rem;font-size:.85rem;border-radius:var(--radius-full);border:1px solid var(--gray-200);background:#fff;color:var(--gray-600);cursor:pointer;">
+                    Cancelar
+                </button>
+                <button type="submit" style="padding:.45rem 1.1rem;font-size:.85rem;font-weight:700;border-radius:var(--radius-full);border:none;background:var(--green-700);color:#fff;cursor:pointer;">
+                    <i class="fa-solid fa-upload fa-xs"></i> Importar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
     @if($items->isEmpty())
         <div class="empty-state">
@@ -184,16 +290,14 @@
     @endif
 </div>
 
-@endsection
-
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    mapPickerInit(
-        'emp-gastro',
-        {{ old('latitud', $gastronomium->latitud ?? 'null') }},
-        {{ old('longitud', $gastronomium->longitud ?? 'null') }}
-    );
-});
+function toggleFiltro() {
+    const panel = document.getElementById("panelFiltro");
+    const open  = panel.style.display === "none" || panel.style.display === "";
+    panel.style.display = open ? "block" : "none";
+}
 </script>
 @endpush
+
+@endsection

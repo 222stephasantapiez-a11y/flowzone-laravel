@@ -57,7 +57,9 @@ class EmpresaController extends Controller
             'perPage',
             'sort',
             'direction'
+
         ));
+                    
     }
 
     // ==========================
