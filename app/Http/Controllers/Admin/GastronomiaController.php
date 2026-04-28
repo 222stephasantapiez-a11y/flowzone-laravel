@@ -64,6 +64,7 @@ class GastronomiaController extends Controller
         $empresas = Empresa::where('aprobado', true)
             ->orderBy('nombre')
             ->get();
+            
 
         return view('admin.gastronomia', compact('gastronomias', 'empresas', 'perPage', 'sort', 'direction'));
     }
