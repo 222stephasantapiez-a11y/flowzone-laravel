@@ -34,9 +34,20 @@ class GastronomiaController extends Controller
     public function index(Request $request)
     {
         $perPage  = $request->get('per_page', 10);
-        $items    = Gastronomia::with('empresa')->oldest()->paginate($perPage)->withQueryString();
+        $busqueda = $request->get('busqueda', '');
+
+        $query = Gastronomia::with('empresa')->oldest();
+        if ($busqueda) {
+            $query->where(function($q) use ($busqueda) {
+                $q->where('nombre', 'like', "%{$busqueda}%")
+                  ->orWhere('restaurante', 'like', "%{$busqueda}%")
+                  ->orWhere('ubicacion', 'like', "%{$busqueda}%");
+            });
+        }
+
+        $items    = $query->paginate($perPage)->withQueryString();
         $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
-        return view('admin.gastronomia', compact('items', 'empresas', 'perPage'));
+        return view('admin.gastronomia', compact('items', 'empresas', 'perPage', 'busqueda'));
     }
 
     public function store(Request $request)

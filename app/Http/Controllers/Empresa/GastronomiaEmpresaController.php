@@ -33,11 +33,22 @@ class GastronomiaEmpresaController extends Controller
         return $current;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $empresa = $this->empresa();
-        $items   = Gastronomia::where('empresa_id', $empresa->id)->latest()->get();
-        return view('empresa.gastronomia', compact('empresa', 'items'));
+        $empresa  = $this->empresa();
+        $busqueda = $request->get('busqueda', '');
+
+        $query = Gastronomia::where('empresa_id', $empresa->id)->latest();
+        if ($busqueda) {
+            $query->where(function($q) use ($busqueda) {
+                $q->where('nombre', 'like', "%{$busqueda}%")
+                  ->orWhere('tipo', 'like', "%{$busqueda}%")
+                  ->orWhere('descripcion', 'like', "%{$busqueda}%");
+            });
+        }
+
+        $items = $query->get();
+        return view('empresa.gastronomia', compact('empresa', 'items', 'busqueda'));
     }
 
     public function store(Request $request)

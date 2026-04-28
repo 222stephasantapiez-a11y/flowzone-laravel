@@ -46,9 +46,20 @@ class EventoController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
-        $eventos = Evento::orderBy('fecha', 'asc')->paginate($perPage)->withQueryString();
-        return view('admin.eventos', compact('eventos', 'perPage'));
+        $perPage  = $request->get('per_page', 10);
+        $busqueda = $request->get('busqueda', '');
+
+        $query = Evento::orderBy('fecha', 'asc');
+        if ($busqueda) {
+            $query->where(function($q) use ($busqueda) {
+                $q->where('nombre', 'like', "%{$busqueda}%")
+                  ->orWhere('ubicacion', 'like', "%{$busqueda}%")
+                  ->orWhere('categoria', 'like', "%{$busqueda}%");
+            });
+        }
+
+        $eventos = $query->paginate($perPage)->withQueryString();
+        return view('admin.eventos', compact('eventos', 'perPage', 'busqueda'));
     }
 
     public function store(Request $request)

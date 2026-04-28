@@ -196,6 +196,11 @@
         <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Eventos Registrados</h2>
         <span class="badge badge-info">{{ $eventos->total() }} total</span>
     </div>
+    @include('partials.search_bar', [
+        'searchRoute' => 'admin.eventos.index',
+        'placeholder' => 'Buscar por nombre, categoría o ubicación...',
+        'busqueda'    => $busqueda,
+    ])
     <div class="table-responsive">
         <table class="admin-table">
             <thead>

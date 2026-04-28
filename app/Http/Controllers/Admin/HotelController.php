@@ -69,8 +69,18 @@ class HotelController extends Controller
   public function index(Request $request)
 {
     $perPage = $request->get('per_page', 10);
-    $hoteles = Hotel::orderBy('id', 'asc')->paginate($perPage)->withQueryString();
-    return view('admin.hoteles', compact('hoteles', 'perPage'));
+    $busqueda = $request->get('busqueda', '');
+
+    $query = Hotel::orderBy('id', 'asc');
+    if ($busqueda) {
+        $query->where(function($q) use ($busqueda) {
+            $q->where('nombre', 'like', "%{$busqueda}%")
+              ->orWhere('ubicacion', 'like', "%{$busqueda}%");
+        });
+    }
+
+    $hoteles = $query->paginate($perPage)->withQueryString();
+    return view('admin.hoteles', compact('hoteles', 'perPage', 'busqueda'));
 }
 
     public function store(Request $request)

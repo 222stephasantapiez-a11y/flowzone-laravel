@@ -211,6 +211,11 @@
         <h2><i class="fa-solid fa-list" style="color:var(--primary);"></i> Hoteles Registrados</h2>
         <span class="badge badge-info">{{ $hoteles->total() }} total</span>
     </div>
+    @include('partials.search_bar', [
+        'searchRoute' => 'admin.hoteles.index',
+        'placeholder' => 'Buscar por nombre o ubicación...',
+        'busqueda'    => $busqueda,
+    ])
     <div class="table-responsive">
         <table class="admin-table">
             <thead>

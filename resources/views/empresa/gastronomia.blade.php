@@ -113,6 +113,11 @@
         </h2>
         <span class="badge badge-info">{{ $items->count() }}</span>
     </div>
+    @include('partials.search_bar', [
+        'searchRoute' => 'empresa.gastronomia.index',
+        'placeholder' => 'Buscar por nombre o tipo...',
+        'busqueda'    => $busqueda ?? '',
+    ])
 
     @if($items->isEmpty())
         <div class="empty-state">
