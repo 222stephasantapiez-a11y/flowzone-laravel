@@ -77,6 +77,11 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::get('/gastronomia/{gastronomium}/edit', [GastronomiaEmpresaController::class, 'edit'])->name('gastronomia.edit');
     Route::put('/gastronomia/{gastronomium}', [GastronomiaEmpresaController::class, 'update'])->name('gastronomia.update');
     Route::delete('/gastronomia/{gastronomium}', [GastronomiaEmpresaController::class, 'destroy'])->name('gastronomia.destroy');
+
+    // Planes turísticos
+    Route::post('/gastronomia/planes/generar', [\App\Http\Controllers\Empresa\PlanTuristicoController::class, 'generar'])->name('gastronomia.planes.generar');
+    Route::post('/gastronomia/planes/guardar', [\App\Http\Controllers\Empresa\PlanTuristicoController::class, 'guardar'])->name('gastronomia.planes.guardar');
+    Route::delete('/gastronomia/planes/{plan}', [\App\Http\Controllers\Empresa\PlanTuristicoController::class, 'destroy'])->name('gastronomia.planes.destroy');
 });
 
 // ── Panel admin ──────────────────────────────────────────────
