@@ -42,7 +42,7 @@
     </div>
 
     {{-- Grid de lugares --}}
-    <div class="grid">
+    <div class="lugares-grid">
         @forelse($lugares as $lugar)
             <article class="card animate-on-scroll">
                 <div class="card-img-wrap">
@@ -101,13 +101,6 @@
             </div>
         @endforelse
     </div>
-
-    {{-- Paginación --}}
-    @if($lugares->hasPages())
-    <div class="pagination-wrap" style="margin-top:2rem;">
-        {{ $lugares->withQueryString()->links() }}
-    </div>
-    @endif
 
 </section>
 </main>

@@ -46,9 +46,9 @@ class PageController extends Controller
         }
  
         return view('pages.hoteles', [
-         'hoteles' => $query->latest()->paginate(5)->withQueryString(),
-            'busqueda'  => $request->busqueda ?? '',
-            'precio_max'=> $request->precio_max ?? '',
+            'hoteles'    => $query->latest()->get(),
+            'busqueda'   => $request->busqueda ?? '',
+            'precio_max' => $request->precio_max ?? '',
         ]);
     }
  
@@ -84,10 +84,10 @@ class PageController extends Controller
         }
  
         return view('pages.lugares', [
-         'lugares' => $query->latest()->paginate(5)->withQueryString(),
-            'categorias'      => Lugar::distinct()->pluck('categoria')->filter()->sort()->values(),
-            'categoria_filtro'=> $request->categoria ?? '',
-            'busqueda'        => $request->busqueda ?? '',
+            'lugares'          => $query->latest()->get(),
+            'categorias'       => Lugar::distinct()->pluck('categoria')->filter()->sort()->values(),
+            'categoria_filtro' => $request->categoria ?? '',
+            'busqueda'         => $request->busqueda ?? '',
         ]);
     }
  
@@ -167,7 +167,7 @@ class PageController extends Controller
         }
  
         return view('pages.blog', [
-            'posts'      => $query->latest('fecha_publicacion')->paginate(9),
+            'posts'      => $query->latest('fecha_publicacion')->get(),
             'tipo_filtro'=> $request->tipo ?? '',
             'busqueda'   => $request->busqueda ?? '',
         ]);
@@ -423,4 +423,3 @@ class PageController extends Controller
         return view('pages.favoritos', compact('hoteles', 'lugares'));
     }
 }
- 
