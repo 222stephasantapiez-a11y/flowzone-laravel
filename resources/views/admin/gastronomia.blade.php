@@ -237,43 +237,50 @@
     </div>
  
     {{-- FILTROS --}}
-    <div id="filtrosBox" style="display:none; margin-bottom:1rem;">
+    <div id="filtrosBox" style="display:none; padding: 1rem 0 .5rem;">
         <form method="GET" action="{{ route('admin.gastronomia.index') }}">
- 
-            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
- 
-                <div>
-                    <label>Nombre</label><br>
-                    <input type="text" name="nombre" value="{{ request('nombre') }}">
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+
+                <div class="filter-field">
+                    <label class="filter-label">Nombre</label>
+                    <input type="text" name="nombre" value="{{ request('nombre') }}"
+                           placeholder="Buscar por nombre..." class="filter-input">
                 </div>
- 
-                <div>
-                    <label>Tipo</label><br>
-                    <input type="text" name="tipo" value="{{ request('tipo') }}">
+
+                <div class="filter-field">
+                    <label class="filter-label">Tipo</label>
+                    <input type="text" name="tipo" value="{{ request('tipo') }}"
+                           placeholder="Ej: Plato típico..." class="filter-input">
                 </div>
- 
-                <div>
-                    <label>Restaurante</label><br>
-                    <input type="text" name="restaurante" value="{{ request('restaurante') }}">
+
+                <div class="filter-field">
+                    <label class="filter-label">Restaurante</label>
+                    <input type="text" name="restaurante" value="{{ request('restaurante') }}"
+                           placeholder="Nombre del local..." class="filter-input">
                 </div>
- 
-                <div>
-                    <label>Empresa</label><br>
-                    <input type="number" name="empresa" value="{{ request('empresa') }}">
+
+                <div class="filter-field">
+                    <label class="filter-label">Empresa (ID)</label>
+                    <input type="number" name="empresa" value="{{ request('empresa') }}"
+                           placeholder="Ej: 3" class="filter-input">
                 </div>
- 
-                <div>
-                    <label>Precio máximo</label><br>
-                    <input type="number" name="precio" value="{{ request('precio') }}">
+
+                <div class="filter-field">
+                    <label class="filter-label">Precio máx.</label>
+                    <input type="number" name="precio" value="{{ request('precio') }}"
+                           placeholder="Ej: 30000" class="filter-input">
                 </div>
- 
-                <div style="display:flex; gap:.5rem;">
-                    <button class="btn btn-primary btn-sm">Aplicar</button>
-                    <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+
+                <div style="display:flex; gap:.5rem; align-items:flex-end; padding-bottom:1px;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i> Aplicar
+                    </button>
+                    <a href="{{ route('admin.gastronomia.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-xmark"></i> Limpiar
+                    </a>
                 </div>
- 
+
             </div>
- 
         </form>
     </div>
  

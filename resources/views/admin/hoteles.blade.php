@@ -228,39 +228,42 @@
 
     <form method="GET" action="{{ route('admin.hoteles.index') }}">
 
-        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
+        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
 
-            <div>
-                <label>Ubicación</label><br>
-                <input type="text" name="ubicacion" value="{{ request('ubicacion') }}">
+            <div class="filter-field">
+                <label class="filter-label">Ubicación</label>
+                <input type="text" name="ubicacion" value="{{ request('ubicacion') }}"
+                       placeholder="Ej: Ortega..." class="filter-input">
             </div>
 
-            <div>
-                <label>Precio máximo</label><br>
-                <input type="number" name="precio" value="{{ request('precio') }}">
+            <div class="filter-field">
+                <label class="filter-label">Precio máximo</label>
+                <input type="number" name="precio" value="{{ request('precio') }}"
+                       placeholder="Ej: 200000" class="filter-input">
             </div>
 
-            <div>
-                <label>Capacidad</label><br>
-                <input type="number" name="capacidad" value="{{ request('capacidad') }}">
+            <div class="filter-field">
+                <label class="filter-label">Capacidad mínima</label>
+                <input type="number" name="capacidad" value="{{ request('capacidad') }}"
+                       placeholder="Ej: 10" class="filter-input">
             </div>
 
-            <div>
-                <label>Estado</label><br>
-                <select name="disponibilidad">
+            <div class="filter-field">
+                <label class="filter-label">Estado</label>
+                <select name="disponibilidad" class="filter-input">
                     <option value="">Todos</option>
-                    <option value="1" {{ request('disponibilidad') == '1' ? 'selected' : '' }}>
-                        Disponible
-                    </option>
-                    <option value="0" {{ request('disponibilidad') == '0' ? 'selected' : '' }}>
-                        No disponible
-                    </option>
+                    <option value="1" {{ request('disponibilidad') == '1' ? 'selected' : '' }}>Disponible</option>
+                    <option value="0" {{ request('disponibilidad') == '0' ? 'selected' : '' }}>No disponible</option>
                 </select>
             </div>
 
-            <div style="display:flex; gap:.5rem;">
-                <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
-                <a href="{{ route('admin.hoteles.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+            <div style="display:flex; gap:.5rem; align-items:flex-end; padding-bottom:1px;">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i> Aplicar
+                </button>
+                <a href="{{ route('admin.hoteles.index') }}" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-xmark"></i> Limpiar
+                </a>
             </div>
 
         </div>

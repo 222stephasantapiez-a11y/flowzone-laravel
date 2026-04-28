@@ -8,6 +8,43 @@
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ── Filtros admin — inputs consistentes en todas las vistas ── */
+        .filter-field {
+            display: flex;
+            flex-direction: column;
+            gap: .3rem;
+            min-width: 160px;
+        }
+        .filter-label {
+            font-size: .78rem;
+            font-weight: 600;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin: 0;
+        }
+        .filter-input {
+            padding: .5rem .75rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: .5rem;
+            font-size: .88rem;
+            color: #111;
+            background: #fff;
+            transition: border-color .15s, box-shadow .15s;
+            outline: none;
+            height: 38px;
+            box-sizing: border-box;
+        }
+        .filter-input:focus {
+            border-color: var(--primary, #1b4332);
+            box-shadow: 0 0 0 3px rgba(27,67,50,.1);
+        }
+        select.filter-input {
+            cursor: pointer;
+            appearance: auto;
+        }
+    </style>
     @stack('head')
 </head>
 <body>

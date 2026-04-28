@@ -1,38 +1,8 @@
 @extends('layouts.app')
- 
+
 @section('title', 'Hoteles en Ortega')
 @section('body-class', 'no-hero')
-<<<<<<< HEAD
 
-@push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-@endpush 
-@push('scripts')
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-<script>
-
-    var map = L.map('mapaaa').setView([3.9377, -75.2230], 14);
-
-     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-         attribution: 'yo'
-     }).addTo(map);
-
-     L.marker([3.9377, -75.2230]).addTo(map)
-         .bindPopup('Aquí estás 📍');
-
-     setTimeout(() => {
-         map.invalidateSize();
-    }, 100);
-
-</script>
-@push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
-@endpush
-
-=======
- 
->>>>>>> 37e88308b37aaac3f58c9a0e74ea5084d3cf0e8c
 @section('content')
 <main>
  

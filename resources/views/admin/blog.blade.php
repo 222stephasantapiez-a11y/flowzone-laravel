@@ -203,40 +203,45 @@
     </div>
  
     {{-- FILTROS --}}
-    <div id="filtrosBox" style="display:none; margin-bottom:1rem;">
+    <div id="filtrosBox" style="display:none; padding: 1rem 0 .5rem;">
         <form method="GET" action="{{ route('admin.blog.index') }}">
- 
-            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
- 
-                <div>
-                    <label>Título</label><br>
-                    <input type="text" name="titulo" value="{{ request('titulo') }}">
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+
+                <div class="filter-field">
+                    <label class="filter-label">Título</label>
+                    <input type="text" name="titulo" value="{{ request('titulo') }}"
+                           placeholder="Buscar por título..." class="filter-input">
                 </div>
- 
-                <div>
-                    <label>Autor</label><br>
-                    <input type="text" name="autor" value="{{ request('autor') }}">
+
+                <div class="filter-field">
+                    <label class="filter-label">Autor</label>
+                    <input type="text" name="autor" value="{{ request('autor') }}"
+                           placeholder="Nombre del autor..." class="filter-input">
                 </div>
- 
-                <div>
-                    <label>Fecha</label><br>
-                    <input type="date" name="fecha" value="{{ request('fecha') }}">
+
+                <div class="filter-field">
+                    <label class="filter-label">Fecha</label>
+                    <input type="date" name="fecha" value="{{ request('fecha') }}" class="filter-input">
                 </div>
- 
-                <div>
-                    <label>Tipo</label><br>
-                    <select name="tipo">
+
+                <div class="filter-field">
+                    <label class="filter-label">Tipo</label>
+                    <select name="tipo" class="filter-input">
                         <option value="">Todos</option>
                         <option value="noticia" {{ request('tipo') == 'noticia' ? 'selected' : '' }}>Noticia</option>
-                        <option value="evento" {{ request('tipo') == 'evento' ? 'selected' : '' }}>Evento</option>
+                        <option value="evento"  {{ request('tipo') == 'evento'  ? 'selected' : '' }}>Evento</option>
                     </select>
                 </div>
- 
-                <div>
-                    <button class="btn btn-primary btn-sm">Aplicar</button>
-                    <a href="{{ route('admin.blog.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+
+                <div style="display:flex; gap:.5rem; align-items:flex-end; padding-bottom:1px;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i> Aplicar
+                    </button>
+                    <a href="{{ route('admin.blog.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-xmark"></i> Limpiar
+                    </a>
                 </div>
- 
+
             </div>
         </form>
     </div>

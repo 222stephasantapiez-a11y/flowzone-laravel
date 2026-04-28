@@ -155,6 +155,9 @@
         <h2>Empresas Registradas</h2>
         <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
               <span class="badge badge-info">{{ $empresas->total() }} total</span>
+            <button type="button" onclick="toggleFiltrosEmpresas()" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-filter"></i> Filtro
+            </button>
             <a href="{{ route('admin.empresas.export.excel') }}" class="btn btn-success btn-sm">
                 <i class="fa-solid fa-file-excel"></i> Excel
             </a>
@@ -173,6 +176,45 @@
                 ],
             ])
         </div>
+    </div>
+
+    {{-- FILTROS --}}
+    <div id="filtrosEmpresas" style="display:none; padding: 1rem 0 .5rem;">
+        <form method="GET" action="{{ route('admin.empresas.index') }}">
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+
+                <div class="filter-field">
+                    <label class="filter-label">Nombre empresa</label>
+                    <input type="text" name="busqueda" value="{{ request('busqueda') }}"
+                           placeholder="Buscar por nombre..." class="filter-input">
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">Responsable / correo</label>
+                    <input type="text" name="responsable" value="{{ request('responsable') }}"
+                           placeholder="Nombre o email..." class="filter-input">
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">Estado</label>
+                    <select name="estado" class="filter-input">
+                        <option value="">Todos</option>
+                        <option value="aprobado"  {{ request('estado') === 'aprobado'  ? 'selected' : '' }}>Aprobada</option>
+                        <option value="pendiente" {{ request('estado') === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                    </select>
+                </div>
+
+                <div style="display:flex; gap:.5rem; align-items:flex-end; padding-bottom:1px;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i> Aplicar
+                    </button>
+                    <a href="{{ route('admin.empresas.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-xmark"></i> Limpiar
+                    </a>
+                </div>
+
+            </div>
+        </form>
     </div>
 
     <div class="table-responsive">
@@ -288,6 +330,17 @@ document.addEventListener('keydown', function(e) {
     document.getElementById('modal-empresa').style.display = 'block';
     document.body.style.overflow = 'hidden';
 @endisset
+
+function toggleFiltrosEmpresas() {
+    const box = document.getElementById('filtrosEmpresas');
+    box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+}
+
+window.addEventListener('load', function () {
+    if ("{{ request('busqueda') }}" || "{{ request('responsable') }}" || "{{ request('estado') }}") {
+        document.getElementById('filtrosEmpresas').style.display = 'block';
+    }
+});
 </script>
 @endpush
 
