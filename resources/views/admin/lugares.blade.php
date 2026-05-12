@@ -201,44 +201,49 @@
   </div>
 
   {{-- FILTROS --}}
-  <div id="filtrosLugares" style="display:none; margin-bottom:1rem;">
+  <div id="filtrosLugares" style="display:none; padding: 1rem 0 .5rem;">
     <form method="GET" action="{{ route('admin.lugares.index') }}">
+        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
 
-        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
-
-            <div>
-                <label>Nombre</label><br>
-                <input type="text" name="nombre" value="{{ request('nombre') }}">
+            <div class="filter-field">
+                <label class="filter-label">Nombre</label>
+                <input type="text" name="nombre" value="{{ request('nombre') }}"
+                       placeholder="Buscar por nombre..." class="filter-input">
             </div>
 
-            <div>
-                <label>Categoría</label><br>
-                <select name="categoria">
+            <div class="filter-field">
+                <label class="filter-label">Categoría</label>
+                <select name="categoria" class="filter-input">
                     <option value="">Todas</option>
-                    <option value="natural" {{ request('categoria') == 'natural' ? 'selected' : '' }}>Natural</option>
-                    <option value="cultural" {{ request('categoria') == 'cultural' ? 'selected' : '' }}>Cultural</option>
-                    <option value="histórico" {{ request('categoria') == 'histórico' ? 'selected' : '' }}>Histórico</option>
-                    <option value="aventura" {{ request('categoria') == 'aventura' ? 'selected' : '' }}>Aventura</option>
+                    <option value="natural"    {{ request('categoria') == 'natural'    ? 'selected' : '' }}>Natural</option>
+                    <option value="cultural"   {{ request('categoria') == 'cultural'   ? 'selected' : '' }}>Cultural</option>
+                    <option value="histórico"  {{ request('categoria') == 'histórico'  ? 'selected' : '' }}>Histórico</option>
+                    <option value="aventura"   {{ request('categoria') == 'aventura'   ? 'selected' : '' }}>Aventura</option>
                 </select>
             </div>
 
-            <div>
-                <label>Ubicación</label><br>
-                <input type="text" name="ubicacion" value="{{ request('ubicacion') }}">
+            <div class="filter-field">
+                <label class="filter-label">Ubicación</label>
+                <input type="text" name="ubicacion" value="{{ request('ubicacion') }}"
+                       placeholder="Ej: Ortega..." class="filter-input">
             </div>
 
-            <div>
-                <label>Precio Entrada</label><br>
-                <input type="number" name="precio_entrada" value="{{ request('precio_entrada') }}">
+            <div class="filter-field">
+                <label class="filter-label">Precio entrada máx.</label>
+                <input type="number" name="precio_entrada" value="{{ request('precio_entrada') }}"
+                       placeholder="Ej: 10000" class="filter-input">
             </div>
 
-            <div style="display:flex; gap:.5rem;">
-                <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
-                <a href="{{ route('admin.lugares.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+            <div style="display:flex; gap:.5rem; align-items:flex-end; padding-bottom:1px;">
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-magnifying-glass"></i> Aplicar
+                </button>
+                <a href="{{ route('admin.lugares.index') }}" class="btn btn-secondary btn-sm">
+                    <i class="fa-solid fa-xmark"></i> Limpiar
+                </a>
             </div>
 
         </div>
-
     </form>
   </div>
 

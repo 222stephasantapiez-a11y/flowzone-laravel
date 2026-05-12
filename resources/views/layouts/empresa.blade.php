@@ -40,12 +40,15 @@
             <a href="{{ route('home') }}" target="_blank">
                 <i class="fa-solid fa-globe"></i> Ver sitio
             </a>
+            
+
             <form method="POST" action="{{ route('logout') }}" style="margin:0">
                 @csrf
                 <button type="submit" class="sidebar-logout-btn">
                     <i class="fa-solid fa-right-from-bracket"></i> Cerrar sesión
                 </button>
             </form>
+            
         </nav>
     </aside>
 

@@ -58,33 +58,38 @@
         </div>
 
         <!-- FILTROS -->
-        <div id="filtrosBox" style="display:none; margin-bottom:1rem;">
+        <div id="filtrosBox" style="display:none; padding: 1rem 0 .5rem;">
             <form method="GET" action="{{ route('admin.usuarios.index') }}">
+                <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
 
-                <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
-
-                    <div>
-                        <label>ID</label><br>
-                        <input type="number" name="id" value="{{ request('id') }}">
+                    <div class="filter-field">
+                        <label class="filter-label">ID</label>
+                        <input type="number" name="id" value="{{ request('id') }}"
+                               placeholder="Ej: 5" class="filter-input">
                     </div>
 
-                    <div>
-                        <label>Nombre</label><br>
-                        <input type="text" name="name" value="{{ request('name') }}">
+                    <div class="filter-field">
+                        <label class="filter-label">Nombre</label>
+                        <input type="text" name="name" value="{{ request('name') }}"
+                               placeholder="Buscar por nombre..." class="filter-input">
                     </div>
 
-                    <div>
-                        <label>Email</label><br>
-                        <input type="text" name="email" value="{{ request('email') }}">
+                    <div class="filter-field">
+                        <label class="filter-label">Email</label>
+                        <input type="text" name="email" value="{{ request('email') }}"
+                               placeholder="Buscar por correo..." class="filter-input">
                     </div>
 
-                    <div style="display:flex; gap:.5rem;">
-                        <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
-                        <a href="{{ route('admin.usuarios.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+                    <div style="display:flex; gap:.5rem; align-items:flex-end; padding-bottom:1px;">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fa-solid fa-magnifying-glass"></i> Aplicar
+                        </button>
+                        <a href="{{ route('admin.usuarios.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="fa-solid fa-xmark"></i> Limpiar
+                        </a>
                     </div>
 
                 </div>
-
             </form>
         </div>
 

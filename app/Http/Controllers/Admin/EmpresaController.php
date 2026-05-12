@@ -38,6 +38,18 @@ class EmpresaController extends Controller
         $direction = $direction === 'desc' ? 'desc' : 'asc';
 
         $empresas = Empresa::with('usuario')
+            ->when($request->filled('busqueda'), function ($q) use ($request) {
+                $q->where('nombre', 'like', '%' . $request->busqueda . '%');
+            })
+            ->when($request->filled('estado'), function ($q) use ($request) {
+                $q->where('aprobado', $request->estado === 'aprobado' ? true : false);
+            })
+            ->when($request->filled('responsable'), function ($q) use ($request) {
+                $q->whereHas('usuario', function ($u) use ($request) {
+                    $u->where('name', 'like', '%' . $request->responsable . '%')
+                      ->orWhere('email', 'like', '%' . $request->responsable . '%');
+                });
+            })
             ->orderBy($sort, $direction)
             ->orderBy('id', 'desc')
             ->paginate($perPage)
@@ -57,7 +69,9 @@ class EmpresaController extends Controller
             'perPage',
             'sort',
             'direction'
+
         ));
+                    
     }
 
     // ==========================

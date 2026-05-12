@@ -1,8 +1,8 @@
 @extends('layouts.app')
- 
+
 @section('title', 'Hoteles en Ortega')
 @section('body-class', 'no-hero')
- 
+
 @section('content')
 <main>
  

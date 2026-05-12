@@ -34,7 +34,13 @@
                 <a href="{{ route('favoritos') }}" class="btn btn-glass btn-sm">
                     <i class="fa-solid fa-heart"></i>
                 </a>
-                <a href="{{ route('dashboard') }}" class="btn btn-glass btn-sm" title="Mi Panel">
+                @if(auth()->user()->isAdmin())
+    <a href="{{ route('admin.dashboard') }}" class="btn btn-glass btn-sm" title="Mi Panel">
+@elseif(auth()->user()->isEmpresa())
+    <a href="{{ route('empresa.dashboard') }}" class="btn btn-glass btn-sm" title="Mi Panel">
+@else
+    <a href="{{ route('home') }}" class="btn btn-glass btn-sm" title="Mi Panel">
+@endif
                   <i class="fa-solid fa-circle-user"></i>
                     </a>
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">

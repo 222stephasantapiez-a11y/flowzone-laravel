@@ -177,38 +177,51 @@
     </div>
 
     {{-- FILTROS --}}
-    <div id="filtrosBox" style="display:none; margin-bottom:1rem;">
+    <div id="filtrosBox" style="display:none; padding: 1rem 0 .5rem;">
         <form method="GET" action="{{ route('admin.reservas.index') }}">
-            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
-                <div>
-                    <label>Fecha inicio</label><br>
-                    <input type="date" name="fecha_inicio" value="{{ request('fecha_inicio') }}">
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+
+                <div class="filter-field">
+                    <label class="filter-label">Fecha inicio</label>
+                    <input type="date" name="fecha_inicio" value="{{ request('fecha_inicio') }}" class="filter-input">
                 </div>
-                <div>
-                    <label>Fecha fin</label><br>
-                    <input type="date" name="fecha_fin" value="{{ request('fecha_fin') }}">
+
+                <div class="filter-field">
+                    <label class="filter-label">Fecha fin</label>
+                    <input type="date" name="fecha_fin" value="{{ request('fecha_fin') }}" class="filter-input">
                 </div>
-                <div>
-                    <label>Usuario</label><br>
-                    <input type="text" name="usuario" value="{{ request('usuario') }}">
+
+                <div class="filter-field">
+                    <label class="filter-label">Usuario</label>
+                    <input type="text" name="usuario" value="{{ request('usuario') }}"
+                           placeholder="Nombre del usuario..." class="filter-input">
                 </div>
-                <div>
-                    <label>Hotel</label><br>
-                    <input type="text" name="hotel" value="{{ request('hotel') }}">
+
+                <div class="filter-field">
+                    <label class="filter-label">Hotel</label>
+                    <input type="text" name="hotel" value="{{ request('hotel') }}"
+                           placeholder="Nombre del hotel..." class="filter-input">
                 </div>
-                <div>
-                    <label>Estado</label><br>
-                    <select name="estado">
+
+                <div class="filter-field">
+                    <label class="filter-label">Estado</label>
+                    <select name="estado" class="filter-input">
                         <option value="">Todos</option>
                         <option value="pendiente"  {{ request('estado') == 'pendiente'  ? 'selected' : '' }}>Pendiente</option>
                         <option value="confirmada" {{ request('estado') == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
                         <option value="cancelada"  {{ request('estado') == 'cancelada'  ? 'selected' : '' }}>Cancelada</option>
                     </select>
                 </div>
-                <div style="display:flex; gap:.5rem;">
-                    <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
-                    <a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
+
+                <div style="display:flex; gap:.5rem; align-items:flex-end; padding-bottom:1px;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i> Aplicar
+                    </button>
+                    <a href="{{ route('admin.reservas.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-xmark"></i> Limpiar
+                    </a>
                 </div>
+
             </div>
         </form>
     </div>
