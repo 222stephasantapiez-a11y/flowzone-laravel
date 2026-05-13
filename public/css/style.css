@@ -3303,3 +3303,210 @@ a.stat-card--link:focus-visible {
     padding: 8px 10px !important;
     border: 1px solid #ccc !important;
 }
+/* ============================================================
+   MODO OSCURO
+   ============================================================ */
+
+[data-theme="dark"] {
+  --white:    #1e2d24;
+  --gray-50:  #151e19;
+  --gray-100: #1e2d24;
+  --gray-200: #2a3d30;
+  --gray-400: #7a9a85;
+  --gray-600: #a0b8a8;
+  --gray-900: #e8f0ea;
+
+  --green-50:  #1a2e22;
+  --green-200: #2d5a3f;
+
+  --shadow-sm:   0 1px 3px rgba(0,0,0,.3);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.4);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,.5);
+  --shadow-xl:   0 20px 60px rgba(0,0,0,.6);
+  --shadow-card: 0 4px 20px rgba(0,0,0,.3);
+}
+
+/* Body en modo oscuro */
+[data-theme="dark"] body {
+  background: #151e19;
+  color: #e8f0ea;
+}
+
+/* Cards */
+[data-theme="dark"] .card,
+[data-theme="dark"] .admin-section,
+[data-theme="dark"] .dash-card,
+[data-theme="dark"] .db-panel,
+[data-theme="dark"] .db-card,
+[data-theme="dark"] .stat-card,
+[data-theme="dark"] .rv-form-wrap,
+[data-theme="dark"] .rv-card,
+[data-theme="dark"] .calificacion-box,
+[data-theme="dark"] .reserva-box,
+[data-theme="dark"] .detalle-main,
+[data-theme="dark"] .hotel-info-card,
+[data-theme="dark"] .reserva-form-card,
+[data-theme="dark"] .contacto-info,
+[data-theme="dark"] .contacto-form-card {
+  background: #1e2d24;
+  border-color: #2a3d30;
+  color: #e8f0ea;
+}
+
+/* Topbar y sidebar admin */
+[data-theme="dark"] .admin-topbar {
+  background: #1e2d24;
+  border-bottom-color: #2a3d30;
+}
+
+[data-theme="dark"] .topbar-title h1 { color: #e8f0ea; }
+
+/* Stats strip */
+[data-theme="dark"] .stats-strip {
+  background: #1e2d24;
+}
+
+[data-theme="dark"] .stats-strip-item {
+  border-right-color: #2a3d30;
+}
+
+/* Tablas */
+[data-theme="dark"] .admin-table th,
+[data-theme="dark"] .db-table thead tr {
+  background: #1a2e22;
+  color: #7a9a85;
+}
+
+[data-theme="dark"] .admin-table td,
+[data-theme="dark"] .db-table td {
+  border-bottom-color: #2a3d30;
+  color: #e8f0ea;
+}
+
+[data-theme="dark"] .admin-table tr:hover td,
+[data-theme="dark"] .db-table--hover tbody tr:hover {
+  background: #1a2e22;
+}
+
+/* Formularios */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group textarea,
+[data-theme="dark"] .form-group select,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .rv-textarea,
+[data-theme="dark"] .filter-form input,
+[data-theme="dark"] .filter-form select,
+[data-theme="dark"] .per-page-select {
+  background: #1a2e22;
+  border-color: #2a3d30;
+  color: #e8f0ea;
+}
+
+[data-theme="dark"] .form-label,
+[data-theme="dark"] .form-group label { color: #a0b8a8; }
+
+/* Filtros */
+[data-theme="dark"] .filters {
+  background: #1e2d24;
+  border-color: #2a3d30;
+}
+
+/* Pagination */
+[data-theme="dark"] .pagination-bar {
+  background: #1a2e22;
+  border-top-color: #2a3d30;
+}
+
+[data-theme="dark"] .page-btn {
+  background: #1e2d24;
+  border-color: #2a3d30;
+  color: #a0b8a8;
+}
+
+/* Section titles */
+[data-theme="dark"] .section-title,
+[data-theme="dark"] .card-content h3,
+[data-theme="dark"] .blog-card-title,
+[data-theme="dark"] .db-card__num { color: #e8f0ea; }
+
+[data-theme="dark"] .card-desc,
+[data-theme="dark"] .card-meta,
+[data-theme="dark"] .blog-card-excerpt { color: #a0b8a8; }
+
+/* DB panel header */
+[data-theme="dark"] .db-panel__header {
+  border-bottom-color: #2a3d30;
+}
+
+[data-theme="dark"] .db-panel__title { color: #e8f0ea; }
+
+/* Auth panels */
+[data-theme="dark"] .auth-panel-right {
+  background: #1e2d24;
+}
+
+[data-theme="dark"] .auth-heading h2 { color: #e8f0ea; }
+
+[data-theme="dark"] .auth-field input {
+  background: #1a2e22;
+  border-color: #2a3d30;
+  color: #e8f0ea;
+}
+
+[data-theme="dark"] .auth-tabs {
+  background: #1a2e22;
+}
+
+[data-theme="dark"] .auth-tab.active {
+  background: #2a3d30;
+  color: #e8f0ea;
+}
+
+[data-theme="dark"] .auth-quick {
+  border-color: #2a3d30;
+}
+
+[data-theme="dark"] .auth-quick-title {
+  background: #1a2e22;
+  color: #7a9a85;
+}
+
+[data-theme="dark"] .auth-quick-row {
+  border-top-color: #2a3d30;
+  color: #e8f0ea;
+}
+
+[data-theme="dark"] .auth-quick-row:hover { background: #1a2e22; }
+
+/* Divider */
+[data-theme="dark"] .auth-divider { color: #7a9a85; }
+[data-theme="dark"] .auth-divider::before,
+[data-theme="dark"] .auth-divider::after { background: #2a3d30; }
+
+/* Toggle button */
+.dark-mode-toggle {
+  background: none;
+  border: 1.5px solid rgba(255,255,255,.3);
+  border-radius: var(--radius-full);
+  color: var(--white);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: .9rem;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.dark-mode-toggle:hover {
+  background: rgba(255,255,255,.15);
+  border-color: rgba(255,255,255,.5);
+}
+
+[data-theme="dark"] .dark-mode-toggle {
+  border-color: rgba(255,255,255,.2);
+  color: var(--green-400);
+}
