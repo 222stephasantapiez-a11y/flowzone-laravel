@@ -1,17 +1,16 @@
 // ============================================================
 // FlowZone — script.js
 // ============================================================
-
+ 
 // 1. Navbar scroll effect
 const navbar = document.getElementById('navbar');
 if (navbar) {
     window.addEventListener('scroll', () => {
         navbar.classList.toggle('scrolled', window.scrollY > 80);
     }, { passive: true });
-    // Trigger on load
     navbar.classList.toggle('scrolled', window.scrollY > 80);
 }
-
+ 
 // 2. Mobile nav toggle
 const navToggle = document.getElementById('navToggle');
 const navMenu = document.getElementById('navMenu');
@@ -20,7 +19,6 @@ if (navToggle && navMenu) {
         navMenu.classList.toggle('open');
         navToggle.classList.toggle('open');
     });
-    // Close on outside click
     document.addEventListener('click', (e) => {
         if (!navMenu.contains(e.target) && !navToggle.contains(e.target)) {
             navMenu.classList.remove('open');
@@ -28,7 +26,7 @@ if (navToggle && navMenu) {
         }
     });
 }
-
+ 
 // 3. Animate on scroll (IntersectionObserver)
 if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries) => {
@@ -39,10 +37,10 @@ if ('IntersectionObserver' in window) {
             }
         });
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-
+ 
     document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
 }
-
+ 
 // 4. Admin sidebar mobile toggle
 const adminToggle = document.getElementById('adminMenuToggle');
 const adminSidebar = document.getElementById('adminSidebar');
@@ -54,7 +52,7 @@ if (adminToggle && adminSidebar) {
         }
     });
 }
-
+ 
 // 5. Image preview (admin imagenes)
 const fileInput = document.getElementById('imagen_file');
 const previewImg = document.getElementById('preview-img');
@@ -68,7 +66,7 @@ if (fileInput && previewImg) {
         }
     });
 }
-
+ 
 const urlInput = document.getElementById('imagen_url');
 if (urlInput && previewImg) {
     urlInput.addEventListener('input', (e) => {
@@ -76,7 +74,7 @@ if (urlInput && previewImg) {
         if (url) { previewImg.src = url; previewImg.style.display = 'block'; }
     });
 }
-
+ 
 // 6. Drag & drop reorder (admin imagenes)
 const sortableList = document.getElementById('sortable-images');
 if (sortableList) {
@@ -97,7 +95,6 @@ if (sortableList) {
                 const tgtIdx = allItems.indexOf(item);
                 if (srcIdx < tgtIdx) item.after(dragSrc);
                 else item.before(dragSrc);
-                // Send new order
                 const ids = [...sortableList.querySelectorAll('[data-id]')].map(el => el.dataset.id);
                 fetch('/admin/imagenes/orden', {
                     method: 'POST',
@@ -108,7 +105,7 @@ if (sortableList) {
         });
     });
 }
-
+ 
 // 7. Star rating
 document.querySelectorAll('.stars .star').forEach(star => {
     star.addEventListener('click', () => {
@@ -120,4 +117,40 @@ document.querySelectorAll('.stars .star').forEach(star => {
         const input = container.nextElementSibling;
         if (input && input.type === 'hidden') input.value = val;
     });
+});
+ 
+// 8. Modo oscuro
+const darkToggle = document.getElementById('darkToggle');
+const darkIcon   = document.getElementById('darkIcon');
+ 
+function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (darkIcon) {
+        darkIcon.className = theme === 'dark'
+            ? 'fa-solid fa-sun'
+            : 'fa-solid fa-moon';
+    }
+}
+ 
+function getPreferredTheme() {
+    const saved = localStorage.getItem('fz-theme');
+    if (saved) return saved;
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+ 
+applyTheme(getPreferredTheme());
+ 
+if (darkToggle) {
+    darkToggle.addEventListener('click', () => {
+        const current = document.documentElement.getAttribute('data-theme');
+        const next    = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem('fz-theme', next);
+        applyTheme(next);
+    });
+}
+ 
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('fz-theme')) {
+        applyTheme(e.matches ? 'dark' : 'light');
+    }
 });

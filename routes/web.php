@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\FavoritoController;
@@ -17,6 +18,7 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GastronomiaController;
 use App\Http\Controllers\Admin\BlogController;
 use App\Http\Controllers\Admin\ImagenController;
+use App\Http\Controllers\Admin\UsuarioController;
 
 // ── Páginas públicas ─────────────────────────────────────────
 Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas.index');
@@ -26,7 +28,7 @@ Route::get('/hoteles/{hotel}', [PageController::class, 'detalleHotel'])->name('h
 Route::get('/lugares', [PageController::class, 'lugares'])->name('lugares');
 Route::get('/lugares/{lugar}', [PageController::class, 'detalleLugar'])->name('lugares.detalle');
 Route::get('/eventos', [PageController::class, 'eventos'])->name('eventos');
-Route::get('/eventos/{evento}', [PageController::class, 'detalleEvento'])->name('eventos.detalle'); // ✅ RUTA AGREGADA
+Route::get('/eventos/{evento}', [PageController::class, 'detalleEvento'])->name('eventos.detalle');
 Route::get('/gastronomia', [PageController::class, 'gastronomia'])->name('gastronomia');
 Route::get('/blog', [PageController::class, 'blog'])->name('blog');
 Route::get('/blog/{post:slug}', [PageController::class, 'blogPost'])->name('blog.post');
@@ -40,6 +42,12 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::get('/registro', [AuthController::class, 'showRegistro'])->name('registro');
     Route::post('/registro', [AuthController::class, 'registro']);
+
+    // ── Olvidé mi contraseña ─────────────────────────────────
+    Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])->name('password.request');
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.update');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
@@ -59,16 +67,12 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::get('/dashboard', [EmpresaDashboardController::class, 'index'])->name('dashboard');
     Route::post('/solicitud', [EmpresaDashboardController::class, 'enviarSolicitud'])->name('solicitud');
 
-
-    // Blog empresa
     Route::get('/blog', [BlogEmpresaController::class, 'index'])->name('blog.index');
     Route::post('/blog', [BlogEmpresaController::class, 'store'])->name('blog.store');
     Route::get('/blog/{post}/edit', [BlogEmpresaController::class, 'edit'])->name('blog.edit');
     Route::put('/blog/{post}', [BlogEmpresaController::class, 'update'])->name('blog.update');
     Route::delete('/blog/{post}', [BlogEmpresaController::class, 'destroy'])->name('blog.destroy');
 
-    // Gastronomía empresa
-    // Export/import deben ir ANTES de las rutas con parámetros
     Route::get('/gastronomia/export/excel', [GastronomiaEmpresaController::class, 'exportExcel'])->name('gastronomia.export.excel');
     Route::get('/gastronomia/export/pdf', [GastronomiaEmpresaController::class, 'exportPdf'])->name('gastronomia.export.pdf');
     Route::post('/gastronomia/import/excel', [GastronomiaEmpresaController::class, 'importExcel'])->name('gastronomia.import.excel');
@@ -78,7 +82,6 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::put('/gastronomia/{gastronomium}', [GastronomiaEmpresaController::class, 'update'])->name('gastronomia.update');
     Route::delete('/gastronomia/{gastronomium}', [GastronomiaEmpresaController::class, 'destroy'])->name('gastronomia.destroy');
 
-    // Planes turísticos
     Route::post('/gastronomia/planes/generar', [\App\Http\Controllers\Empresa\PlanTuristicoController::class, 'generar'])->name('gastronomia.planes.generar');
     Route::post('/gastronomia/planes/guardar', [\App\Http\Controllers\Empresa\PlanTuristicoController::class, 'guardar'])->name('gastronomia.planes.guardar');
     Route::delete('/gastronomia/planes/{plan}', [\App\Http\Controllers\Empresa\PlanTuristicoController::class, 'destroy'])->name('gastronomia.planes.destroy');
@@ -88,7 +91,6 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
 Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // ── Hoteles ──────────────────────────────────────────────
     Route::get('/hoteles/export/excel',  [HotelController::class, 'exportExcel'])->name('hoteles.export.excel');
     Route::get('/hoteles/export/pdf',    [HotelController::class, 'exportPdf'])->name('hoteles.export.pdf');
     Route::post('/hoteles/import/excel', [HotelController::class, 'importExcel'])->name('hoteles.import.excel');
@@ -98,7 +100,6 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::put('/hoteles/{hotel}',       [HotelController::class, 'update'])->name('hoteles.update');
     Route::delete('/hoteles/{hotel}',    [HotelController::class, 'destroy'])->name('hoteles.destroy');
 
-    // ── Lugares ──────────────────────────────────────────────
     Route::get('/lugares/export/excel',  [LugarController::class, 'exportExcel'])->name('lugares.export.excel');
     Route::get('/lugares/export/pdf',    [LugarController::class, 'exportPdf'])->name('lugares.export.pdf');
     Route::post('/lugares/import/excel', [LugarController::class, 'importExcel'])->name('lugares.import.excel');
@@ -108,7 +109,6 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::put('/lugares/{lugar}',       [LugarController::class, 'update'])->name('lugares.update');
     Route::delete('/lugares/{lugar}',    [LugarController::class, 'destroy'])->name('lugares.destroy');
 
-    // ── Eventos ──────────────────────────────────────────────
     Route::get('/eventos/export/excel',  [EventoController::class, 'exportExcel'])->name('eventos.export.excel');
     Route::get('/eventos/export/pdf',    [EventoController::class, 'exportPdf'])->name('eventos.export.pdf');
     Route::post('/eventos/import/excel', [EventoController::class, 'importExcel'])->name('eventos.import.excel');
@@ -118,7 +118,6 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::put('/eventos/{evento}',      [EventoController::class, 'update'])->name('eventos.update');
     Route::delete('/eventos/{evento}',   [EventoController::class, 'destroy'])->name('eventos.destroy');
 
-    // ── Empresas ─────────────────────────────────────────────
     Route::get('/empresas/export/excel',         [EmpresaController::class, 'exportExcel'])->name('empresas.export.excel');
     Route::get('/empresas/export/pdf',           [EmpresaController::class, 'exportPdf'])->name('empresas.export.pdf');
     Route::post('/empresas/import/excel',        [EmpresaController::class, 'importExcel'])->name('empresas.import.excel');
@@ -126,80 +125,30 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/empresas/{empresa}/edit',       [EmpresaController::class, 'edit'])->name('empresas.edit');
     Route::put('/empresas/{empresa}',            [EmpresaController::class, 'update'])->name('empresas.update');
     Route::patch('/empresas/{empresa}/aprobar',  [EmpresaController::class, 'aprobar'])->name('empresas.aprobar');
-    Route::get('/hoteles', [HotelController::class, 'index'])->name('hoteles.index');
-    Route::post('/hoteles', [HotelController::class, 'store'])->name('hoteles.store');
-    Route::get('/hoteles/{hotel}/edit', [HotelController::class, 'edit'])->name('hoteles.edit');
-    Route::put('/hoteles/{hotel}', [HotelController::class, 'update'])->name('hoteles.update');
-    Route::delete('/hoteles/{hotel}', [HotelController::class, 'destroy'])->name('hoteles.destroy');
-    Route::get('/hoteles/export/excel', [App\Http\Controllers\Admin\HotelController::class, 'exportExcel'])->name('hoteles.export.excel');
-    Route::get('/hoteles/export/pdf', [App\Http\Controllers\Admin\HotelController::class, 'exportPdf'])->name('hoteles.export.pdf');
-    Route::post('/hoteles/import/excel', [App\Http\Controllers\Admin\HotelController::class, 'importExcel'])->name('hoteles.import.excel');
-
-    
-    Route::get('/lugares', [LugarController::class, 'index'])->name('lugares.index');
-    Route::post('/lugares', [LugarController::class, 'store'])->name('lugares.store');
-    Route::get('/lugares/{lugar}/edit', [LugarController::class, 'edit'])->name('lugares.edit');
-    Route::put('/lugares/{lugar}', [LugarController::class, 'update'])->name('lugares.update');
-    Route::delete('/lugares/{lugar}', [LugarController::class, 'destroy'])->name('lugares.destroy');
-    Route::get('/lugares/export/excel', [App\Http\Controllers\Admin\LugarController::class, 'exportExcel'])->name('lugares.export.excel');
-    Route::get('/lugares/export/pdf', [App\Http\Controllers\Admin\LugarController::class, 'exportPdf'])->name('lugares.export.pdf');
-    Route::post('/lugares/import/excel', [App\Http\Controllers\Admin\LugarController::class, 'importExcel'])->name('lugares.import.excel');
-
-    Route::get('/eventos', [EventoController::class, 'index'])->name('eventos.index');
-    Route::post('/eventos', [EventoController::class, 'store'])->name('eventos.store');
-    Route::get('/eventos/{evento}/edit', [EventoController::class, 'edit'])->name('eventos.edit');
-    Route::put('/eventos/{evento}', [EventoController::class, 'update'])->name('eventos.update');
-    Route::delete('/eventos/{evento}', [EventoController::class, 'destroy'])->name('eventos.destroy');
-    Route::get('/eventos/export/excel',[App\Http\Controllers\Admin\EventoController::class, 'exportExcel'])->name('eventos.export.excel');
-    Route::get('eventos/export/pdf', [App\Http\Controllers\Admin\EventoController::class, 'exportPdf'])->name('eventos.export.pdf');
-    Route::post('/eventos/import/excel', [App\Http\Controllers\Admin\EventoController::class, 'importExcel'])->name('eventos.import.excel');
-   
-
-    Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas.index');
-    Route::get('/empresas/export/excel', [EmpresaController::class, 'exportExcel'])->name('empresas.export.excel');
-    Route::get('/empresas/export/pdf', [EmpresaController::class, 'exportPdf'])->name('empresas.export.pdf');
-    Route::post('/empresas/import/excel', [EmpresaController::class, 'importExcel'])->name('empresas.import.excel');
-    Route::get('/empresas/{empresa}/edit', [EmpresaController::class, 'edit'])->name('empresas.edit');
-    Route::put('/empresas/{empresa}', [EmpresaController::class, 'update'])->name('empresas.update');
-    Route::patch('/empresas/{empresa}/aprobar', [EmpresaController::class, 'aprobar'])->name('empresas.aprobar');
     Route::patch('/empresas/{empresa}/rechazar', [EmpresaController::class, 'rechazar'])->name('empresas.rechazar');
     Route::delete('/empresas/{empresa}',         [EmpresaController::class, 'destroy'])->name('empresas.destroy');
     Route::patch('/notificaciones/{notificacion}/leer', [EmpresaController::class, 'marcarLeida'])->name('notificaciones.leer');
     Route::post('/notificaciones/leer-todas',           [EmpresaController::class, 'marcarTodasLeidas'])->name('notificaciones.leer-todas');
 
-    // ── Reservas ─────────────────────────────────────────────
-    Route::get('/reservas/export/excel',  [ReservaController::class, 'exportExcel'])->name('reservas.export.excel');
-    Route::get('/reservas/export/pdf',    [ReservaController::class, 'exportPdf'])->name('reservas.export.pdf');
-    Route::post('/reservas/import/excel', [ReservaController::class, 'importExcel'])->name('reservas.import.excel');
-    Route::get('/reservas',               [ReservaController::class, 'index'])->name('reservas.index');
-    Route::post('/reservas',              [ReservaController::class, 'store'])->name('reservas.store');
-    Route::get('/reservas/{reserva}/edit',        [ReservaController::class, 'edit'])->name('reservas.edit');
-    Route::put('/reservas/{reserva}',             [ReservaController::class, 'update'])->name('reservas.update');
-    Route::patch('/reservas/{reserva}/estado',    [ReservaController::class, 'cambiarEstado'])->name('reservas.estado');
-    Route::delete('/reservas/{reserva}',          [ReservaController::class, 'destroy'])->name('reservas.destroy');
+    Route::get('/reservas/export/excel',       [ReservaController::class, 'exportExcel'])->name('reservas.export.excel');
+    Route::get('/reservas/export/pdf',         [ReservaController::class, 'exportPdf'])->name('reservas.export.pdf');
+    Route::post('/reservas/import/excel',      [ReservaController::class, 'importExcel'])->name('reservas.import.excel');
+    Route::get('/reservas',                    [ReservaController::class, 'index'])->name('reservas.index');
+    Route::post('/reservas',                   [ReservaController::class, 'store'])->name('reservas.store');
+    Route::get('/reservas/{reserva}/edit',     [ReservaController::class, 'edit'])->name('reservas.edit');
+    Route::put('/reservas/{reserva}',          [ReservaController::class, 'update'])->name('reservas.update');
+    Route::patch('/reservas/{reserva}/estado', [ReservaController::class, 'cambiarEstado'])->name('reservas.estado');
+    Route::delete('/reservas/{reserva}',       [ReservaController::class, 'destroy'])->name('reservas.destroy');
 
-    // ── Gastronomía ──────────────────────────────────────────
     Route::get('/gastronomia/export/excel',  [GastronomiaController::class, 'exportExcel'])->name('gastronomia.export.excel');
     Route::get('/gastronomia/export/pdf',    [GastronomiaController::class, 'exportPdf'])->name('gastronomia.export.pdf');
     Route::post('/gastronomia/import/excel', [GastronomiaController::class, 'importExcel'])->name('gastronomia.import.excel');
     Route::get('/gastronomia',               [GastronomiaController::class, 'index'])->name('gastronomia.index');
     Route::post('/gastronomia',              [GastronomiaController::class, 'store'])->name('gastronomia.store');
-    Route::get('/reservas', [ReservaController::class, 'index'])->name('reservas.index');
-    Route::post('/reservas', [ReservaController::class, 'store'])->name('reservas.store');
-    Route::get('/reservas/{reserva}/edit', [ReservaController::class, 'edit'])->name('reservas.edit');
-    Route::put('/reservas/{reserva}', [ReservaController::class, 'update'])->name('reservas.update');
-    Route::delete('/reservas/{reserva}', [ReservaController::class, 'destroy'])->name('reservas.destroy');
-    Route::get('/reservas/export/excel', [ReservaController::class, 'exportExcel'])->name('reservas.export.excel');
-    Route::post('/reservas/import/excel', [ReservaController::class, 'importExcel'])->name('reservas.import.excel');
-    Route::get('/reservas/export/pdf', [ReservaController::class, 'exportPdf'])->name('reservas.export.pdf');
-    // Gastronomía admin
-    Route::get('/gastronomia', [GastronomiaController::class, 'index'])->name('gastronomia.index');
-    Route::post('/gastronomia', [GastronomiaController::class, 'store'])->name('gastronomia.store');
     Route::get('/gastronomia/{gastronomium}/edit', [GastronomiaController::class, 'edit'])->name('gastronomia.edit');
     Route::put('/gastronomia/{gastronomium}',      [GastronomiaController::class, 'update'])->name('gastronomia.update');
     Route::delete('/gastronomia/{gastronomium}',   [GastronomiaController::class, 'destroy'])->name('gastronomia.destroy');
 
-    // ── Blog ─────────────────────────────────────────────────
     Route::get('/blog/export/excel',  [BlogController::class, 'exportExcel'])->name('blog.export.excel');
     Route::get('/blog/export/pdf',    [BlogController::class, 'exportPdf'])->name('blog.export.pdf');
     Route::post('/blog/import/excel', [BlogController::class, 'importExcel'])->name('blog.import.excel');
@@ -208,47 +157,16 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/blog/{blog}/edit',   [BlogController::class, 'edit'])->name('blog.edit');
     Route::put('/blog/{blog}',        [BlogController::class, 'update'])->name('blog.update');
     Route::delete('/blog/{blog}',     [BlogController::class, 'destroy'])->name('blog.destroy');
-    Route::put('/gastronomia/{gastronomium}', [GastronomiaController::class, 'update'])->name('gastronomia.update');
-    Route::delete('/gastronomia/{gastronomium}', [GastronomiaController::class, 'destroy'])->name('gastronomia.destroy');
-    Route::get('/gastronomia/export/excel', [App\Http\Controllers\Admin\GastronomiaController::class, 'exportExcel'])->name('gastronomia.export.excel');
-    Route::get('/gastronomia/export/pdf', [App\Http\Controllers\Admin\GastronomiaController::class, 'exportPdf'])->name('gastronomia.export.pdf');
-    Route::post('/gastronomia/import/excel', [App\Http\Controllers\Admin\GastronomiaController::class, 'importExcel'])->name('gastronomia.import.excel');
-
-    // Blog admin
-    Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
-    Route::post('/blog', [BlogController::class, 'store'])->name('blog.store');
-    Route::get('/blog/export/excel',[BlogController::class, 'exportExcel'])->name('blog.export.excel');
-    Route::post('/blog/import/excel', [BlogController::class, 'importExcel'])->name('blog.import.excel');
-    Route::get('/blog/export/pdf', [BlogController::class, 'exportPdf'])->name('blog.export.pdf');
-    Route::get('/blog/{blog}/edit', [BlogController::class, 'edit'])->name('blog.edit');
-    Route::put('/blog/{blog}', [BlogController::class, 'update'])->name('blog.update');
-    Route::delete('/blog/{blog}', [BlogController::class, 'destroy'])->name('blog.destroy');
     Route::patch('/blog/{blog}/publicar', [BlogController::class, 'togglePublicado'])->name('blog.publicar');
 
-    // ── Usuarios ─────────────────────────────────────────────
     Route::get('/usuarios/export/excel',  [UsuarioController::class, 'exportExcel'])->name('usuarios.export.excel');
     Route::get('/usuarios/export/pdf',    [UsuarioController::class, 'exportPdf'])->name('usuarios.export.pdf');
     Route::post('/usuarios/import/excel', [UsuarioController::class, 'importExcel'])->name('usuarios.import.excel');
     Route::get('/usuarios',               [UsuarioController::class, 'index'])->name('usuarios.index');
 
-    // ── Imágenes hero/galería ─────────────────────────────────
     Route::get('/imagenes',                   [ImagenController::class, 'index'])->name('imagenes.index');
     Route::post('/imagenes',                  [ImagenController::class, 'store'])->name('imagenes.store');
     Route::patch('/imagenes/{imagen}/toggle', [ImagenController::class, 'toggleActiva'])->name('imagenes.toggle');
     Route::post('/imagenes/orden',            [ImagenController::class, 'orden'])->name('imagenes.orden');
     Route::delete('/imagenes/{imagen}',       [ImagenController::class, 'destroy'])->name('imagenes.destroy');
-
-
-    // Gestión de imágenes hero/galería
-    Route::get('/imagenes', [ImagenController::class, 'index'])->name('imagenes.index');
-    Route::post('/imagenes', [ImagenController::class, 'store'])->name('imagenes.store');
-    Route::patch('/imagenes/{imagen}/toggle', [ImagenController::class, 'toggleActiva'])->name('imagenes.toggle');
-    Route::post('/imagenes/orden', [ImagenController::class, 'orden'])->name('imagenes.orden');
-    Route::delete('/imagenes/{imagen}', [ImagenController::class, 'destroy'])->name('imagenes.destroy');
-
-    // Gestión de usuarios
-    Route::get('/usuarios', [App\Http\Controllers\Admin\UsuarioController::class, 'index'])->name('usuarios.index');
-    Route::get('/usuarios/export/excel', [App\Http\Controllers\Admin\UsuarioController::class, 'exportExcel'])->name('usuarios.export.excel');
-    Route::get('/usuarios/export/pdf', [App\Http\Controllers\Admin\UsuarioController::class, 'exportPdf'])->name('usuarios.export.pdf');
-    Route::post('/usuarios/import/excel', [App\Http\Controllers\Admin\UsuarioController::class, 'importExcel'])->name('usuarios.import.excel');
 });
