@@ -36,18 +36,65 @@
         <button class="img-manager-tab" onclick="showTab('cards',this)">
             <i class="fa-solid fa-th-large"></i> Cards ({{ $imagenes->where('seccion','cards')->count() }})
         </button>
-        <button class="img-manager-tab" onclick="showTab('nueva',this)" style="margin-left:auto;color:var(--primary);">
+        <button class="img-manager-tab" onclick="abrirModalImagen()" style="margin-left:auto;color:var(--primary);">
             <i class="fa-solid fa-plus"></i> Agregar imagen
         </button>
     </div>
 
-    {{-- Tab: Agregar nueva --}}
-    <div id="tab-nueva" class="img-tab-content" style="display:none;">
-        <h3 style="margin-bottom:1.5rem;font-size:1rem;color:var(--gray-900);">
-            <i class="fa-solid fa-plus-circle" style="color:var(--primary);"></i> Agregar nueva imagen
-        </h3>
-        <form method="POST" action="{{ route('admin.imagenes.store') }}" enctype="multipart/form-data" class="admin-form">
-            @csrf
+    {{-- ===================== MODAL ===================== --}}
+    <div id="modal-imagen" style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.55);
+        backdrop-filter: blur(4px);
+        z-index: 999;
+        overflow-y: auto;
+        padding: 2rem 1rem;
+    ">
+        <div style="
+            background: #fff;
+            border-radius: 1rem;
+            max-width: 720px;
+            margin: 0 auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,.25);
+            overflow: hidden;
+        ">
+            {{-- Header modal --}}
+            <div style="
+                background: linear-gradient(135deg, var(--cyan-900), var(--cyan-700));
+                padding: 1.25rem 1.75rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            ">
+                <h3 style="color:#fff;font-size:1.05rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
+                    <i class="fa-solid fa-plus-circle"></i>
+                    Agregar nueva imagen
+                </h3>
+                <button onclick="cerrarModalImagen()" style="
+                    background: rgba(255,255,255,.15);
+                    border: none;
+                    color: #fff;
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 50%;
+                    cursor: pointer;
+                    font-size: 1rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background .2s;
+                " onmouseover="this.style.background='rgba(255,255,255,.3)'"
+                   onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            {{-- Body modal --}}
+            <div style="padding: 1.75rem;max-height:calc(90vh - 120px);overflow-y:auto;">
+                <form method="POST" action="{{ route('admin.imagenes.store') }}" enctype="multipart/form-data" class="admin-form">
+                    @csrf
             <div class="form-row">
                 <div class="form-group">
                     <label>Título (opcional)</label>
@@ -123,6 +170,24 @@
 
 @push('scripts')
 <script>
+function abrirModalImagen() {
+    document.getElementById('modal-imagen').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarModalImagen() {
+    document.getElementById('modal-imagen').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('modal-imagen').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalImagen();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarModalImagen();
+});
+
 function showTab(name, btn) {
     document.querySelectorAll('.img-tab-content').forEach(t => t.style.display = 'none');
     document.querySelectorAll('.img-manager-tab').forEach(t => t.classList.remove('active'));

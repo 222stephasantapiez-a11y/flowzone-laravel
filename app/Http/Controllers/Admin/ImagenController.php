@@ -11,7 +11,7 @@ class ImagenController extends Controller
 {
     public function index()
     {
-        $imagenes = HeroImage::orderBy('seccion')->orderBy('orden')->get();
+        $imagenes = HeroImage::orderBy('seccion', 'desc')->orderBy('orden', 'desc')->get();
         $secciones = ['hero' => 'Hero (Inicio)', 'destacadas' => 'Secciones Destacadas', 'cards' => 'Cards'];
         return view('admin.imagenes', compact('imagenes', 'secciones'));
     }

@@ -13,6 +13,7 @@ class HotelesExport implements FromCollection, WithHeadings
         return Hotel::select(
             'id',
             'nombre',
+            'descripcion',
             'precio',
             'ubicacion',
             'created_at'

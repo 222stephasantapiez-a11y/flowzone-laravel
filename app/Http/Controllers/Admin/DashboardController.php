@@ -34,9 +34,6 @@ class DashboardController extends Controller
 
         // Estadísticas de interacción
         $totalFavoritos      = Favorito::count();
-        $totalCalificaciones = Calificacion::count();
-        $totalComentarios    = Calificacion::whereNotNull('comentario')->where('comentario', '!=', '')->count();
-        $promedioGeneral     = round(Calificacion::avg('calificacion') ?? 0, 1);
 
         // Top 5 hoteles más calificados
         $topHoteles = Calificacion::where('tipo', 'hotel')
@@ -127,7 +124,7 @@ $mesData = $reservasPorMes->pluck('total');
             'reservasPorEstado',
             'estadoLabels', 'estadoData',
             'notificaciones', 'notifCount',
-            'totalFavoritos', 'totalCalificaciones', 'totalComentarios', 'promedioGeneral',
+            'totalFavoritos',
             'topHoteles', 'topLugares'
         ));
     }

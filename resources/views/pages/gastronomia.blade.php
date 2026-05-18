@@ -1,43 +1,36 @@
 @extends('layouts.app')
-
-@section('title', 'Gastronomía Local')
+ 
+@section('title', 'Gastronomia Local')
 @section('body-class', 'no-hero')
-
+ 
 @section('content')
 <main>
-
-{{-- Page Hero --}}
+ 
 <section class="page-hero" style="background:linear-gradient(135deg,var(--green-900) 0%,var(--green-700) 100%);">
     <div class="container">
         <div class="page-hero-content">
-            <span class="page-hero-eyebrow">
-                <i class="fa-solid fa-utensils"></i> Sabores
-            </span>
-            <h1>Gastronomía Local</h1>
+            <span class="page-hero-eyebrow"><i class="fa-solid fa-utensils"></i> Sabores</span>
+            <h1>Gastronomia Local</h1>
             <p>Descubre los sabores y tradiciones culinarias de Ortega, Tolima</p>
             <nav class="breadcrumb" aria-label="Breadcrumb">
                 <a href="{{ route('home') }}">Inicio</a>
                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-                <span aria-current="page">Gastronomía</span>
+                <span aria-current="page">Gastronomia</span>
             </nav>
         </div>
     </div>
 </section>
-
-{{-- Contenido --}}
+ 
 <section class="container section">
-
-    {{-- Filtros --}}
+ 
     <div class="filters">
         <form method="GET" action="{{ route('gastronomia') }}" class="filter-form">
             <input type="text" name="busqueda" placeholder="Buscar platos o restaurantes..."
-                   value="{{ $busqueda }}" aria-label="Buscar gastronomía">
+                   value="{{ $busqueda }}" aria-label="Buscar gastronomia">
             <select name="tipo" aria-label="Filtrar por tipo">
                 <option value="">Todos los tipos</option>
                 @foreach($tipos as $tipo)
-                    <option value="{{ $tipo }}" {{ $tipo_filtro === $tipo ? 'selected' : '' }}>
-                        {{ $tipo }}
-                    </option>
+                    <option value="{{ $tipo }}" {{ $tipo_filtro === $tipo ? 'selected' : '' }}>{{ $tipo }}</option>
                 @endforeach
             </select>
             <button type="submit" class="btn btn-primary">
@@ -46,66 +39,40 @@
             <a href="{{ route('gastronomia') }}" class="btn btn-outline">Limpiar</a>
         </form>
     </div>
-
-    {{-- Grid de platos/restaurantes --}}
+ 
     <div class="grid">
         @forelse($platos as $plato)
             <article class="card animate-on-scroll">
                 <div class="card-img-wrap">
                     @if($plato->imagen)
-                        @php
-                            $imgSrc = str_starts_with($plato->imagen, 'http')
-                                ? $plato->imagen
-                                : Storage::disk('public')->url($plato->imagen);
-                        @endphp
+                        @php $imgSrc = str_starts_with($plato->imagen,'http') ? $plato->imagen : Storage::disk('public')->url($plato->imagen); @endphp
                         <img src="{{ $imgSrc }}" alt="{{ $plato->nombre }}"
                              onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-utensils\'></i></div>'">
                     @else
-                        <div class="card-img-fallback">
-                            <i class="fa-solid fa-utensils" aria-hidden="true"></i>
-                        </div>
+                        <div class="card-img-fallback"><i class="fa-solid fa-utensils" aria-hidden="true"></i></div>
                     @endif
-
-                    @if($plato->tipo)
-                        <span class="card-badge">{{ $plato->tipo }}</span>
-                    @endif
-
+                    @if($plato->tipo)<span class="card-badge">{{ $plato->tipo }}</span>@endif
                     <div class="card-img-overlay" aria-hidden="true"></div>
                 </div>
-
                 <div class="card-content">
                     <h3>{{ $plato->nombre }}</h3>
-
                     @if($plato->restaurante || $plato->empresa)
-                        <p class="card-meta">
-                            <i class="fa-solid fa-store fa-xs" aria-hidden="true"></i>
-                            {{ $plato->restaurante ?? $plato->empresa?->nombre }}
-                        </p>
+                        <p class="card-meta"><i class="fa-solid fa-store fa-xs" aria-hidden="true"></i> {{ $plato->restaurante ?? $plato->empresa?->nombre }}</p>
                     @endif
-
                     @if($plato->ubicacion)
-                        <p class="card-meta">
-                            <i class="fa-solid fa-location-dot fa-xs" aria-hidden="true"></i>
-                            {{ $plato->ubicacion }}
-                        </p>
+                        <p class="card-meta"><i class="fa-solid fa-location-dot fa-xs" aria-hidden="true"></i> {{ $plato->ubicacion }}</p>
                     @endif
-
                     @if($plato->precio_promedio)
                         <p class="card-meta" style="color:var(--green-700);font-weight:700;font-size:.95rem;">
                             <i class="fa-solid fa-tag fa-xs" aria-hidden="true"></i>
                             ${{ number_format($plato->precio_promedio, 0, ',', '.') }} COP
                         </p>
                     @endif
-
                     @if($plato->descripcion)
                         <p class="card-desc">{{ Str::limit($plato->descripcion, 120) }}</p>
                     @endif
-
                     @if($plato->telefono)
-                        <p class="card-meta" style="margin-top:.5rem;">
-                            <i class="fa-solid fa-phone fa-xs" aria-hidden="true"></i>
-                            {{ $plato->telefono }}
-                        </p>
+                        <p class="card-meta" style="margin-top:.5rem;"><i class="fa-solid fa-phone fa-xs" aria-hidden="true"></i> {{ $plato->telefono }}</p>
                     @endif
                 </div>
             </article>
@@ -119,8 +86,7 @@
             </div>
         @endforelse
     </div>
-
+ 
 </section>
-
 </main>
 @endsection

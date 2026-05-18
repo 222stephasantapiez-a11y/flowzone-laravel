@@ -1,7 +1,8 @@
 <nav class="navbar" id="navbar">
     <div class="container navbar-inner">
         <a class="nav-brand" href="{{ route('home') }}">
-            <i ></i> FlowZone
+            <i class=></i> FlowZone
+
         </a>
 
         <ul class="nav-menu" id="navMenu">
@@ -33,9 +34,19 @@
                 <a href="{{ route('favoritos') }}" class="btn btn-glass btn-sm">
                     <i class="fa-solid fa-heart"></i>
                 </a>
-                <a href="{{ route('mis-reservas') }}" class="btn btn-glass btn-sm">
-                    <i class="fa-solid fa-calendar-check"></i>
-                </a>
+            @if(auth()->user()->isAdmin())
+                    <a href="{{ route('admin.dashboard') }}" class="btn btn-glass btn-sm" title="Mi Panel">
+                        <i class="fa-solid fa-circle-user"></i>
+                    </a>
+                @elseif(auth()->user()->isEmpresa())
+                    <a href="{{ route('empresa.dashboard') }}" class="btn btn-glass btn-sm" title="Mi Panel">
+                        <i class="fa-solid fa-circle-user"></i>
+                    </a>
+                @else
+                    <a href="{{ route('mis-reservas') }}" class="btn btn-glass btn-sm" title="Mis Reservas">
+                        <i class="fa-solid fa-circle-user"></i>
+                    </a>
+                @endif
                 <form method="POST" action="{{ route('logout') }}" style="margin:0">
                     @csrf
                     <button type="submit" class="btn btn-white btn-sm">
@@ -51,6 +62,10 @@
                 </a>
             @endauth
         </div>
+
+      <button class="dark-mode-toggle" id="darkToggle" title="Modo oscuro" aria-label="Cambiar tema">
+    <i class="fa-solid fa-moon" id="darkIcon"></i>
+</button>
 
         <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú">
             <span></span><span></span><span></span>

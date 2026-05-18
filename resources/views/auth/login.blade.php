@@ -32,7 +32,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: url('https://th.bing.com/th/id/OIP.ZnOpbBwzMNPumOarX1JeUgHaEK?w=263&h=180&c=7&r=0&o=7&dpr=1.5&pid=1.7&rm=3') center/cover no-repeat;
+            background: url('https://i.pinimg.com/736x/88/56/0e/88560eacc1be906f0925fc8dfc234d06.jpg') center/cover no-repeat;
         }
 
         .auth-panel-left::after {
@@ -274,6 +274,21 @@
             align-items: center;
             gap: .5rem;
         }
+        /* Alerta éxito */
+        .auth-alert-success {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-left: 3px solid #16a34a;
+            color: #15803d;
+            padding: .75rem 1rem;
+            border-radius: var(--radius-md);
+            font-size: .85rem;
+            margin-bottom: 1.2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
 
         /* Botón principal */
         .auth-submit {
@@ -440,6 +455,13 @@
 
     <div class="auth-role-badge" id="rol-badge">Ingresando como Visitante</div>
 
+    @if(session('success_reset'))
+        <div class="auth-alert-success">
+            <i class="fa-solid fa-circle-check"></i>
+            {{ session('success_reset') }}
+        </div>
+    @endif
+
     @if($errors->any())
         <div class="auth-alert-error">
             <i class="fa-solid fa-circle-exclamation"></i>
@@ -473,7 +495,7 @@
 
     <div class="auth-links">
         <a href="{{ route('registro') }}">¿No tienes cuenta? Regístrate</a>
-        <a href="{{ route('home') }}">← Inicio</a>
+        <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
     </div>
 
     <div class="auth-divider">acceso rápido</div>

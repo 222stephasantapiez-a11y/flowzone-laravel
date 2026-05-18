@@ -15,8 +15,8 @@
             Solicitudes pendientes
             <span class="badge badge-warning">{{ $notifCount }}</span>
         </h2>
-
-        <form method="POST" action="{{ route('admin.notificaciones.leer-todas') }}">
+        
+        <form method="POST" action="{{ route('admin.notificaciones.leer-todas') }}" style="display:inline">
             @csrf
             <button type="submit" class="btn-small btn-edit">
                 Marcar todas leídas
@@ -57,58 +57,195 @@
 </div>
 @endif
 
-
-{{-- FORMULARIO --}}
-@isset($empresa)
-<div class="admin-section">
-    <h2>Editar Empresa: {{ $empresa->nombre }}</h2>
-
-    <form method="POST" action="{{ route('admin.empresas.update', $empresa) }}" class="admin-form">
-        @csrf @method('PUT')
-
-        <div class="form-row">
-            <div class="form-group">
-                <label>Nombre</label>
-                <input type="text" name="nombre" value="{{ old('nombre', $empresa->nombre) }}">
-            </div>
-
-            <div class="form-group">
-                <label>Teléfono</label>
-                <input type="text" name="telefono" value="{{ old('telefono', $empresa->telefono) }}">
-            </div>
+{{-- ===================== MODAL ===================== --}}
+<div id="modal-empresa" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+    overflow-y: auto;
+    padding: 2rem 1rem;
+">
+    <div style="
+        background: #fff;
+        border-radius: 1rem;
+        max-width: 720px;
+        margin: 0 auto;
+        box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        overflow: hidden;
+    ">
+        {{-- Header modal --}}
+        <div style="
+            background: linear-gradient(135deg, var(--red-900), var(--red-700));
+            padding: 1.25rem 1.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        ">
+            <h3 style="color:#fff;font-size:1.05rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-pen-to-square"></i>
+                Editar Empresa
+            </h3>
+            <button onclick="cerrarModal()" style="
+                background: rgba(255,255,255,.15);
+                border: none;
+                color: #fff;
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                cursor: pointer;
+                font-size: 1rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background .2s;
+            " onmouseover="this.style.background='rgba(255,255,255,.3)'"
+               onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
         </div>
 
-        <div class="form-group">
-            <label>Dirección</label>
-            <input type="text" name="direccion" value="{{ old('direccion', $empresa->direccion) }}">
-        </div>
+        {{-- Body modal --}}
+        <div style="padding: 1.75rem;">
 
-        <button type="submit" class="btn btn-primary">
-            Actualizar Empresa
-        </button>
-    </form>
+            @isset($empresa)
+                <form method="POST" action="{{ route('admin.empresas.update', $empresa) }}" class="admin-form">
+                @csrf @method('PUT')
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" name="nombre" value="{{ old('nombre', $empresa->nombre) }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Teléfono</label>
+                        <input type="text" name="telefono" value="{{ old('telefono', $empresa->telefono) }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Dirección</label>
+                    <input type="text" name="direccion" value="{{ old('direccion', $empresa->direccion) }}">
+                </div>
+
+                <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Actualizar Empresa
+                    </button>
+                    <a href="{{ route('admin.empresas.index') }}" class="btn btn-outline">
+                        <i class="fa-solid fa-xmark"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+            @endisset
+        </div>
+    </div>
 </div>
-@endisset
 
 
+{{-- Tabla empresas --}}
 {{-- TABLA --}}
 <div class="admin-section">
 
     <div class="admin-section-header">
         <h2>Empresas Registradas</h2>
-        <span class="badge badge-info">{{ $empresas->total() }} total</span>
+        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+              <span class="badge badge-info">{{ $empresas->total() }} total</span>
+            <button type="button" onclick="toggleFiltrosEmpresas()" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-filter"></i> Filtro
+            </button>
+            <a href="{{ route('admin.empresas.export.excel') }}" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-file-excel"></i> Excel
+            </a>
+            <a href="{{ route('admin.empresas.export.pdf') }}" class="btn btn-danger btn-sm">
+                <i class="fa-solid fa-file-pdf"></i> PDF
+            </a>
+            @include('partials.import_modal', [
+                'importRoute' => 'admin.empresas.import.excel',
+                'sampleFile'  => 'ejemplo_usuarios.xlsx',
+                'modalId'     => 'importEmpresas',
+                'columns'     => [
+                    'nombre'    => 'Nombre de la empresa (requerido)',
+                    'correo'    => 'Correo electrónico del responsable (requerido)',
+                    'telefono'  => 'Teléfono de contacto',
+                    'direccion' => 'Dirección de la empresa',
+                ],
+            ])
+        </div>
+    </div>
+
+    {{-- FILTROS --}}
+    <div id="filtrosEmpresas" style="display:none; padding: 1rem 0 .5rem;">
+        <form method="GET" action="{{ route('admin.empresas.index') }}">
+            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
+
+                <div class="filter-field">
+                    <label class="filter-label">Nombre empresa</label>
+                    <input type="text" name="busqueda" value="{{ request('busqueda') }}"
+                           placeholder="Buscar por nombre..." class="filter-input">
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">Responsable / correo</label>
+                    <input type="text" name="responsable" value="{{ request('responsable') }}"
+                           placeholder="Nombre o email..." class="filter-input">
+                </div>
+
+                <div class="filter-field">
+                    <label class="filter-label">Estado</label>
+                    <select name="estado" class="filter-input">
+                        <option value="">Todos</option>
+                        <option value="aprobado"  {{ request('estado') === 'aprobado'  ? 'selected' : '' }}>Aprobada</option>
+                        <option value="pendiente" {{ request('estado') === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
+                    </select>
+                </div>
+
+                <div style="display:flex; gap:.5rem; align-items:flex-end; padding-bottom:1px;">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fa-solid fa-magnifying-glass"></i> Aplicar
+                    </button>
+                    <a href="{{ route('admin.empresas.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-xmark"></i> Limpiar
+                    </a>
+                </div>
+
+            </div>
+        </form>
     </div>
 
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
+                @php
+                    $sort      = $sort ?? 'aprobado';
+                    $direction = $direction ?? 'asc';
+                @endphp
                 <tr>
-                    <th>#</th>
-                    <th>Empresa</th>
+                    <th>
+                        <a href="{{ route('admin.empresas.index', array_merge(request()->all(), ['sort' => 'id', 'direction' => ($sort === 'id' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            # @if($sort === 'id') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ route('admin.empresas.index', array_merge(request()->all(), ['sort' => 'nombre', 'direction' => ($sort === 'nombre' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Empresa @if($sort === 'nombre') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
                     <th>Responsable</th>
                     <th>Teléfono</th>
                     <th>Dirección</th>
-                    <th>Estado</th>
+                    <th>
+                        <a href="{{ route('admin.empresas.index', array_merge(request()->all(), ['sort' => 'aprobado', 'direction' => ($sort === 'aprobado' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
+                           style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
+                            Estado @if($sort === 'aprobado') <i class="fa-solid fa-sort-{{ $direction === 'asc' ? 'up' : 'down' }} fa-xs"></i> @else <i class="fa-solid fa-sort fa-xs" style="opacity:.35"></i> @endif
+                        </a>
+                    </th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -164,52 +301,47 @@
                 @endforelse
             </tbody>
         </table>
+
+        
+       
     </div>
 
     {{-- Paginación --}}
-    @if($empresas->hasPages())
-    <div class="pagination-bar">
-        <div class="pagination-info">
-            Mostrando <strong>{{ $empresas->firstItem() }}</strong>–<strong>{{ $empresas->lastItem() }}</strong>
-            de <strong>{{ $empresas->total() }}</strong> registros
-        </div>
-
-        <div class="pagination-links">
-            @if($empresas->onFirstPage())
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-left fa-xs"></i></span>
-            @else
-                <a href="{{ $empresas->previousPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-left fa-xs"></i></a>
-            @endif
-
-            @foreach($empresas->getUrlRange(max(1,$empresas->currentPage()-2), min($empresas->lastPage(),$empresas->currentPage()+2)) as $page => $url)
-                @if($page == $empresas->currentPage())
-                    <span class="page-btn page-btn--active">{{ $page }}</span>
-                @else
-                    <a href="{{ $url }}" class="page-btn">{{ $page }}</a>
-                @endif
-            @endforeach
-
-            @if($empresas->hasMorePages())
-                <a href="{{ $empresas->nextPageUrl() }}" class="page-btn"><i class="fa-solid fa-chevron-right fa-xs"></i></a>
-            @else
-                <span class="page-btn page-btn--disabled"><i class="fa-solid fa-chevron-right fa-xs"></i></span>
-            @endif
-        </div>
-
-        <form method="GET" class="per-page-form">
-            @foreach(request()->except(['page','per_page']) as $k => $v)
-                <input type="hidden" name="{{ $k }}" value="{{ $v }}">
-            @endforeach
-            <label class="per-page-label">Filas:</label>
-            <select name="per_page" class="per-page-select" onchange="this.form.submit()">
-                @foreach([5,10,25,50,100] as $n)
-                    <option value="{{ $n }}" {{ ($perPage ?? 10) == $n ? 'selected' : '' }}>{{ $n }}</option>
-                @endforeach
-            </select>
-        </form>
-    </div>
-    @endif
+    @include('partials.pagination', ['paginator' => $empresas, 'perPage' => $perPage])
 
 </div>
+
+@push('scripts')
+<script>
+function cerrarModal() {
+    document.getElementById('modal-empresa').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('modal-empresa').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarModal();
+});
+
+@isset($empresa)
+    document.getElementById('modal-empresa').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+@endisset
+
+function toggleFiltrosEmpresas() {
+    const box = document.getElementById('filtrosEmpresas');
+    box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
+}
+
+window.addEventListener('load', function () {
+    if ("{{ request('busqueda') }}" || "{{ request('responsable') }}" || "{{ request('estado') }}") {
+        document.getElementById('filtrosEmpresas').style.display = 'block';
+    }
+});
+</script>
+@endpush
 
 @endsection

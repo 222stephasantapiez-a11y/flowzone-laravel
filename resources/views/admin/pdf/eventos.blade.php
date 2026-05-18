@@ -18,4 +18,5 @@
         <td>{{ $evento->ubicacion }}</td>
     </tr>
     @endforeach
+    
 </table>

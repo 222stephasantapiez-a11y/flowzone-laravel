@@ -1,11 +1,11 @@
 @extends('layouts.app')
-
+ 
 @section('title', 'Blog de Viajes')
 @section('body-class', 'no-hero')
-
+ 
 @section('content')
 <main>
-
+ 
 {{-- Page Hero --}}
 <section class="page-hero" style="background:linear-gradient(135deg,var(--green-900) 0%,var(--green-700) 100%);">
     <div class="container">
@@ -23,10 +23,10 @@
         </div>
     </div>
 </section>
-
+ 
 {{-- Contenido --}}
 <section class="container section">
-
+ 
     {{-- Filtros --}}
     <div class="filters">
         <form method="GET" action="{{ route('blog') }}" class="filter-form">
@@ -43,7 +43,7 @@
             <a href="{{ route('blog') }}" class="btn btn-outline">Limpiar</a>
         </form>
     </div>
-
+ 
     {{-- Blog grid --}}
     <div class="blog-grid">
     @forelse($posts as $post)
@@ -93,15 +93,8 @@
         </div>
     @endforelse
     </div>{{-- /.blog-grid --}}
-
-    {{-- Paginación --}}
-    @if($posts->hasPages())
-        <div class="pagination-wrap">
-            {{ $posts->withQueryString()->links() }}
-        </div>
-    @endif
-
+ 
 </section>
-
+ 
 </main>
 @endsection
