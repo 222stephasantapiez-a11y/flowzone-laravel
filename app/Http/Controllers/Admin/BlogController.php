@@ -198,30 +198,12 @@ class BlogController extends Controller
     // ==========================
     // EXPORTAR EXCEL
     // ==========================
-    public function exportExcel()
-    {
-        return Excel::download(new BlogsExport, 'blogs.xlsx');
-    }
 
-    // ==========================
-    // IMPORTAR EXCEL
-    // ==========================
-    public function importExcel(Request $request)
-    {
-        return $this->runImport($request, new BlogsImport, 'admin.blog.index');
-    }
 
     // ==========================
     // EXPORTAR PDF
     // ==========================
-    public function exportPdf()
-    {
-        $blogs = BlogPost::all();
 
-        $pdf = Pdf::loadView('admin.pdf.blog', compact('blogs'));
-
-        return $pdf->download('blogs.pdf');
-    }
       public function exportExcel()
 {
     return Excel::download(new BlogsExport, 'blogs.xlsx');
@@ -252,5 +234,4 @@ public function exportPdf()
 
 
 
-
-    }
+}
