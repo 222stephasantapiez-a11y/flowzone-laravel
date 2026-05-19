@@ -7,8 +7,13 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\FavoritoController;
 use App\Http\Controllers\EmpresaDashboardController;
+use App\Http\Controllers\UserDashboardController;
 use App\Http\Controllers\Empresa\BlogEmpresaController;
 use App\Http\Controllers\Empresa\GastronomiaEmpresaController;
+use App\Http\Controllers\Empresa\PlanTuristicoController;
+use App\Http\Controllers\Empresa\HabitacionController;
+use App\Http\Controllers\Empresa\PaqueteController;
+use App\Http\Controllers\Empresa\ReservaEmpresaController;
 use App\Http\Controllers\Admin\HotelController;
 use App\Http\Controllers\Admin\LugarController;
 use App\Http\Controllers\Admin\EventoController;
@@ -30,6 +35,7 @@ Route::get('/lugares/{lugar}', [PageController::class, 'detalleLugar'])->name('l
 Route::get('/eventos', [PageController::class, 'eventos'])->name('eventos');
 Route::get('/eventos/{evento}', [PageController::class, 'detalleEvento'])->name('eventos.detalle');
 Route::get('/gastronomia', [PageController::class, 'gastronomia'])->name('gastronomia');
+Route::get('/planes-turisticos', [PageController::class, 'planesTuristicos'])->name('planes.publico');
 Route::get('/blog', [PageController::class, 'blog'])->name('blog');
 Route::get('/blog/{post:slug}', [PageController::class, 'blogPost'])->name('blog.post');
 Route::get('/contacto', [PageController::class, 'contacto'])->name('contacto');
@@ -60,12 +66,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/favoritos', [PageController::class, 'favoritos'])->name('favoritos');
     Route::post('/favoritos/toggle', [FavoritoController::class, 'toggle'])->name('favoritos.toggle');
     Route::post('/calificaciones', [CalificacionController::class, 'store'])->name('calificaciones.store');
+
+    // ── Panel usuario /mi-cuenta ─────────────────────────────
+    Route::get('/mi-cuenta',         [UserDashboardController::class, 'index'])->name('usuario.dashboard');
+    Route::get('/mi-cuenta/perfil',  [UserDashboardController::class, 'editarPerfil'])->name('usuario.perfil.edit');
+    Route::put('/mi-cuenta/perfil',  [UserDashboardController::class, 'actualizarPerfil'])->name('usuario.perfil.update');
+    Route::delete('/mi-cuenta/resenas/{calificacion}', [UserDashboardController::class, 'eliminarResena'])->name('usuario.resenas.destroy');
 });
 
 // ── Panel empresa ────────────────────────────────────────────
 Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->group(function () {
     Route::get('/dashboard', [EmpresaDashboardController::class, 'index'])->name('dashboard');
     Route::post('/solicitud', [EmpresaDashboardController::class, 'enviarSolicitud'])->name('solicitud');
+    Route::get('/perfil/editar', [EmpresaDashboardController::class, 'editarPerfil'])->name('perfil.edit');
+    Route::put('/perfil/editar', [EmpresaDashboardController::class, 'actualizarPerfil'])->name('perfil.update');
 
     Route::get('/blog', [BlogEmpresaController::class, 'index'])->name('blog.index');
     Route::post('/blog', [BlogEmpresaController::class, 'store'])->name('blog.store');
@@ -82,9 +96,41 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::put('/gastronomia/{gastronomium}', [GastronomiaEmpresaController::class, 'update'])->name('gastronomia.update');
     Route::delete('/gastronomia/{gastronomium}', [GastronomiaEmpresaController::class, 'destroy'])->name('gastronomia.destroy');
 
-    Route::post('/gastronomia/planes/generar', [\App\Http\Controllers\Empresa\PlanTuristicoController::class, 'generar'])->name('gastronomia.planes.generar');
-    Route::post('/gastronomia/planes/guardar', [\App\Http\Controllers\Empresa\PlanTuristicoController::class, 'guardar'])->name('gastronomia.planes.guardar');
-    Route::delete('/gastronomia/planes/{plan}', [\App\Http\Controllers\Empresa\PlanTuristicoController::class, 'destroy'])->name('gastronomia.planes.destroy');
+    Route::post('/gastronomia/planes/generar', [PlanTuristicoController::class, 'generar'])->name('gastronomia.planes.generar');
+    Route::post('/gastronomia/planes/guardar', [PlanTuristicoController::class, 'guardar'])->name('gastronomia.planes.guardar');
+    Route::delete('/gastronomia/planes/{plan}', [PlanTuristicoController::class, 'destroy'])->name('gastronomia.planes.destroy');
+
+    // Generador de planes — vista propia
+    Route::get('/planes', [PlanTuristicoController::class, 'index'])->name('planes.index');
+    Route::post('/planes/generar', [PlanTuristicoController::class, 'generar'])->name('planes.generar');
+    Route::post('/planes/guardar', [PlanTuristicoController::class, 'guardar'])->name('planes.guardar');
+    Route::patch('/planes/{plan}/publicar', [PlanTuristicoController::class, 'togglePublicado'])->name('planes.publicar');
+    Route::delete('/planes/{plan}', [PlanTuristicoController::class, 'destroy'])->name('planes.destroy');
+
+    // Disponibilidad gastronomía
+    Route::patch('/gastronomia/reset-stock', [GastronomiaEmpresaController::class, 'resetStockDiario'])->name('gastronomia.reset-stock');
+    Route::patch('/gastronomia/{gastronomium}/toggle', [GastronomiaEmpresaController::class, 'toggleDisponibilidad'])->name('gastronomia.toggle');
+
+    // Habitaciones
+    Route::get('/habitaciones', [HabitacionController::class, 'index'])->name('habitaciones.index');
+    Route::post('/hoteles', [HabitacionController::class, 'storeHotel'])->name('hoteles.store');
+    Route::put('/hoteles/{hotel}', [HabitacionController::class, 'updateHotel'])->name('hoteles.update');
+    Route::post('/hoteles/{hotel}/habitaciones', [HabitacionController::class, 'store'])->name('habitaciones.store');
+    Route::put('/habitaciones/{habitacion}', [HabitacionController::class, 'update'])->name('habitaciones.update');
+    Route::delete('/habitaciones/{habitacion}', [HabitacionController::class, 'destroy'])->name('habitaciones.destroy');
+    Route::patch('/habitaciones/{habitacion}/toggle', [HabitacionController::class, 'toggleDisponibilidad'])->name('habitaciones.toggle');
+
+    // Paquetes turísticos
+    Route::get('/paquetes', [PaqueteController::class, 'index'])->name('paquetes.index');
+    Route::post('/paquetes', [PaqueteController::class, 'store'])->name('paquetes.store');
+    Route::put('/paquetes/{paquete}', [PaqueteController::class, 'update'])->name('paquetes.update');
+    Route::delete('/paquetes/{paquete}', [PaqueteController::class, 'destroy'])->name('paquetes.destroy');
+    Route::patch('/paquetes/{paquete}/toggle', [PaqueteController::class, 'toggleActivo'])->name('paquetes.toggle');
+    Route::patch('/paquetes/{paquete}/cupo', [PaqueteController::class, 'ajustarCupo'])->name('paquetes.cupo');
+
+    // Reservas empresa
+    Route::get('/reservas', [ReservaEmpresaController::class, 'index'])->name('reservas.index');
+    Route::patch('/reservas/{reserva}/estado', [ReservaEmpresaController::class, 'cambiarEstado'])->name('reservas.estado');
 });
 
 // ── Panel admin ──────────────────────────────────────────────

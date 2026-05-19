@@ -285,42 +285,36 @@
                             {{ ucfirst($r->estado) }}
                         </span>
                     </td>
-                    <td>
-                        <div style="display:flex; gap:.4rem; flex-wrap:nowrap; align-items:center;">
-
+                    <td style="min-width:200px;">
+                        <div style="display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;">
                             @if($r->estado !== 'confirmada')
-                            <form method="POST" action="{{ route('admin.reservas.estado', $r) }}" style="margin:0;">
+                            <form method="POST" action="{{ route('admin.reservas.estado', $r) }}" style="display:contents">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="estado" value="confirmada">
-                                <button type="submit" class="btn-small btn-sm" style="background:#155724;color:#fff;white-space:nowrap;border:none;padding:.3rem .7rem;border-radius:.4rem;cursor:pointer;">
+                                <button type="submit" class="btn-small btn-sm" style="background:#155724;color:#fff;border:none;padding:.3rem .7rem;border-radius:.4rem;cursor:pointer;font-size:.75rem;font-weight:700;">
                                     <i class="fa-solid fa-circle-check fa-xs"></i> Confirmar
                                 </button>
                             </form>
                             @endif
-
                             @if($r->estado === 'confirmada')
-                            <form method="POST" action="{{ route('admin.reservas.estado', $r) }}" style="margin:0;">
+                            <form method="POST" action="{{ route('admin.reservas.estado', $r) }}" style="display:contents">
                                 @csrf @method('PATCH')
                                 <input type="hidden" name="estado" value="pendiente">
-                                <button type="submit" class="btn-small btn-sm" style="background:#856404;color:#fff;white-space:nowrap;border:none;padding:.3rem .7rem;border-radius:.4rem;cursor:pointer;">
+                                <button type="submit" class="btn-small btn-sm" style="background:#856404;color:#fff;border:none;padding:.3rem .7rem;border-radius:.4rem;cursor:pointer;font-size:.75rem;font-weight:700;">
                                     <i class="fa-solid fa-clock fa-xs"></i> Pendiente
                                 </button>
                             </form>
                             @endif
-
-                            <a href="{{ route('admin.reservas.edit', $r) }}"
-                               class="btn-small btn-edit btn-sm">
+                            <a href="{{ route('admin.reservas.edit', $r) }}" class="btn-small btn-edit btn-sm" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
                                 <i class="fa-solid fa-pen fa-xs"></i> Editar
                             </a>
-
-                            <form method="POST" action="{{ route('admin.reservas.destroy', $r) }}" style="margin:0;"
+                            <form method="POST" action="{{ route('admin.reservas.destroy', $r) }}" style="display:contents"
                                   onsubmit="return confirm('¿Eliminar esta reserva?')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn-small btn-delete btn-sm">
+                                <button type="submit" class="btn-small btn-delete btn-sm" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
                                     <i class="fa-solid fa-trash fa-xs"></i> Eliminar
                                 </button>
                             </form>
-
                         </div>
                     </td>
                 </tr>

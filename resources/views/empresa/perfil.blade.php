@@ -1,213 +1,121 @@
 @extends('layouts.empresa')
 
-@section('page-title', 'Mi Perfil')
-@section('page-subtitle', 'Información de tu empresa')
+@section('page-title', 'Editar perfil')
+@section('page-subtitle', 'Actualiza la información de tu empresa')
 
 @section('content')
+@php
+    use Illuminate\Support\Facades\Storage;
+    use Illuminate\Support\Str;
+    $tipoLabels = ['hotel'=>'🏨 Hotel/Hospedaje','restaurante'=>'🍽️ Restaurante','agencia_turismo'=>'🧭 Agencia de turismo','transporte'=>'🚌 Transporte','artesanias'=>'🎨 Artesanías','otro'=>'📦 Otro'];
+    $serviciosOpciones = ['WiFi','Parqueadero','Restaurante propio','Piscina','Eventos','Guía turístico','Reservas online','Domicilios','Sala de conferencias','Pet friendly'];
+    $serviciosActuales = old('servicios', $empresa->servicios ?? []);
+@endphp
 
-@if(!$empresa)
-    <div class="alert alert-error">
-        <i class="fa-solid fa-circle-exclamation"></i>
-        No se encontraron datos asociados a tu cuenta. Contacta al administrador.
-    </div>
-@else
-
-{{-- ── Tarjeta de perfil ── --}}
 <div class="admin-section">
+    <form method="POST" action="{{ route('empresa.perfil.update') }}" enctype="multipart/form-data" class="admin-form">
+        @csrf
+        @method('PUT')
 
-    {{-- Cabecera con nombre y estado --}}
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.75rem;">
-        <div style="display:flex;align-items:center;gap:1rem;">
-            <div style="width:56px;height:56px;border-radius:var(--radius-lg);background:rgba(45,106,79,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                <i class="fa-solid fa-building" style="font-size:1.4rem;color:var(--green-700);"></i>
-            </div>
-            <div>
-                <h2 style="font-size:1.3rem;font-weight:800;color:var(--gray-900);margin:0 0 .2rem;">
-                    {{ $empresa->nombre }}
-                </h2>
-                @if($empresa->aprobado)
-                    <span class="badge badge-success"><i class="fa-solid fa-circle-check fa-xs"></i> Aprobada</span>
-                @else
-                    <span class="badge badge-warning"><i class="fa-solid fa-clock fa-xs"></i> Pendiente de aprobación</span>
-                @endif
-            </div>
-        </div>
-    </div>
-
-    {{-- Grid de datos --}}
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.75rem;">
-
-        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:1rem 1.1rem;">
-            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);margin-bottom:.3rem;font-weight:600;">
-                <i class="fa-solid fa-building fa-xs" style="margin-right:.3rem;"></i>Empresa
-            </div>
-            <div style="font-weight:600;color:var(--gray-900);font-size:.95rem;">{{ $empresa->nombre }}</div>
-        </div>
-
-        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:1rem 1.1rem;">
-            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);margin-bottom:.3rem;font-weight:600;">
-                <i class="fa-solid fa-envelope fa-xs" style="margin-right:.3rem;"></i>Correo electrónico
-            </div>
-            <div style="font-weight:600;color:var(--gray-900);font-size:.95rem;">{{ auth()->user()->email }}</div>
-        </div>
-
-        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:1rem 1.1rem;">
-            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);margin-bottom:.3rem;font-weight:600;">
-                <i class="fa-solid fa-phone fa-xs" style="margin-right:.3rem;"></i>Teléfono
-            </div>
-            <div style="font-weight:600;color:var(--gray-900);font-size:.95rem;">{{ $empresa->telefono ?? '—' }}</div>
-        </div>
-
-        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:1rem 1.1rem;">
-            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);margin-bottom:.3rem;font-weight:600;">
-                <i class="fa-solid fa-location-dot fa-xs" style="margin-right:.3rem;"></i>Dirección
-            </div>
-            <div style="font-weight:600;color:var(--gray-900);font-size:.95rem;">{{ $empresa->direccion ?? '—' }}</div>
-        </div>
-
-        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:1rem 1.1rem;">
-            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);margin-bottom:.3rem;font-weight:600;">
-                <i class="fa-solid fa-user fa-xs" style="margin-right:.3rem;"></i>Responsable
-            </div>
-            <div style="font-weight:600;color:var(--gray-900);font-size:.95rem;">{{ auth()->user()->name }}</div>
-        </div>
-
-        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:1rem 1.1rem;">
-            <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--gray-400);margin-bottom:.3rem;font-weight:600;">
-                <i class="fa-solid fa-shield-halved fa-xs" style="margin-right:.3rem;"></i>Estado
-            </div>
-            <div style="font-weight:600;font-size:.95rem;">
-                @if($empresa->aprobado)
-                    <span style="color:var(--green-700);">Aprobada</span>
-                @else
-                    <span style="color:var(--warning);">Pendiente</span>
-                @endif
-            </div>
-        </div>
-
-    </div>
-
-    {{-- Botón Editar --}}
-    <button type="button" onclick="document.getElementById('modalEditarPerfil').classList.add('open')"
-            class="btn btn-primary" style="gap:.5rem;">
-        <i class="fa-solid fa-pen-to-square fa-xs"></i> Editar información
-    </button>
-
-</div>
-
-{{-- ══════════════════════════════════════
-     MODAL Editar perfil
-══════════════════════════════════════ --}}
-<div id="modalEditarPerfil" style="
-    display:none;
-    position:fixed;inset:0;
-    background:rgba(0,0,0,.45);
-    z-index:9999;
-    align-items:center;
-    justify-content:center;
-    padding:1rem;
-">
-    <div style="
-        background:var(--white);
-        border-radius:var(--radius-lg);
-        width:100%;max-width:540px;
-        box-shadow:0 20px 60px rgba(0,0,0,.2);
-        overflow:hidden;
-        animation: modalIn .2s ease;
-    ">
-        {{-- Header modal --}}
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--gray-100);">
-            <div style="display:flex;align-items:center;gap:.6rem;">
-                <i class="fa-solid fa-pen-to-square" style="color:var(--green-600);"></i>
-                <h3 style="margin:0;font-size:1rem;font-weight:700;color:var(--gray-900);">Editar información</h3>
-            </div>
-            <button type="button"
-                    onclick="document.getElementById('modalEditarPerfil').classList.remove('open')"
-                    style="background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--gray-400);line-height:1;padding:.2rem;">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        {{-- Formulario --}}
-        <form method="POST" action="{{ route('empresa.perfil.update') }}" style="padding:1.5rem;" class="admin-form">
-            @csrf
-            @method('PUT')
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Nombre de la empresa *</label>
-                    <input type="text" name="nombre" required maxlength="200"
-                           value="{{ old('nombre', $empresa->nombre) }}"
-                           placeholder="Ej: Empresa Demo S.A.S">
-                    @error('nombre')
-                        <span style="color:var(--danger);font-size:.8rem;">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="text" name="telefono" maxlength="30"
-                           value="{{ old('telefono', $empresa->telefono) }}"
-                           placeholder="Ej: +57 300 000 0000">
-                </div>
-            </div>
-
+        <div class="form-row">
             <div class="form-group">
-                <label>Dirección</label>
-                <input type="text" name="direccion" maxlength="400"
-                       value="{{ old('direccion', $empresa->direccion) }}"
-                       placeholder="Ej: Calle 123 # 45-67, Bogotá">
+                <label>Nombre de la empresa *</label>
+                <input type="text" name="nombre" value="{{ old('nombre', $empresa->nombre) }}" required maxlength="200">
             </div>
+            <div class="form-group">
+                <label>Teléfono</label>
+                <input type="text" name="telefono" value="{{ old('telefono', $empresa->telefono) }}" maxlength="30">
+            </div>
+        </div>
 
-            <div class="form-group" style="margin-bottom:1.75rem;">
-                <label>Correo electrónico</label>
-                <input type="email" value="{{ auth()->user()->email }}" disabled
-                       style="background:var(--gray-50);color:var(--gray-400);cursor:not-allowed;">
-                <small style="color:var(--gray-400);font-size:.78rem;">El email no puede modificarse aquí.</small>
-            </div>
+        <div class="form-group">
+            <label>Dirección</label>
+            <input type="text" name="direccion" value="{{ old('direccion', $empresa->direccion) }}" maxlength="400">
+        </div>
 
-            {{-- Footer modal --}}
-            <div style="display:flex;gap:.75rem;justify-content:flex-end;">
-                <button type="button"
-                        onclick="document.getElementById('modalEditarPerfil').classList.remove('open')"
-                        class="btn" style="background:var(--gray-100);color:var(--gray-700);border-color:var(--gray-200);">
-                    Cancelar
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk fa-xs"></i> Guardar cambios
-                </button>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Tipo de empresa</label>
+                <select name="tipo_empresa">
+                    <option value="">— Selecciona —</option>
+                    @foreach($tipoLabels as $val => $label)
+                        <option value="{{ $val }}" {{ old('tipo_empresa', $empresa->tipo_empresa) === $val ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
             </div>
-        </form>
-    </div>
+            <div class="form-group">
+                <label>NIT <small style="color:var(--gray-400);font-weight:400;">(solo lectura)</small></label>
+                <input type="text" value="{{ $empresa->nit ?? '—' }}" disabled
+                       style="background:var(--gray-100);color:var(--gray-500);cursor:not-allowed;">
+                <small style="color:var(--gray-400);font-size:.78rem;">Para cambiar el NIT contacta al administrador.</small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Descripción</label>
+            <textarea name="descripcion" rows="4" maxlength="1000"
+                      placeholder="Cuéntanos sobre tu empresa...">{{ old('descripcion', $empresa->descripcion) }}</textarea>
+        </div>
+
+        {{-- Servicios --}}
+        <div class="form-group">
+            <label>Servicios que ofrece</label>
+            <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.4rem;">
+                @foreach($serviciosOpciones as $srv)
+                <label style="display:flex;align-items:center;gap:.35rem;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:2rem;padding:.35rem .75rem;font-size:.85rem;cursor:pointer;">
+                    <input type="checkbox" name="servicios[]" value="{{ $srv }}"
+                           {{ in_array($srv, $serviciosActuales) ? 'checked' : '' }}
+                           style="accent-color:var(--green-700);">
+                    {{ $srv }}
+                </label>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- Logo --}}
+        <div class="form-group">
+            <label>Logo</label>
+            @if($empresa->logo)
+            <div style="margin-bottom:.75rem;">
+                <img src="{{ Str::startsWith($empresa->logo, 'http') ? $empresa->logo : Storage::url($empresa->logo) }}"
+                     alt="Logo actual" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-md);border:1.5px solid var(--gray-200);">
+                <div style="font-size:.78rem;color:var(--gray-400);margin-top:.3rem;">Logo actual</div>
+            </div>
+            @endif
+            <input type="file" name="empresa_logo_file" accept="image/*" style="margin-bottom:.5rem;">
+            <input type="url" name="empresa_logo_url" value="{{ old('empresa_logo_url') }}"
+                   placeholder="O pega una URL: https://..."
+                   style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-family:var(--font-body);font-size:.9rem;outline:none;">
+        </div>
+
+        <div class="form-group">
+            <label>Sitio web</label>
+            <input type="url" name="sitio_web" value="{{ old('sitio_web', $empresa->sitio_web) }}"
+                   placeholder="https://miempresa.com" maxlength="300">
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Instagram</label>
+                <input type="text" name="instagram" value="{{ old('instagram', $empresa->instagram) }}"
+                       placeholder="@miempresa" maxlength="200">
+            </div>
+            <div class="form-group">
+                <label>Facebook</label>
+                <input type="text" name="facebook" value="{{ old('facebook', $empresa->facebook) }}"
+                       placeholder="facebook.com/miempresa" maxlength="200">
+            </div>
+        </div>
+
+        <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.5rem;">
+            <button type="submit" class="btn btn-primary">
+                <i class="fa-solid fa-floppy-disk fa-xs"></i> Guardar cambios
+            </button>
+            <a href="{{ route('empresa.dashboard') }}" class="btn btn-outline">
+                <i class="fa-solid fa-arrow-left fa-xs"></i> Volver
+            </a>
+        </div>
+    </form>
 </div>
 
-@endif
-
-@push('scripts')
-<script>
-    // Abrir modal con clase
-    const modal = document.getElementById('modalEditarPerfil');
-    if (modal) {
-        // Mostrar/ocultar via clase
-        const observer = new MutationObserver(() => {
-            modal.style.display = modal.classList.contains('open') ? 'flex' : 'none';
-        });
-        observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
-
-        // Cerrar al click fuera
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) modal.classList.remove('open');
-        });
-
-        // Si hay errores de validación, abrir el modal automáticamente
-        @if($errors->any())
-            modal.classList.add('open');
-        @endif
-    }
-</script>
-<style>
-    @keyframes modalIn {
-        from { opacity:0; transform:translateY(-12px) scale(.97); }
-        to   { opacity:1; transform:translateY(0) scale(1); }
-    }
-</style>
-@endpush
+@endsection

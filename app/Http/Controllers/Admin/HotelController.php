@@ -19,7 +19,7 @@ class HotelController extends Controller
     // ✅ INDEX UNIFICADO (FILTROS + PAGINACIÓN)
     public function index(Request $request)
     {
-        $query = Hotel::query();
+        $query = Hotel::with('empresa');
 
         // 🔎 FILTROS
         if ($request->filled('ubicacion')) {
@@ -101,6 +101,7 @@ class HotelController extends Controller
             'email'        => 'nullable|email|max:150',
             'latitud'      => 'nullable|numeric|between:-90,90',
             'longitud'     => 'nullable|numeric|between:-180,180',
+            'empresa_id'   => 'nullable|exists:empresas,id',
         ];
     }
 
@@ -136,6 +137,7 @@ class HotelController extends Controller
             'disponibilidad' => $request->has('disponibilidad'),
             'telefono'       => $request->telefono ?: null,
             'email'          => $request->email ?: null,
+            'empresa_id'     => $request->empresa_id ?: null,
         ]);
 
         return redirect()->route('admin.hoteles.index')
@@ -171,6 +173,7 @@ class HotelController extends Controller
             'disponibilidad' => $request->has('disponibilidad'),
             'telefono'       => $request->telefono ?: null,
             'email'          => $request->email ?: null,
+            'empresa_id'     => $request->empresa_id ?: null,
         ]);
 
         return redirect()->route('admin.hoteles.index')

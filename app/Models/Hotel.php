@@ -23,4 +23,14 @@ class Hotel extends Model
     {
         return $this->belongsTo(\App\Models\Empresa::class, 'empresa_id');
     }
+
+    public function habitaciones()
+    {
+        return $this->hasMany(Habitacion::class);
+    }
+
+    public function habitacionesDisponibles()
+    {
+        return $this->habitaciones()->where('disponible', true);
+    }
 }

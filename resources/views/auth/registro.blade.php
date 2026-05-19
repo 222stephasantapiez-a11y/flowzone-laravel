@@ -15,12 +15,15 @@
             background: var(--green-900);
             display: flex;
             min-height: 100vh;
+            align-items: stretch;
         }
 
         /* ── Panel izquierdo ── */
         .auth-panel-left {
             flex: 1;
-            position: relative;
+            position: sticky;
+            top: 0;
+            height: 100vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -74,9 +77,10 @@
             background: var(--gray-50);
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: flex-start;
             padding: 2.5rem 3rem;
             overflow-y: auto;
+            min-height: 100vh;
         }
 
         .auth-heading { margin-bottom: 2rem; }
@@ -312,7 +316,11 @@
     @if($errors->any())
         <div class="auth-alert-error">
             <i class="fa-solid fa-circle-exclamation"></i>
-            {{ $errors->first() }}
+            <div>
+                @foreach($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
+            </div>
         </div>
     @endif
 
@@ -337,7 +345,7 @@
         </button>
     </div>
 
-    <form method="POST" action="{{ url('/registro') }}">
+    <form method="POST" action="{{ url('/registro') }}" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="rol" id="campo-rol" value="{{ old('rol', 'usuario') }}">
 
@@ -390,6 +398,8 @@
             <div class="auth-section-title">
                 <i class="fa-solid fa-building fa-xs"></i> Datos de la empresa
             </div>
+
+            {{-- Nombre --}}
             <div class="auth-field">
                 <label>Nombre de la empresa *</label>
                 <div class="auth-field-wrap">
@@ -398,6 +408,25 @@
                            placeholder="Nombre legal" value="{{ old('empresa_nombre') }}">
                 </div>
             </div>
+
+            {{-- Tipo de empresa --}}
+            <div class="auth-field">
+                <label>Tipo de empresa *</label>
+                <div class="auth-field-wrap">
+                    <i class="auth-icon fa-solid fa-tag"></i>
+                    <select name="tipo_empresa" style="width:100%;padding:.8rem 1rem .8rem 2.6rem;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-family:var(--font-body);font-size:.92rem;color:var(--gray-900);outline:none;appearance:none;">
+                        <option value="">— Selecciona el tipo —</option>
+                        <option value="hotel"           {{ old('tipo_empresa') === 'hotel'           ? 'selected' : '' }}>🏨 Hotel / Hospedaje</option>
+                        <option value="restaurante"     {{ old('tipo_empresa') === 'restaurante'     ? 'selected' : '' }}>🍽️ Restaurante / Gastronomía</option>
+                        <option value="agencia_turismo" {{ old('tipo_empresa') === 'agencia_turismo' ? 'selected' : '' }}>🧭 Agencia de turismo</option>
+                        <option value="transporte"      {{ old('tipo_empresa') === 'transporte'      ? 'selected' : '' }}>🚌 Transporte turístico</option>
+                        <option value="artesanias"      {{ old('tipo_empresa') === 'artesanias'      ? 'selected' : '' }}>🎨 Artesanías / Comercio</option>
+                        <option value="otro"            {{ old('tipo_empresa') === 'otro'            ? 'selected' : '' }}>📦 Otro</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- Dirección --}}
             <div class="auth-field">
                 <label>Dirección</label>
                 <div class="auth-field-wrap">
@@ -406,6 +435,89 @@
                            placeholder="Dirección" value="{{ old('empresa_direccion') }}">
                 </div>
             </div>
+
+            {{-- NIT --}}
+            <div class="auth-field">
+                <label>NIT / Documento empresarial</label>
+                <div class="auth-field-wrap">
+                    <i class="auth-icon fa-solid fa-id-card"></i>
+                    <input type="text" name="nit" maxlength="20"
+                           placeholder="900.123.456-7" value="{{ old('nit') }}">
+                </div>
+            </div>
+
+            {{-- Descripción --}}
+            <div class="auth-field">
+                <label>Descripción</label>
+                <textarea name="descripcion" maxlength="1000" rows="3"
+                    placeholder="Cuéntanos sobre tu empresa, qué ofreces y qué te hace especial..."
+                    style="width:100%;padding:.8rem 1rem;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-family:var(--font-body);font-size:.92rem;color:var(--gray-900);outline:none;resize:vertical;">{{ old('descripcion') }}</textarea>
+            </div>
+
+            {{-- Servicios --}}
+            <div class="auth-field">
+                <label>Servicios que ofrece</label>
+                <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.2rem;">
+                    @php
+                        $serviciosOpciones = ['WiFi','Parqueadero','Restaurante propio','Piscina','Eventos','Guía turístico','Reservas online','Domicilios','Sala de conferencias','Pet friendly'];
+                        $serviciosOld = old('servicios', []);
+                    @endphp
+                    @foreach($serviciosOpciones as $srv)
+                    <label style="display:flex;align-items:center;gap:.35rem;background:var(--white);border:1.5px solid var(--gray-200);border-radius:2rem;padding:.35rem .75rem;font-size:.82rem;cursor:pointer;transition:border-color .2s;">
+                        <input type="checkbox" name="servicios[]" value="{{ $srv }}"
+                               {{ in_array($srv, $serviciosOld) ? 'checked' : '' }}
+                               style="accent-color:var(--green-700);">
+                        {{ $srv }}
+                    </label>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Logo --}}
+            <div class="auth-field">
+                <label>Logo de la empresa</label>
+                <div class="auth-field-wrap" style="margin-bottom:.5rem;">
+                    <i class="auth-icon fa-solid fa-image"></i>
+                    <input type="file" name="empresa_logo_file" accept="image/*"
+                           style="width:100%;padding:.8rem 1rem .8rem 2.6rem;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-family:var(--font-body);font-size:.85rem;outline:none;">
+                </div>
+                <div class="auth-field-wrap">
+                    <i class="auth-icon fa-solid fa-link"></i>
+                    <input type="url" name="empresa_logo_url"
+                           placeholder="O pega una URL: https://..." value="{{ old('empresa_logo_url') }}">
+                </div>
+            </div>
+
+            {{-- Sitio web --}}
+            <div class="auth-field">
+                <label>Sitio web</label>
+                <div class="auth-field-wrap">
+                    <i class="auth-icon fa-solid fa-globe"></i>
+                    <input type="url" name="sitio_web" maxlength="300"
+                           placeholder="https://miempresa.com" value="{{ old('sitio_web') }}">
+                </div>
+            </div>
+
+            {{-- Instagram y Facebook --}}
+            <div class="auth-row-2">
+                <div class="auth-field">
+                    <label>Instagram</label>
+                    <div class="auth-field-wrap">
+                        <i class="auth-icon fa-brands fa-instagram"></i>
+                        <input type="text" name="instagram" maxlength="200"
+                               placeholder="@miempresa" value="{{ old('instagram') }}">
+                    </div>
+                </div>
+                <div class="auth-field">
+                    <label>Facebook</label>
+                    <div class="auth-field-wrap">
+                        <i class="auth-icon fa-brands fa-facebook"></i>
+                        <input type="text" name="facebook" maxlength="200"
+                               placeholder="facebook.com/miempresa" value="{{ old('facebook') }}">
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <button type="submit" class="auth-submit">
@@ -427,12 +539,15 @@ function setTipo(btn, tipo) {
     document.getElementById('sec-empresa').classList.toggle('visible', tipo === 'empresa');
 }
 
-// Restaurar estado si hay old input
-if (document.getElementById('campo-rol').value === 'empresa') {
-    document.querySelectorAll('.auth-tab')[1].classList.add('active');
-    document.querySelectorAll('.auth-tab')[0].classList.remove('active');
-    document.getElementById('sec-empresa').classList.add('visible');
-}
+// Restaurar estado si hay old input (tras error de validación)
+(function() {
+    const rol = document.getElementById('campo-rol').value;
+    if (rol === 'empresa') {
+        document.querySelectorAll('.auth-tab')[1].classList.add('active');
+        document.querySelectorAll('.auth-tab')[0].classList.remove('active');
+        document.getElementById('sec-empresa').classList.add('visible');
+    }
+})();
 </script>
 </body>
 </html>

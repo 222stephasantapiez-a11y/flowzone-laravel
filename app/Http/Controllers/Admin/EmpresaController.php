@@ -85,6 +85,18 @@ class EmpresaController extends Controller
             $empresa->usuario->update(['estado' => 'activo']);
         }
 
+        // Crear hotel automáticamente si es tipo hotel y aún no tiene ninguno
+        if ($empresa->tipo_empresa === 'hotel' && $empresa->hoteles()->count() === 0) {
+            \App\Models\Hotel::create([
+                'empresa_id'     => $empresa->id,
+                'nombre'         => $empresa->nombre,
+                'descripcion'    => $empresa->descripcion,
+                'telefono'       => $empresa->telefono,
+                'precio'         => 0,
+                'disponibilidad' => false,
+            ]);
+        }
+
         return redirect()->route('admin.empresas.index')
             ->with('success', "Empresa \"{$empresa->nombre}\" aprobada.");
     }
@@ -140,15 +152,22 @@ class EmpresaController extends Controller
     public function update(Request $request, Empresa $empresa)
     {
         $request->validate([
-            'nombre'    => 'required|string|max:200',
-            'telefono'  => 'nullable|string|max:30',
-            'direccion' => 'nullable|string|max:400',
+            'nombre'       => 'required|string|max:200',
+            'telefono'     => 'nullable|string|max:30',
+            'direccion'    => 'nullable|string|max:400',
+            'tipo_empresa' => 'nullable|in:hotel,restaurante,agencia_turismo,transporte,artesanias,otro',
+            'nit'          => 'nullable|string|max:20',
+            'descripcion'  => 'nullable|string|max:1000',
+            'servicios'    => 'nullable|array',
+            'servicios.*'  => 'string|max:100',
+            'sitio_web'    => 'nullable|url',
+            'instagram'    => 'nullable|string|max:200',
+            'facebook'     => 'nullable|string|max:200',
         ]);
 
         $empresa->update($request->only([
-            'nombre',
-            'telefono',
-            'direccion'
+            'nombre', 'telefono', 'direccion', 'tipo_empresa',
+            'nit', 'descripcion', 'servicios', 'sitio_web', 'instagram', 'facebook',
         ]));
 
         return redirect()->route('admin.empresas.index')

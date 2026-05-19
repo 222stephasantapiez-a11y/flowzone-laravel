@@ -152,6 +152,27 @@ class PageController extends Controller
         ]);
     }
  
+    // ── Planes turísticos públicos ────────────────────────────
+    public function planesTuristicos(Request $request)
+    {
+        $query = \App\Models\PlanTuristico::with(['empresa','hotel','gastronomia','lugar','habitacion','evento'])
+            ->where('publicado', true);
+
+        if ($request->filled('tipo')) {
+            $query->where('tipo_plan', $request->tipo);
+        }
+        if ($request->filled('busqueda')) {
+            $q = $request->busqueda;
+            $query->where(fn($q2) => $q2->where('titulo', 'like', "%$q%")->orWhere('descripcion', 'like', "%$q%"));
+        }
+
+        return view('pages.planes_turisticos', [
+            'planes'     => $query->latest()->get(),
+            'tipo_filtro'=> $request->tipo ?? '',
+            'busqueda'   => $request->busqueda ?? '',
+        ]);
+    }
+
     // ── Blog ─────────────────────────────────────────────────
     public function blog(Request $request)
     {

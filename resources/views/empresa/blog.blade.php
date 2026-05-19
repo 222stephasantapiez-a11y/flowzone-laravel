@@ -1,7 +1,7 @@
 @extends('layouts.empresa')
 
 @section('page-title', 'Blog')
-@section('page-subtitle', 'Publicaciones de {{ $empresa->nombre }}')
+@section('page-subtitle')Publicaciones de {{ $empresa->nombre }}@endsection
 
 @section('topbar-actions')
     @unless(isset($post))

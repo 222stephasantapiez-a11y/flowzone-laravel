@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -80,9 +81,21 @@ class AuthController extends Controller
 
         if ($request->rol === 'empresa') {
             $request->validate([
-                'empresa_nombre' => ['required', 'string', 'max:200'],
+                'empresa_nombre'    => ['required', 'string', 'max:200'],
+                'tipo_empresa'      => ['nullable', 'in:hotel,restaurante,agencia_turismo,transporte,artesanias,otro'],
+                'servicios'         => ['nullable', 'array'],
+                'servicios.*'       => ['string', 'max:100'],
+                'descripcion'       => ['nullable', 'string', 'max:1000'],
+                'nit'               => ['nullable', 'string', 'max:20'],
+                'sitio_web'         => ['nullable', 'url'],
+                'empresa_logo_file' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+                'empresa_logo_url'  => ['nullable', 'url'],
+                'instagram'         => ['nullable', 'string', 'max:200'],
+                'facebook'          => ['nullable', 'string', 'max:200'],
             ], [
                 'empresa_nombre.required' => 'El nombre de la empresa es obligatorio.',
+                'sitio_web.url'           => 'El sitio web debe ser una URL válida (incluye https://).',
+                'empresa_logo_url.url'    => 'La URL del logo debe ser válida.',
             ]);
         }
 
@@ -99,16 +112,44 @@ class AuthController extends Controller
 
         // Crear registro en tabla empresas si el rol es empresa
         if ($request->rol === 'empresa') {
-            \App\Models\Empresa::create([
-                'usuario_id' => $user->id,
-                'nombre'     => $request->empresa_nombre,
-                'telefono'   => $request->telefono,
-                'direccion'  => $request->empresa_direccion,
-                'aprobado'   => false,
+            // Manejar logo
+            $logo = null;
+            if ($request->hasFile('empresa_logo_file')) {
+                $logo = Storage::disk('public')->putFile('logos/empresas', $request->file('empresa_logo_file'));
+            } elseif ($request->filled('empresa_logo_url')) {
+                $logo = $request->empresa_logo_url;
+            }
+
+            $empresa = \App\Models\Empresa::create([
+                'usuario_id'  => $user->id,
+                'nombre'      => $request->empresa_nombre,
+                'telefono'    => $request->telefono,
+                'direccion'   => $request->empresa_direccion,
+                'tipo_empresa'=> $request->tipo_empresa,
+                'servicios'   => $request->servicios ?? [],
+                'descripcion' => $request->descripcion,
+                'logo'        => $logo,
+                'nit'         => $request->nit,
+                'sitio_web'   => $request->sitio_web,
+                'instagram'   => $request->instagram,
+                'facebook'    => $request->facebook,
+                'aprobado'    => false,
             ]);
+
+            // Pre-crear registro en tabla especializada según tipo
+            if ($request->tipo_empresa === 'hotel') {
+                \App\Models\Hotel::create([
+                    'empresa_id'     => $empresa->id,
+                    'nombre'         => $request->empresa_nombre,
+                    'descripcion'    => $request->descripcion,
+                    'telefono'       => $request->telefono,
+                    'precio'         => 0,
+                    'disponibilidad' => false,
+                ]);
+            }
         }
 
-        return back()->with('success', $request->rol === 'empresa' ? 'empresa' : 'usuario');
+        return redirect()->route('registro')->with('success', $request->rol === 'empresa' ? 'empresa' : 'usuario');
     }
 
     public function logout(Request $request)

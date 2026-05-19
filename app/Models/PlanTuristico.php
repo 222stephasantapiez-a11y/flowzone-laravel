@@ -9,33 +9,20 @@ class PlanTuristico extends Model
     protected $table = 'planes_turisticos';
 
     protected $fillable = [
-        'empresa_id', 'titulo',
-        'evento_id', 'gastronomia_id', 'hotel_id', 'lugar_id',
+        'empresa_id', 'titulo', 'tipo_plan', 'descripcion',
+        'evento_id', 'gastronomia_id', 'hotel_id', 'lugar_id', 'habitacion_id',
         'subtotal', 'descuento', 'precio_final',
+        'publicado', 'imagen',
     ];
 
-    public function empresa()
-    {
-        return $this->belongsTo(Empresa::class);
-    }
+    protected $casts = [
+        'publicado' => 'boolean',
+    ];
 
-    public function evento()
-    {
-        return $this->belongsTo(Evento::class);
-    }
-
-    public function gastronomia()
-    {
-        return $this->belongsTo(Gastronomia::class);
-    }
-
-    public function hotel()
-    {
-        return $this->belongsTo(Hotel::class);
-    }
-
-    public function lugar()
-    {
-        return $this->belongsTo(Lugar::class);
-    }
+    public function empresa()    { return $this->belongsTo(Empresa::class); }
+    public function evento()     { return $this->belongsTo(Evento::class); }
+    public function gastronomia(){ return $this->belongsTo(Gastronomia::class); }
+    public function hotel()      { return $this->belongsTo(Hotel::class); }
+    public function lugar()      { return $this->belongsTo(Lugar::class); }
+    public function habitacion() { return $this->belongsTo(Habitacion::class); }
 }

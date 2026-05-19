@@ -11,10 +11,13 @@ class Empresa extends Model
 
     protected $fillable = [
         'usuario_id', 'nombre', 'telefono', 'direccion', 'aprobado',
+        'tipo_empresa', 'servicios', 'descripcion', 'logo', 'nit',
+        'sitio_web', 'instagram', 'facebook',
     ];
 
     protected $casts = [
-        'aprobado' => 'boolean',
+        'aprobado'  => 'boolean',
+        'servicios' => 'array',
     ];
 
     public function usuario()
@@ -30,5 +33,10 @@ class Empresa extends Model
     public function hoteles()
     {
         return $this->hasMany(\App\Models\Hotel::class, 'empresa_id');
+    }
+
+    public function gastronomias()
+    {
+        return $this->hasMany(\App\Models\Gastronomia::class, 'empresa_id');
     }
 }

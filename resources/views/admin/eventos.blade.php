@@ -210,38 +210,45 @@
  
   {{-- FILTROS --}}
   <div id="filtrosEventos" style="display:none; margin-bottom:1rem;">
-    <form method="GET" action="{{ route('admin.eventos.index') }}">
- 
-        <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:end;">
- 
-            <div>
-                <label>Nombre</label><br>
-                <input type="text" name="nombre" value="{{ request('nombre') }}">
-            </div>
- 
-            <div>
-                <label>Fecha</label><br>
-                <input type="date" name="fecha" value="{{ request('fecha') }}">
-            </div>
- 
-            <div>
-                <label>Ubicación</label><br>
-                <input type="text" name="ubicacion" value="{{ request('ubicacion') }}">
-            </div>
- 
-            <div>
-                <label>Precio</label><br>
-                <input type="number" name="precio" value="{{ request('precio') }}">
-            </div>
- 
-            <div style="display:flex; gap:.5rem;">
-                <button type="submit" class="btn btn-primary btn-sm">Aplicar</button>
-                <a href="{{ route('admin.eventos.index') }}" class="btn btn-secondary btn-sm">Limpiar</a>
-            </div>
- 
+    <div style="background:#fff;border-radius:.75rem;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:1rem 1.25rem;margin-bottom:1rem;">
+    <form method="GET" action="{{ route('admin.eventos.index') }}"
+          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;align-items:end;">
+
+        <div>
+            <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Nombre</label>
+            <input type="text" name="nombre" value="{{ request('nombre') }}" placeholder="Buscar evento..."
+                   style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;">
         </div>
- 
+
+        <div>
+            <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Fecha</label>
+            <input type="date" name="fecha" value="{{ request('fecha') }}"
+                   style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;">
+        </div>
+
+        <div>
+            <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Ubicación</label>
+            <input type="text" name="ubicacion" value="{{ request('ubicacion') }}" placeholder="Ciudad o lugar..."
+                   style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;">
+        </div>
+
+        <div>
+            <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Precio máx.</label>
+            <input type="number" name="precio" value="{{ request('precio') }}" placeholder="Ej: 50000"
+                   style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;">
+        </div>
+
+        <div style="display:flex;gap:.5rem;align-items:flex-end;">
+            <button type="submit" style="display:inline-flex;align-items:center;gap:.4rem;background:#16a34a;color:#fff;font-size:.875rem;font-weight:700;padding:.5rem 1.1rem;border-radius:.5rem;border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1);">
+                <i class="fa-solid fa-magnifying-glass fa-xs"></i> Filtrar
+            </button>
+            <a href="{{ route('admin.eventos.index') }}" style="display:inline-flex;align-items:center;gap:.4rem;background:#f3f4f6;color:#374151;font-size:.875rem;font-weight:700;padding:.5rem 1.1rem;border-radius:.5rem;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,.1);">
+                Limpiar
+            </a>
+        </div>
+
     </form>
+    </div>
   </div>
  
     <div class="table-responsive">

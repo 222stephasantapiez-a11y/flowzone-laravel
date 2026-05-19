@@ -13,7 +13,7 @@ class BlogEmpresaController extends Controller
 {
     private function empresa(): Empresa
     {
-        return Empresa::where('usuario_id', Auth::id())->where('aprobado', true)->firstOrFail();
+        return Empresa::where('usuario_id', Auth::id())->firstOrFail();
     }
 
     private function handleImage(Request $request, ?string $current = null): ?string

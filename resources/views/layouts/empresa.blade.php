@@ -32,11 +32,38 @@
             <a href="{{ route('empresa.blog.index') }}" class="{{ request()->routeIs('empresa.blog.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-newspaper"></i> Blog
             </a>
+
+            @php $empresaNav = Auth::user()->empresa ?? null; @endphp
+
+            @if(!$empresaNav || in_array($empresaNav->tipo_empresa, ['restaurante','agencia_turismo','transporte','artesanias','otro',null]))
             <a href="{{ route('empresa.gastronomia.index') }}" class="{{ request()->routeIs('empresa.gastronomia.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-utensils"></i> Gastronomía
             </a>
+            @endif
+
+            <a href="{{ route('empresa.planes.index') }}" class="{{ request()->routeIs('empresa.planes.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Planes turísticos
+            </a>
+
+            @if($empresaNav && ($empresaNav->tipo_empresa === 'hotel' || $empresaNav->hoteles()->exists()))
+            <a href="{{ route('empresa.habitaciones.index') }}" class="{{ request()->routeIs('empresa.habitaciones.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-bed"></i> Habitaciones
+            </a>
+            <a href="{{ route('empresa.reservas.index') }}" class="{{ request()->routeIs('empresa.reservas.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-calendar-check"></i> Reservas
+            </a>
+            @endif
+
+            @if($empresaNav && in_array($empresaNav->tipo_empresa, ['agencia_turismo','transporte']))
+            <a href="{{ route('empresa.paquetes.index') }}" class="{{ request()->routeIs('empresa.paquetes.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-map-location-dot"></i> Paquetes turísticos
+            </a>
+            @endif
 
             <div class="nav-section-label" style="margin-top:auto;padding-top:1.5rem;">Sesión</div>
+            <a href="{{ route('empresa.perfil.edit') }}" class="{{ request()->routeIs('empresa.perfil.*') ? 'active' : '' }}">
+                <i class="fa-solid fa-pen-to-square"></i> Editar perfil
+            </a>
             <a href="{{ route('home') }}" target="_blank">
                 <i class="fa-solid fa-globe"></i> Ver sitio
             </a>

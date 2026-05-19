@@ -111,7 +111,7 @@
         <div style="padding: 1.75rem;">
 
             @isset($empresa)
-                <form method="POST" action="{{ route('admin.empresas.update', $empresa) }}" class="admin-form">
+                <form method="POST" action="{{ route('admin.empresas.update', $empresa) }}" class="admin-form" enctype="multipart/form-data">
                 @csrf @method('PUT')
 
                 <div class="form-row">
@@ -129,6 +129,58 @@
                 <div class="form-group">
                     <label>Dirección</label>
                     <input type="text" name="direccion" value="{{ old('direccion', $empresa->direccion) }}">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Tipo de empresa</label>
+                        <select name="tipo_empresa">
+                            <option value="">— Selecciona —</option>
+                            @foreach(['hotel'=>'🏨 Hotel/Hospedaje','restaurante'=>'🍽️ Restaurante','agencia_turismo'=>'🧭 Agencia de turismo','transporte'=>'🚌 Transporte','artesanias'=>'🎨 Artesanías','otro'=>'📦 Otro'] as $val => $label)
+                                <option value="{{ $val }}" {{ old('tipo_empresa', $empresa->tipo_empresa) === $val ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>NIT</label>
+                        <input type="text" name="nit" value="{{ old('nit', $empresa->nit) }}" maxlength="20">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Descripción</label>
+                    <textarea name="descripcion" rows="3" maxlength="1000">{{ old('descripcion', $empresa->descripcion) }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Servicios</label>
+                    <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                        @php $serviciosActuales = old('servicios', $empresa->servicios ?? []); @endphp
+                        @foreach(['WiFi','Parqueadero','Restaurante propio','Piscina','Eventos','Guía turístico','Reservas online','Domicilios','Sala de conferencias','Pet friendly'] as $srv)
+                        <label style="display:flex;align-items:center;gap:.3rem;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:2rem;padding:.3rem .65rem;font-size:.82rem;cursor:pointer;">
+                            <input type="checkbox" name="servicios[]" value="{{ $srv }}"
+                                   {{ in_array($srv, $serviciosActuales) ? 'checked' : '' }}
+                                   style="accent-color:var(--green-700);">
+                            {{ $srv }}
+                        </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Sitio web</label>
+                        <input type="url" name="sitio_web" value="{{ old('sitio_web', $empresa->sitio_web) }}" maxlength="300">
+                    </div>
+                    <div class="form-group">
+                        <label>Instagram</label>
+                        <input type="text" name="instagram" value="{{ old('instagram', $empresa->instagram) }}" maxlength="200">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Facebook</label>
+                    <input type="text" name="facebook" value="{{ old('facebook', $empresa->facebook) }}" maxlength="200">
                 </div>
 
                 <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
@@ -180,41 +232,37 @@
 
     {{-- FILTROS --}}
     <div id="filtrosEmpresas" style="display:none; padding: 1rem 0 .5rem;">
-        <form method="GET" action="{{ route('admin.empresas.index') }}">
-            <div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-end;">
-
-                <div class="filter-field">
-                    <label class="filter-label">Nombre empresa</label>
-                    <input type="text" name="busqueda" value="{{ request('busqueda') }}"
-                           placeholder="Buscar por nombre..." class="filter-input">
-                </div>
-
-                <div class="filter-field">
-                    <label class="filter-label">Responsable / correo</label>
-                    <input type="text" name="responsable" value="{{ request('responsable') }}"
-                           placeholder="Nombre o email..." class="filter-input">
-                </div>
-
-                <div class="filter-field">
-                    <label class="filter-label">Estado</label>
-                    <select name="estado" class="filter-input">
-                        <option value="">Todos</option>
-                        <option value="aprobado"  {{ request('estado') === 'aprobado'  ? 'selected' : '' }}>Aprobada</option>
-                        <option value="pendiente" {{ request('estado') === 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                    </select>
-                </div>
-
-                <div style="display:flex; gap:.5rem; align-items:flex-end; padding-bottom:1px;">
-                    <button type="submit" class="btn btn-primary btn-sm">
-                        <i class="fa-solid fa-magnifying-glass"></i> Aplicar
-                    </button>
-                    <a href="{{ route('admin.empresas.index') }}" class="btn btn-secondary btn-sm">
-                        <i class="fa-solid fa-xmark"></i> Limpiar
-                    </a>
-                </div>
-
+        <div style="background:#fff;border-radius:.75rem;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:1rem 1.25rem;margin-bottom:1rem;">
+        <form method="GET" action="{{ route('admin.empresas.index') }}"
+              style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;align-items:end;">
+            <div>
+                <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Nombre empresa</label>
+                <input type="text" name="busqueda" value="{{ request('busqueda') }}" placeholder="Buscar por nombre..."
+                       style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;transition:border-color .15s;">
+            </div>
+            <div>
+                <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Responsable / correo</label>
+                <input type="text" name="responsable" value="{{ request('responsable') }}" placeholder="Nombre o email..."
+                       style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;transition:border-color .15s;">
+            </div>
+            <div>
+                <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Estado</label>
+                <select name="estado" style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;cursor:pointer;">
+                    <option value="">Todos</option>
+                    <option value="aprobado"  {{ request('estado')==='aprobado'?'selected':'' }}>Aprobada</option>
+                    <option value="pendiente" {{ request('estado')==='pendiente'?'selected':'' }}>Pendiente</option>
+                </select>
+            </div>
+            <div style="display:flex;gap:.5rem;align-items:flex-end;">
+                <button type="submit" style="display:inline-flex;align-items:center;gap:.4rem;background:#16a34a;color:#fff;font-size:.875rem;font-weight:700;padding:.5rem 1.1rem;border-radius:.5rem;border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1);">
+                    <i class="fa-solid fa-magnifying-glass fa-xs"></i> Filtrar
+                </button>
+                <a href="{{ route('admin.empresas.index') }}" style="display:inline-flex;align-items:center;gap:.4rem;background:#f3f4f6;color:#374151;font-size:.875rem;font-weight:700;padding:.5rem 1.1rem;border-radius:.5rem;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,.1);">
+                    Limpiar
+                </a>
             </div>
         </form>
+        </div>
     </div>
 
     <div class="table-responsive">
@@ -240,6 +288,8 @@
                     <th>Responsable</th>
                     <th>Teléfono</th>
                     <th>Dirección</th>
+                    <th>Tipo</th>
+                    <th>NIT</th>
                     <th>
                         <a href="{{ route('admin.empresas.index', array_merge(request()->all(), ['sort' => 'aprobado', 'direction' => ($sort === 'aprobado' && $direction === 'asc') ? 'desc' : 'asc'])) }}"
                            style="color:inherit;text-decoration:none;display:flex;align-items:center;gap:.3rem;">
@@ -258,6 +308,17 @@
                     <td>{{ $e->usuario->name ?? '—' }}</td>
                     <td>{{ $e->telefono ?? '—' }}</td>
                     <td>{{ $e->direccion ?? '—' }}</td>
+                    <td>
+                        @php
+                            $tl = ['hotel'=>'🏨 Hotel','restaurante'=>'🍽️ Restaurante','agencia_turismo'=>'🧭 Agencia','transporte'=>'🚌 Transporte','artesanias'=>'🎨 Artesanías','otro'=>'📦 Otro'];
+                        @endphp
+                        @if($e->tipo_empresa)
+                            <span class="badge badge-info">{{ $tl[$e->tipo_empresa] ?? $e->tipo_empresa }}</span>
+                        @else
+                            <span style="color:var(--gray-400);">—</span>
+                        @endif
+                    </td>
+                    <td>{{ $e->nit ?? '—' }}</td>
 
                     <td>
                         @if($e->aprobado)
@@ -267,29 +328,33 @@
                         @endif
                     </td>
 
-                    <td>
+                    <td style="min-width:200px;">
+                        <div style="display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;">
                         @unless($e->aprobado)
-                            <form method="POST" action="{{ route('admin.empresas.aprobar', $e) }}" style="display:inline">
+                            <form method="POST" action="{{ route('admin.empresas.aprobar', $e) }}" style="display:contents">
                                 @csrf @method('PATCH')
-                                <button class="btn-small btn-success">Aprobar</button>
+                                <button class="btn-small btn-success" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
+                                    <i class="fa-solid fa-check fa-xs"></i> Aprobar
+                                </button>
                             </form>
-
-                            <form method="POST" action="{{ route('admin.empresas.rechazar', $e) }}" style="display:inline">
+                            <form method="POST" action="{{ route('admin.empresas.rechazar', $e) }}" style="display:contents">
                                 @csrf @method('PATCH')
-                                <button class="btn-small btn-delete">Rechazar</button>
+                                <button class="btn-small btn-delete" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
+                                    <i class="fa-solid fa-xmark fa-xs"></i> Rechazar
+                                </button>
                             </form>
                         @endunless
-
-                        <a href="{{ route('admin.empresas.edit', $e) }}" class="btn-small btn-edit">
-                            Editar
+                        <a href="{{ route('admin.empresas.edit', $e) }}" class="btn-small btn-edit" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
+                            <i class="fa-solid fa-pen fa-xs"></i> Editar
                         </a>
-
-                        <form method="POST" action="{{ route('admin.empresas.destroy', $e) }}" style="display:inline">
+                        <form method="POST" action="{{ route('admin.empresas.destroy', $e) }}" style="display:contents"
+                              onsubmit="return confirm('¿Eliminar empresa {{ addslashes($e->nombre) }}?')">
                             @csrf @method('DELETE')
-                            <button class="btn-small btn-delete">
-                                Eliminar
+                            <button class="btn-small btn-delete" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
+                                <i class="fa-solid fa-trash fa-xs"></i> Eliminar
                             </button>
                         </form>
+                        </div>
                     </td>
                 </tr>
                 @empty

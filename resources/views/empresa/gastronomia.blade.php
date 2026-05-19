@@ -1,7 +1,7 @@
-@extends('layouts.empresa')
+﻿@extends('layouts.empresa')
 
 @section('page-title', 'Gastronomía')
-@section('page-subtitle', 'Platos y servicios de {{ $empresa->nombre }}')
+@section('page-subtitle')Platos y servicios de {{ $empresa->nombre }}@endsection
 
 @section('topbar-actions')
     <button type="button" onclick="abrirModalPlato()"
@@ -12,127 +12,6 @@
 
 @section('content')
 
-{{-- ══════════════════════════════════════
-     GENERADOR DE PLANES TURÍSTICOS
-══════════════════════════════════════ --}}
-<div class="admin-section" style="margin-bottom:1.5rem;border:2px dashed #b7e4c7;background:#f8fffe;">
-
-    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;">
-        <h2 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:.5rem;margin:0;">
-            <i class="fa-solid fa-wand-magic-sparkles" style="color:var(--green-600);"></i> Generador de Planes Turísticos
-        </h2>
-        <div style="display:flex;gap:.6rem;flex-wrap:wrap;">
-            <button type="button" id="btnGenerar" onclick="generarPlan()"
-                    style="display:inline-flex;align-items:center;gap:.4rem;padding:.45rem 1.1rem;font-size:.85rem;font-weight:700;border-radius:var(--radius-full);border:none;background:var(--green-700);color:#fff;cursor:pointer;box-shadow:0 2px 8px rgba(45,106,79,.25);">
-                <i class="fa-solid fa-dice fa-xs"></i> Generar plan
-            </button>
-            <button type="button" id="btnLimpiar" onclick="limpiarPlan()" style="display:none;
-                    display:none;align-items:center;gap:.4rem;padding:.45rem 1.1rem;font-size:.85rem;font-weight:700;border-radius:var(--radius-full);border:1.5px solid #f87171;background:#fff;color:#c0392b;cursor:pointer;">
-                <i class="fa-solid fa-xmark fa-xs"></i> Limpiar
-            </button>
-        </div>
-    </div>
-
-    {{-- Panel del plan generado (oculto hasta generar) --}}
-    <div id="planGenerado" style="display:none;">
-        <div style="overflow:hidden;border-radius:var(--radius-md);border:1px solid #b7e4c7;">
-            {{-- Banner --}}
-            <div style="background:var(--green-700);color:#fff;padding:.75rem 1.25rem;text-align:center;font-weight:700;font-size:.9rem;letter-spacing:.03em;">
-                <i class="fa-solid fa-tag fa-xs"></i> ¡OFERTA ESPECIAL: PLAN TURÍSTICO CON 20% DE DESCUENTO!
-            </div>
-            {{-- Cards de componentes --}}
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;padding:1.25rem;background:#fff;">
-                <div style="padding:.85rem 1rem;border-left:4px solid #6366f1;background:#f5f3ff;border-radius:0 var(--radius-md) var(--radius-md) 0;">
-                    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#6366f1;margin-bottom:.2rem;">Evento</div>
-                    <div id="planEvento" style="font-weight:700;color:var(--gray-900);font-size:.9rem;">—</div>
-                </div>
-                <div style="padding:.85rem 1rem;border-left:4px solid #f97316;background:#fff7ed;border-radius:0 var(--radius-md) var(--radius-md) 0;">
-                    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#f97316;margin-bottom:.2rem;">Gastronomía</div>
-                    <div id="planGastronomia" style="font-weight:700;color:var(--gray-900);font-size:.9rem;">—</div>
-                </div>
-                <div style="padding:.85rem 1rem;border-left:4px solid #22c55e;background:#f0fdf4;border-radius:0 var(--radius-md) var(--radius-md) 0;">
-                    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#22c55e;margin-bottom:.2rem;">Hotel</div>
-                    <div id="planHotel" style="font-weight:700;color:var(--gray-900);font-size:.9rem;">—</div>
-                </div>
-                <div style="padding:.85rem 1rem;border-left:4px solid #3b82f6;background:#eff6ff;border-radius:0 var(--radius-md) var(--radius-md) 0;">
-                    <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;color:#3b82f6;margin-bottom:.2rem;">Lugar</div>
-                    <div id="planLugar" style="font-weight:700;color:var(--gray-900);font-size:.9rem;">—</div>
-                </div>
-            </div>
-            {{-- Footer con precios + botón guardar --}}
-            <div style="background:#1e293b;color:#fff;padding:1.1rem 1.25rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.75rem;">
-                <div>
-                    <span id="planSubtotal" style="text-decoration:line-through;color:#94a3b8;margin-right:.75rem;">—</span>
-                    <span style="background:#ef4444;padding:2px 8px;border-radius:5px;font-size:.75rem;font-weight:700;">-20% DCTO</span>
-                </div>
-                <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
-                    <div style="text-align:right;">
-                        <div style="font-size:.78rem;color:#94a3b8;">Precio Total Plan:</div>
-                        <div id="planPrecioFinal" style="font-size:1.6rem;font-weight:900;color:#fbbf24;">—</div>
-                    </div>
-                    {{-- Formulario para guardar --}}
-                    <form method="POST" action="{{ route('empresa.gastronomia.planes.guardar') }}" id="formGuardarPlan">
-                        @csrf
-                        <input type="hidden" name="evento_id"      id="inputEventoId">
-                        <input type="hidden" name="gastronomia_id" id="inputGastronomiaId">
-                        <input type="hidden" name="hotel_id"       id="inputHotelId">
-                        <input type="hidden" name="lugar_id"       id="inputLugarId">
-                        <input type="hidden" name="subtotal"       id="inputSubtotal">
-                        <input type="hidden" name="descuento"      id="inputDescuento">
-                        <input type="hidden" name="precio_final"   id="inputPrecioFinal">
-                        <button type="submit"
-                                style="padding:.5rem 1.2rem;font-size:.85rem;font-weight:700;border-radius:var(--radius-full);border:none;background:#fbbf24;color:#1e293b;cursor:pointer;">
-                            <i class="fa-solid fa-floppy-disk fa-xs"></i> Agregar plan
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Mensaje por defecto --}}
-    <div id="planVacio" style="text-align:center;color:#64748b;padding:.5rem 0;font-size:.88rem;">
-        Haz clic en <strong>Generar plan</strong> para crear una combinación aleatoria con 20% de descuento.
-    </div>
-</div>
-
-{{-- ══════════════════════════════════════
-     PLANES SUGERIDOS GUARDADOS
-══════════════════════════════════════ --}}
-@if(isset($planes) && $planes->count() > 0)
-<div class="admin-section" style="margin-bottom:1.5rem;">
-    <h2 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:.5rem;margin-bottom:1.25rem;">
-        <i class="fa-solid fa-star" style="color:#fbbf24;"></i> Planes Sugeridos
-        <span class="badge badge-info" style="margin-left:.25rem;">{{ $planes->count() }}</span>
-    </h2>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;">
-        @foreach($planes as $p)
-        <div style="border:1px solid #b7e4c7;border-radius:var(--radius-md);overflow:hidden;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.06);">
-            <div style="background:var(--green-700);color:#fff;padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center;">
-                <span style="font-size:.8rem;font-weight:700;">{{ $p->titulo }}</span>
-                <form method="POST" action="{{ route('empresa.gastronomia.planes.destroy', $p) }}">
-                    @csrf @method('DELETE')
-                    <button type="submit" style="background:none;border:none;color:#fca5a5;cursor:pointer;font-size:.9rem;" title="Eliminar plan">
-                        <i class="fa-solid fa-trash fa-xs"></i>
-                    </button>
-                </form>
-            </div>
-            <div style="padding:.85rem 1rem;font-size:.82rem;display:grid;gap:.3rem;">
-                <div><span style="color:#6366f1;font-weight:700;">🎭</span> {{ $p->evento->nombre ?? '—' }}</div>
-                <div><span style="color:#f97316;font-weight:700;">🍽</span> {{ $p->gastronomia->nombre ?? '—' }}</div>
-                <div><span style="color:#22c55e;font-weight:700;">🏨</span> {{ $p->hotel->nombre ?? '—' }}</div>
-                <div><span style="color:#3b82f6;font-weight:700;">📍</span> {{ $p->lugar->nombre ?? '—' }}</div>
-            </div>
-            <div style="background:#f8fafc;padding:.6rem 1rem;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #e2e8f0;">
-                <span style="text-decoration:line-through;color:#94a3b8;font-size:.78rem;">${{ number_format($p->subtotal, 0, ',', '.') }}</span>
-                <span style="font-weight:900;color:var(--green-700);font-size:1rem;">${{ number_format($p->precio_final, 0, ',', '.') }}</span>
-            </div>
-        </div>
-        @endforeach
-    </div>
-</div>
-@endif
 
 
 {{-- ══ MODAL Agregar / Editar plato ══ --}}
@@ -221,6 +100,65 @@
             'fieldId'      => 'emp-gastro',
         ])
 
+        {{-- Disponibilidad --}}
+        <div style="border-top:1.5px solid var(--gray-100);padding-top:1rem;margin-top:.5rem;">
+            <div style="font-size:.75rem;font-weight:600;color:var(--green-700);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem;">
+                <i class="fa-solid fa-clock fa-xs"></i> Disponibilidad
+            </div>
+
+            <div class="form-row" style="align-items:center;">
+                <div class="form-group" style="display:flex;align-items:center;gap:.5rem;padding-bottom:.25rem;">
+                    <input type="checkbox" name="disponible_hoy" id="f_disponible_hoy" value="1"
+                           {{ old('disponible_hoy', $gastronomium->disponible_hoy ?? true) ? 'checked' : '' }}
+                           style="accent-color:var(--green-700);width:16px;height:16px;">
+                    <label for="f_disponible_hoy" style="cursor:pointer;font-size:.9rem;font-weight:500;margin:0;">Disponible hoy</label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Hora inicio</label>
+                    <input type="time" name="hora_inicio"
+                           value="{{ old('hora_inicio', $gastronomium->hora_inicio ?? '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Hora fin</label>
+                    <input type="time" name="hora_fin"
+                           value="{{ old('hora_fin', $gastronomium->hora_fin ?? '') }}">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Stock diario <small style="font-weight:400;color:var(--gray-400);">(0 = ilimitado)</small></label>
+                    <input type="number" name="stock_diario" min="0"
+                           value="{{ old('stock_diario', $gastronomium->stock_diario ?? '') }}"
+                           placeholder="Ej: 20">
+                </div>
+                <div class="form-group">
+                    <label>Stock actual</label>
+                    <input type="number" name="stock_actual" min="0"
+                           value="{{ old('stock_actual', $gastronomium->stock_actual ?? '') }}"
+                           placeholder="Quedan...">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Días de la semana</label>
+                <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                    @php $diasActuales = old('dias_semana', $gastronomium->dias_semana ?? []); @endphp
+                    @foreach(['lunes','martes','miercoles','jueves','viernes','sabado','domingo'] as $dia)
+                    <label style="display:flex;align-items:center;gap:.3rem;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:2rem;padding:.3rem .65rem;font-size:.82rem;cursor:pointer;">
+                        <input type="checkbox" name="dias_semana[]" value="{{ $dia }}"
+                               {{ in_array($dia, $diasActuales) ? 'checked' : '' }}
+                               style="accent-color:var(--green-700);">
+                        {{ ucfirst($dia) }}
+                    </label>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
         {{-- Footer --}}
         <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem;">
             <button type="button" onclick="cerrarModalPlato()"
@@ -272,6 +210,16 @@
             <i class="fa-solid fa-filter fa-xs"></i> Filtro
             @if($hayFiltros)<span style="width:7px;height:7px;background:#fff;border-radius:50%;display:inline-block;opacity:.85;"></span>@endif
         </button>
+
+        {{-- Reset stock --}}
+        <form method="POST" action="{{ route('empresa.gastronomia.reset-stock') }}" style="display:inline"
+              onsubmit="return confirm('¿Reiniciar el stock de todos los platos al stock diario?')">
+            @csrf @method('PATCH')
+            <button type="submit"
+                    style="display:inline-flex;align-items:center;gap:.35rem;padding:.4rem .9rem;font-size:.82rem;font-weight:700;border-radius:var(--radius-full);border:1.5px solid #f97316;background:#fff;color:#f97316;cursor:pointer;">
+                <i class="fa-solid fa-rotate fa-xs"></i> Resetear stock del día
+            </button>
+        </form>
     </div>
 
     {{-- Panel de filtros desplegable --}}
@@ -372,6 +320,7 @@
                         <th>Nombre</th>
                         <th>Tipo</th>
                         <th>Precio</th>
+                        <th>Disponibilidad</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
@@ -381,6 +330,13 @@
                             $imgSrc = $item->imagen
                                 ? (str_starts_with($item->imagen,'http') ? $item->imagen : Storage::disk('public')->url($item->imagen))
                                 : null;
+                            $dispStatus = $item->estaDisponibleAhora()
+                                ? ['label'=>'Disponible','class'=>'badge-success']
+                                : ($item->disponible_hoy
+                                    ? ($item->stock_actual !== null && $item->stock_actual <= 0
+                                        ? ['label'=>'Agotado','class'=>'badge-danger']
+                                        : ['label'=>'Fuera de horario','class'=>'badge-warning'])
+                                    : ['label'=>'No disponible','class'=>'badge-danger']);
                         @endphp
                         <tr>
                             <td>
@@ -409,6 +365,19 @@
                                 @endif
                             </td>
                             <td>
+                                <span class="badge {{ $dispStatus['class'] }}">{{ $dispStatus['label'] }}</span>
+                                @if($item->stock_actual !== null)
+                                    <div style="font-size:.75rem;color:var(--gray-400);margin-top:.15rem;">Stock: {{ $item->stock_actual }}</div>
+                                @endif
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ route('empresa.gastronomia.toggle', $item) }}" style="display:inline">
+                                    @csrf @method('PATCH')
+                                    <button type="submit" class="btn-small {{ $item->disponible_hoy ? 'btn-warning' : 'btn-success' }}"
+                                            title="{{ $item->disponible_hoy ? 'Marcar no disponible' : 'Marcar disponible' }}">
+                                        <i class="fa-solid fa-{{ $item->disponible_hoy ? 'eye-slash' : 'eye' }} fa-xs"></i>
+                                    </button>
+                                </form>
                                 <a href="{{ route('empresa.gastronomia.edit', $item) }}" class="btn-small btn-edit">
                                     <i class="fa-solid fa-pen fa-xs"></i> Editar
                                 </a>
@@ -436,57 +405,26 @@ function toggleFiltro() {
     panel.style.display = open ? "block" : "none";
 }
 
-// ── Generador de planes ──
-function generarPlan() {
-    const btn = document.getElementById('btnGenerar');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-xs"></i> Generando...';
 
-    fetch('{{ route("empresa.gastronomia.planes.generar") }}', {
-        method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]')?.content || '{{ csrf_token() }}',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(r => r.json())
-    .then(d => {
-        if (d.error) { alert(d.error); return; }
-
-        document.getElementById('planEvento').textContent      = d.evento.nombre;
-        document.getElementById('planGastronomia').textContent = d.gastronomia.nombre;
-        document.getElementById('planHotel').textContent       = d.hotel.nombre;
-        document.getElementById('planLugar').textContent       = d.lugar.nombre;
-        document.getElementById('planSubtotal').textContent    = 'Antes: $' + d.subtotal.toLocaleString('es-CO');
-        document.getElementById('planPrecioFinal').textContent = '$' + d.precioFinal.toLocaleString('es-CO');
-
-        document.getElementById('inputEventoId').value      = d.evento.id;
-        document.getElementById('inputGastronomiaId').value = d.gastronomia.id;
-        document.getElementById('inputHotelId').value       = d.hotel.id;
-        document.getElementById('inputLugarId').value       = d.lugar.id;
-        document.getElementById('inputSubtotal').value      = d.subtotal;
-        document.getElementById('inputDescuento').value     = d.descuento;
-        document.getElementById('inputPrecioFinal').value   = d.precioFinal;
-
-        document.getElementById('planVacio').style.display    = 'none';
-        document.getElementById('planGenerado').style.display = 'block';
-        document.getElementById('btnLimpiar').style.display   = 'inline-flex';
-    })
-    .catch(() => alert('Error al generar el plan.'))
-    .finally(() => {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-dice fa-xs"></i> Generar plan';
-    });
+// ── Modal plato ──
+function abrirModalPlato() {
+    document.getElementById('modalPlato').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
 }
 
-function limpiarPlan() {
-    document.getElementById('planGenerado').style.display = 'none';
-    document.getElementById('planVacio').style.display    = 'block';
-    document.getElementById('btnLimpiar').style.display   = 'none';
+function cerrarModalPlato() {
+    document.getElementById('modalPlato').style.display = 'none';
+    document.body.style.overflow = '';
 }
 
-// Modal plato
+document.getElementById('modalPlato').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalPlato();
+});
+
+// Abrir automáticamente si hay errores de validación o estamos editando
+@if($errors->any() || isset($gastronomium))
+    abrirModalPlato();
+@endif
 </script>
 @endpush
 

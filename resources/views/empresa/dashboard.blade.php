@@ -4,6 +4,7 @@
 @section('page-subtitle', 'Resumen de tu empresa')
 
 @section('content')
+@php use Illuminate\Support\Facades\Storage; use Illuminate\Support\Str; @endphp
 
 @if(!$empresa)
     <div class="alert alert-error">
@@ -78,23 +79,42 @@
             @endif
         </div>
     </div>
+    <div class="stat-card blue">
+        <div class="stat-icon-wrap" style="background:rgba(59,130,246,.12);color:#3b82f6;">
+            <i class="fa-solid fa-bed"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ $habitacionesDisponibles }} <span style="font-size:.75rem;font-weight:400;color:var(--gray-400);">/ {{ $totalHabitaciones }}</span></h3>
+            <p>Habitaciones disponibles</p>
+        </div>
+    </div>
+    <div class="stat-card teal">
+        <div class="stat-icon-wrap" style="background:rgba(6,182,212,.12);color:#06b6d4;">
+            <i class="fa-solid fa-map-location-dot"></i>
+        </div>
+        <div class="stat-info">
+            <h3>{{ $paquetesActivos }} <span style="font-size:.75rem;font-weight:400;color:var(--gray-400);">/ {{ $totalPaquetes }}</span></h3>
+            <p>Paquetes activos</p>
+        </div>
+    </div>
 </div>
 
-{{-- Calificaciones por hotel --}}
+{{-- Calificaciones por servicio --}}
 @if($statsCalificaciones->isNotEmpty())
 <div class="admin-section" style="margin-bottom:1.5rem;">
     <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;">
-        <i class="fa-solid fa-star" style="color:var(--gold-500);"></i> Calificaciones por hotel
+        <i class="fa-solid fa-star" style="color:var(--gold-500);"></i> Calificaciones por servicio
     </h2>
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
-                <tr><th>Hotel</th><th>Promedio</th><th>Reseñas</th></tr>
+                <tr><th>Servicio</th><th>Tipo</th><th>Promedio</th><th>Reseñas</th></tr>
             </thead>
             <tbody>
                 @foreach($statsCalificaciones as $s)
                 <tr>
                     <td>{{ $s->nombre }}</td>
+                    <td><span class="badge badge-info">{{ $s->tipo_label }}</span></td>
                     <td>
                         <span style="color:var(--gold-500);font-weight:700;">
                             <i class="fa-solid fa-star fa-xs"></i> {{ $s->promedio }}
@@ -120,6 +140,19 @@
             <div style="font-weight:600;color:var(--gray-900);">{{ $empresa->nombre }}</div>
         </div>
         <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:.9rem 1rem;">
+            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Tipo</div>
+            <div style="font-weight:600;color:var(--gray-900);">
+                @php
+                    $tipoLabels = ['hotel'=>'🏨 Hotel/Hospedaje','restaurante'=>'🍽️ Restaurante','agencia_turismo'=>'🧭 Agencia de turismo','transporte'=>'🚌 Transporte','artesanias'=>'🎨 Artesanías','otro'=>'📦 Otro'];
+                @endphp
+                {{ $tipoLabels[$empresa->tipo_empresa] ?? '—' }}
+            </div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:.9rem 1rem;">
+            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">NIT</div>
+            <div style="font-weight:600;color:var(--gray-900);">{{ $empresa->nit ?? '—' }}</div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:.9rem 1rem;">
             <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Teléfono</div>
             <div style="font-weight:600;color:var(--gray-900);">{{ $empresa->telefono ?? '—' }}</div>
         </div>
@@ -135,6 +168,56 @@
                 <span class="badge badge-warning"><i class="fa-solid fa-clock fa-xs"></i> Pendiente</span>
             @endif
         </div>
+        @if($empresa->logo)
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:.9rem 1rem;">
+            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;">Logo</div>
+            <img src="{{ Str::startsWith($empresa->logo, 'http') ? $empresa->logo : Storage::url($empresa->logo) }}"
+                 alt="Logo" style="width:60px;height:60px;object-fit:cover;border-radius:var(--radius-sm);">
+        </div>
+        @endif
+        @if($empresa->descripcion)
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:.9rem 1rem;grid-column:1/-1;">
+            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Descripción</div>
+            <div style="color:var(--gray-700);font-size:.9rem;">{{ $empresa->descripcion }}</div>
+        </div>
+        @endif
+        @if($empresa->servicios && count($empresa->servicios))
+        <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:.9rem 1rem;grid-column:1/-1;">
+            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;">Servicios</div>
+            <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @foreach($empresa->servicios as $srv)
+                    <span style="background:rgba(64,145,108,.12);color:var(--green-700);border-radius:2rem;padding:.25rem .7rem;font-size:.8rem;font-weight:500;">{{ $srv }}</span>
+                @endforeach
+            </div>
+        </div>
+        @endif
+    </div>
+
+    {{-- Links externos --}}
+    @if($empresa->sitio_web || $empresa->instagram || $empresa->facebook)
+    <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1rem;">
+        @if($empresa->sitio_web)
+            <a href="{{ $empresa->sitio_web }}" target="_blank" class="btn btn-outline btn-sm">
+                <i class="fa-solid fa-globe fa-xs"></i> Sitio web
+            </a>
+        @endif
+        @if($empresa->instagram)
+            <a href="https://instagram.com/{{ ltrim($empresa->instagram,'@') }}" target="_blank" class="btn btn-outline btn-sm">
+                <i class="fa-brands fa-instagram fa-xs"></i> Instagram
+            </a>
+        @endif
+        @if($empresa->facebook)
+            <a href="{{ Str::startsWith($empresa->facebook,'http') ? $empresa->facebook : 'https://'.$empresa->facebook }}" target="_blank" class="btn btn-outline btn-sm">
+                <i class="fa-brands fa-facebook fa-xs"></i> Facebook
+            </a>
+        @endif
+    </div>
+    @endif
+
+    <div style="margin-top:1.2rem;">
+        <a href="{{ route('empresa.perfil.edit') }}" class="btn btn-primary">
+            <i class="fa-solid fa-pen-to-square fa-xs"></i> Editar perfil
+        </a>
     </div>
 </div>
 

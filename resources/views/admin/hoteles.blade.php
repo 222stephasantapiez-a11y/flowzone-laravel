@@ -184,6 +184,21 @@
                 <label for="disponibilidad" style="margin:0;cursor:pointer;">Disponible para reservas</label>
             </div>
 
+            @php $empresasHotel = \App\Models\Empresa::where('tipo_empresa','hotel')->where('aprobado',true)->orderBy('nombre')->get(); @endphp
+            @if($empresasHotel->count())
+            <div class="form-group">
+                <label>Empresa propietaria <span style="font-size:.75rem;font-weight:400;color:var(--gray-400);">(opcional)</span></label>
+                <select name="empresa_id" style="width:100%;padding:.55rem .9rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.9rem;outline:none;">
+                    <option value="">— Sin empresa asignada —</option>
+                    @foreach($empresasHotel as $emp)
+                    <option value="{{ $emp->id }}" {{ old('empresa_id', $hotel->empresa_id ?? '') == $emp->id ? 'selected' : '' }}>
+                        {{ $emp->nombre }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+            @endif
+
             <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-{{ isset($hotel) ? 'floppy-disk' : 'plus' }}"></i>
@@ -312,6 +327,7 @@
                         </a>
                     </th>
                     <th>Estado</th>
+                    <th>Empresa</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -343,18 +359,23 @@
                                 <span class="badge badge-danger">No disponible</span>
                             @endif
                         </td>
-                        <td>
-                            <a href="{{ route('admin.hoteles.edit', $h) }}" class="btn-small btn-edit btn-sm">
+                        <td style="font-size:.82rem;">
+                            {{ $h->empresa?->nombre ?? '—' }}
+                        </td>
+                        <td style="min-width:160px;">
+                            <div style="display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;">
+                            <a href="{{ route('admin.hoteles.edit', $h) }}" class="btn-small btn-edit btn-sm" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
                                 <i class="fa-solid fa-pen fa-xs"></i> Editar
                             </a>
                             <form method="POST" action="{{ route('admin.hoteles.destroy', $h) }}"
-                                  style="display:inline"
+                                  style="display:contents"
                                   onsubmit="return confirm('¿Eliminar {{ addslashes($h->nombre) }}?')">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn-small btn-delete btn-sm">
+                                <button type="submit" class="btn-small btn-delete btn-sm" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
                                     <i class="fa-solid fa-trash fa-xs"></i> Eliminar
                                 </button>
                             </form>
+                            </div>
                         </td>
                     </tr>
                 @empty

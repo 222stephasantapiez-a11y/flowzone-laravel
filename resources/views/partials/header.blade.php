@@ -43,7 +43,7 @@
                         <i class="fa-solid fa-circle-user"></i>
                     </a>
                 @else
-                    <a href="{{ route('mis-reservas') }}" class="btn btn-glass btn-sm" title="Mis Reservas">
+                    <a href="{{ route('usuario.dashboard') }}" class="btn btn-glass btn-sm" title="Mi Cuenta">
                         <i class="fa-solid fa-circle-user"></i>
                     </a>
                 @endif
