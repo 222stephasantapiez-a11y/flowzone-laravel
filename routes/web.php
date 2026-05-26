@@ -8,6 +8,7 @@ use App\Http\Controllers\CalificacionController;
 use App\Http\Controllers\FavoritoController;
 use App\Http\Controllers\EmpresaDashboardController;
 use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\WompiController;
 use App\Http\Controllers\Empresa\BlogEmpresaController;
 use App\Http\Controllers\Empresa\GastronomiaEmpresaController;
 use App\Http\Controllers\Empresa\PlanTuristicoController;
@@ -49,7 +50,6 @@ Route::middleware('guest')->group(function () {
     Route::get('/registro', [AuthController::class, 'showRegistro'])->name('registro');
     Route::post('/registro', [AuthController::class, 'registro']);
 
-    // ── Olvidé mi contraseña ─────────────────────────────────
     Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])->name('password.request');
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLink'])->name('password.email');
     Route::get('/reset-password/{token}', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
@@ -57,6 +57,9 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
+
+// ── Webhook Wompi (fuera de auth — Wompi llama desde sus servidores) ──
+Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->name('wompi.webhook');
 
 // ── Área de usuario autenticado ──────────────────────────────
 Route::middleware('auth')->group(function () {
@@ -67,11 +70,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/favoritos/toggle', [FavoritoController::class, 'toggle'])->name('favoritos.toggle');
     Route::post('/calificaciones', [CalificacionController::class, 'store'])->name('calificaciones.store');
 
-    // ── Panel usuario /mi-cuenta ─────────────────────────────
     Route::get('/mi-cuenta',         [UserDashboardController::class, 'index'])->name('usuario.dashboard');
     Route::get('/mi-cuenta/perfil',  [UserDashboardController::class, 'editarPerfil'])->name('usuario.perfil.edit');
     Route::put('/mi-cuenta/perfil',  [UserDashboardController::class, 'actualizarPerfil'])->name('usuario.perfil.update');
     Route::delete('/mi-cuenta/resenas/{calificacion}', [UserDashboardController::class, 'eliminarResena'])->name('usuario.resenas.destroy');
+
+    // ── Wompi ────────────────────────────────────────────────
+    Route::post('/wompi/pagar',  [WompiController::class, 'iniciarPago'])->name('wompi.pagar');
+    Route::get('/wompi/retorno', [WompiController::class, 'retorno'])->name('wompi.retorno');
 });
 
 // ── Panel empresa ────────────────────────────────────────────
@@ -100,18 +106,15 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::post('/gastronomia/planes/guardar', [PlanTuristicoController::class, 'guardar'])->name('gastronomia.planes.guardar');
     Route::delete('/gastronomia/planes/{plan}', [PlanTuristicoController::class, 'destroy'])->name('gastronomia.planes.destroy');
 
-    // Generador de planes — vista propia
     Route::get('/planes', [PlanTuristicoController::class, 'index'])->name('planes.index');
     Route::post('/planes/generar', [PlanTuristicoController::class, 'generar'])->name('planes.generar');
     Route::post('/planes/guardar', [PlanTuristicoController::class, 'guardar'])->name('planes.guardar');
     Route::patch('/planes/{plan}/publicar', [PlanTuristicoController::class, 'togglePublicado'])->name('planes.publicar');
     Route::delete('/planes/{plan}', [PlanTuristicoController::class, 'destroy'])->name('planes.destroy');
 
-    // Disponibilidad gastronomía
     Route::patch('/gastronomia/reset-stock', [GastronomiaEmpresaController::class, 'resetStockDiario'])->name('gastronomia.reset-stock');
     Route::patch('/gastronomia/{gastronomium}/toggle', [GastronomiaEmpresaController::class, 'toggleDisponibilidad'])->name('gastronomia.toggle');
 
-    // Habitaciones
     Route::get('/habitaciones', [HabitacionController::class, 'index'])->name('habitaciones.index');
     Route::post('/hoteles', [HabitacionController::class, 'storeHotel'])->name('hoteles.store');
     Route::put('/hoteles/{hotel}', [HabitacionController::class, 'updateHotel'])->name('hoteles.update');
@@ -120,7 +123,6 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::delete('/habitaciones/{habitacion}', [HabitacionController::class, 'destroy'])->name('habitaciones.destroy');
     Route::patch('/habitaciones/{habitacion}/toggle', [HabitacionController::class, 'toggleDisponibilidad'])->name('habitaciones.toggle');
 
-    // Paquetes turísticos
     Route::get('/paquetes', [PaqueteController::class, 'index'])->name('paquetes.index');
     Route::post('/paquetes', [PaqueteController::class, 'store'])->name('paquetes.store');
     Route::put('/paquetes/{paquete}', [PaqueteController::class, 'update'])->name('paquetes.update');
@@ -128,7 +130,6 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::patch('/paquetes/{paquete}/toggle', [PaqueteController::class, 'toggleActivo'])->name('paquetes.toggle');
     Route::patch('/paquetes/{paquete}/cupo', [PaqueteController::class, 'ajustarCupo'])->name('paquetes.cupo');
 
-    // Reservas empresa
     Route::get('/reservas', [ReservaEmpresaController::class, 'index'])->name('reservas.index');
     Route::patch('/reservas/{reserva}/estado', [ReservaEmpresaController::class, 'cambiarEstado'])->name('reservas.estado');
 });
