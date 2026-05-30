@@ -76,8 +76,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/mi-cuenta/resenas/{calificacion}', [UserDashboardController::class, 'eliminarResena'])->name('usuario.resenas.destroy');
 
     // ── Wompi ────────────────────────────────────────────────
-    Route::post('/wompi/pagar',  [WompiController::class, 'iniciarPago'])->name('wompi.pagar');
+    Route::get('/wompi/pagar',   [WompiController::class, 'iniciarPago'])->name('wompi.pagar');
     Route::get('/wompi/retorno', [WompiController::class, 'retorno'])->name('wompi.retorno');
+
+    // ── Notificaciones usuario ────────────────────────────────
+    Route::patch('/mis-notificaciones/{id}/leer', function(string $id) {
+        auth()->user()->notifications()->findOrFail($id)->markAsRead();
+        return back();
+    })->name('usuario.notificaciones.leer');
+
+    Route::post('/mis-notificaciones/leer-todas', function() {
+        auth()->user()->unreadNotifications->markAsRead();
+        return back();
+    })->name('usuario.notificaciones.leer-todas');
 });
 
 // ── Panel empresa ────────────────────────────────────────────
@@ -86,6 +97,11 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::post('/solicitud', [EmpresaDashboardController::class, 'enviarSolicitud'])->name('solicitud');
     Route::get('/perfil/editar', [EmpresaDashboardController::class, 'editarPerfil'])->name('perfil.edit');
     Route::put('/perfil/editar', [EmpresaDashboardController::class, 'actualizarPerfil'])->name('perfil.update');
+
+    // ── Imagen principal hero ────────────────────────────────
+    Route::post('/hero',                     [EmpresaDashboardController::class, 'heroStore'])->name('hero.store');
+    Route::patch('/hero/{heroImage}/toggle', [EmpresaDashboardController::class, 'heroToggle'])->name('hero.toggle');
+    Route::delete('/hero/{heroImage}',       [EmpresaDashboardController::class, 'heroDestroy'])->name('hero.destroy');
 
     Route::get('/blog', [BlogEmpresaController::class, 'index'])->name('blog.index');
     Route::post('/blog', [BlogEmpresaController::class, 'store'])->name('blog.store');
@@ -178,7 +194,7 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::delete('/empresas/{empresa}',         [EmpresaController::class, 'destroy'])->name('empresas.destroy');
     Route::patch('/notificaciones/{notificacion}/leer', [EmpresaController::class, 'marcarLeida'])->name('notificaciones.leer');
     Route::post('/notificaciones/leer-todas',           [EmpresaController::class, 'marcarTodasLeidas'])->name('notificaciones.leer-todas');
-    Route::post('/notificaciones/{notificacion}/responder', [EmpresaController::class, 'responder'])->name('notificaciones.responder');
+    Route::match(['POST', 'PATCH'], '/notificaciones/{notificacion}/responder', [EmpresaController::class, 'responder'])->name('notificaciones.responder');
 
     Route::get('/reservas/export/excel',       [ReservaController::class, 'exportExcel'])->name('reservas.export.excel');
     Route::get('/reservas/export/pdf',         [ReservaController::class, 'exportPdf'])->name('reservas.export.pdf');
@@ -213,7 +229,7 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/usuarios/export/pdf',    [UsuarioController::class, 'exportPdf'])->name('usuarios.export.pdf');
     Route::post('/usuarios/import/excel', [UsuarioController::class, 'importExcel'])->name('usuarios.import.excel');
     Route::get('/usuarios',               [UsuarioController::class, 'index'])->name('usuarios.index');
-    Route::delete('/usuarios/{usuario}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
+    Route::delete('/usuarios/{usuario}',  [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 
     Route::get('/imagenes',                   [ImagenController::class, 'index'])->name('imagenes.index');
     Route::post('/imagenes',                  [ImagenController::class, 'store'])->name('imagenes.store');

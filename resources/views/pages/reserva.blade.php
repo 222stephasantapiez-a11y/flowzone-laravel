@@ -93,7 +93,7 @@
                 <div class="alert alert-error" style="margin-bottom:1.25rem;">{{ $errors->first() }}</div>
             @endif
 
-            <form method="POST" action="{{ route('wompi.pagar') }}">
+                <form method="POST" action="{{ route('reservar.store') }}">
                 @csrf
                 <input type="hidden" name="hotel_id" value="{{ $hotel->id }}">
 

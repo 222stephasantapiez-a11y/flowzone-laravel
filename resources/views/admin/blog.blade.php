@@ -44,7 +44,116 @@
     </div>
 </div>
 
-{{-- ===================== MODAL ===================== --}}
+{{-- ================= PENDIENTES DE APROBACIÓN ================= --}}
+@php $pendientes = $posts->getCollection()->where('publicado', false)->where('empresa_id', '!=', null); @endphp
+@if($pendientes->count())
+<div class="admin-section" style="border-left:4px solid var(--warning);background:linear-gradient(135deg,#fffbeb,#fef3c7);">
+    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;">
+        <div style="width:40px;height:40px;background:var(--warning);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fa-solid fa-clock" style="color:#fff;font-size:1rem;"></i>
+        </div>
+        <div>
+            <h3 style="margin:0;font-size:1rem;font-weight:700;color:#92400e;">
+                {{ $pendientes->count() }} publicación(es) pendiente(s) de aprobación
+            </h3>
+            <p style="margin:0;font-size:.82rem;color:#a16207;">Enviadas por empresas, esperan tu revisión</p>
+        </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:.6rem;">
+        @foreach($pendientes as $p)
+        <div style="background:#fff;border-radius:.6rem;padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;box-shadow:0 1px 4px rgba(0,0,0,.07);">
+            <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:.9rem;color:#111827;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                    {{ $p->titulo }}
+                </div>
+                <div style="font-size:.78rem;color:#6b7280;margin-top:.15rem;">
+                    <i class="fa-solid fa-building fa-xs"></i> {{ $p->empresa?->nombre ?? '—' }}
+                    &nbsp;·&nbsp;
+                    <i class="fa-solid fa-tag fa-xs"></i> {{ $p->tipo }}
+                    &nbsp;·&nbsp;
+                    <i class="fa-solid fa-calendar fa-xs"></i> {{ $p->fecha_publicacion?->format('d/m/Y') }}
+                </div>
+            </div>
+            <div style="display:flex;gap:.5rem;flex-shrink:0;">
+                {{-- Botón ver preview --}}
+                <button type="button"
+                        onclick="abrirPreview({{ $p->id }})"
+                        style="padding:.4rem .8rem;border-radius:.4rem;border:1.5px solid var(--gray-200);background:#fff;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--gray-600);display:inline-flex;align-items:center;gap:.3rem;">
+                    <i class="fa-solid fa-eye fa-xs"></i> Ver
+                </button>
+                {{-- Botón aprobar --}}
+                <form method="POST" action="{{ route('admin.blog.publicar', $p) }}" style="display:inline;">
+                    @csrf @method('PATCH')
+                    <button type="submit"
+                            style="padding:.4rem .9rem;border-radius:.4rem;border:none;background:var(--success);color:#fff;cursor:pointer;font-size:.8rem;font-weight:600;display:inline-flex;align-items:center;gap:.3rem;">
+                        <i class="fa-solid fa-check fa-xs"></i> Aprobar
+                    </button>
+                </form>
+                {{-- Botón rechazar (eliminar) --}}
+                <button type="button"
+                        onclick="abrirConfirmBlog({{ $p->id }}, '{{ addslashes($p->titulo) }}')"
+                        style="padding:.4rem .8rem;border-radius:.4rem;border:none;background:var(--danger);color:#fff;cursor:pointer;font-size:.8rem;font-weight:600;display:inline-flex;align-items:center;gap:.3rem;">
+                    <i class="fa-solid fa-xmark fa-xs"></i> Rechazar
+                </button>
+                <form id="form-delete-blog-pend-{{ $p->id }}" method="POST"
+                      action="{{ route('admin.blog.destroy', $p) }}" style="display:none;">
+                    @csrf @method('DELETE')
+                </form>
+            </div>
+        </div>
+
+        {{-- Modal preview individual --}}
+        <div id="preview-{{ $p->id }}" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:1100;overflow-y:auto;padding:2rem 1rem;">
+            <div style="background:#fff;border-radius:1rem;max-width:700px;margin:0 auto;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3);">
+                <div style="background:linear-gradient(135deg,var(--green-900),var(--green-700));padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;">
+                    <span style="color:#fff;font-weight:700;font-size:.95rem;">
+                        <i class="fa-solid fa-eye"></i> Preview — {{ $p->titulo }}
+                    </span>
+                    <button onclick="cerrarPreview({{ $p->id }})" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:.9rem;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div style="padding:1.5rem;">
+                    @if($p->imagen)
+                        <img src="{{ str_starts_with($p->imagen,'http') ? $p->imagen : Storage::url($p->imagen) }}"
+                             style="width:100%;max-height:280px;object-fit:cover;border-radius:.5rem;margin-bottom:1rem;">
+                    @endif
+                    <div style="display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap;">
+                        <span class="badge badge-info">{{ $p->tipo }}</span>
+                        <span style="font-size:.8rem;color:var(--gray-500);">
+                            <i class="fa-solid fa-building fa-xs"></i> {{ $p->empresa?->nombre ?? '—' }}
+                        </span>
+                        <span style="font-size:.8rem;color:var(--gray-500);">
+                            <i class="fa-solid fa-calendar fa-xs"></i> {{ $p->fecha_publicacion?->format('d M Y') }}
+                        </span>
+                    </div>
+                    <h3 style="font-size:1.15rem;font-weight:700;margin-bottom:.75rem;">{{ $p->titulo }}</h3>
+                    <div style="font-size:.9rem;color:var(--gray-600);line-height:1.7;max-height:300px;overflow-y:auto;">
+                        {!! nl2br(e($p->contenido)) !!}
+                    </div>
+                    <div style="display:flex;gap:.6rem;margin-top:1.25rem;justify-content:flex-end;">
+                        <button onclick="cerrarPreview({{ $p->id }})"
+                                style="padding:.5rem 1rem;border-radius:.4rem;border:1.5px solid var(--gray-200);background:#fff;cursor:pointer;font-size:.85rem;font-weight:600;">
+                            Cerrar
+                        </button>
+                        <form method="POST" action="{{ route('admin.blog.publicar', $p) }}" style="display:inline;">
+                            @csrf @method('PATCH')
+                            <button type="submit"
+                                    style="padding:.5rem 1.1rem;border-radius:.4rem;border:none;background:var(--success);color:#fff;cursor:pointer;font-size:.85rem;font-weight:600;">
+                                <i class="fa-solid fa-check fa-xs"></i> Aprobar y publicar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
+{{-- ===================== MODAL CREAR/EDITAR ===================== --}}
 <div id="modal-blog" style="
     display: none;
     position: fixed;
@@ -272,26 +381,46 @@
             </thead>
             <tbody>
                 @forelse($posts as $p)
-                    <tr>
+                    <tr style="{{ !$p->publicado && $p->empresa_id ? 'background:#fffbeb;' : '' }}">
                         <td>{{ $p->id }}</td>
                         <td>
                             @if($p->imagen)
                                 <img src="{{ str_starts_with($p->imagen,'http') ? $p->imagen : Storage::url($p->imagen) }}" width="90">
                             @endif
                         </td>
-                        <td>{{ $p->titulo }}</td>
+                        <td>
+                            {{ $p->titulo }}
+                            @if(!$p->publicado && $p->empresa_id)
+                                <span class="badge badge-warning" style="margin-left:.3rem;font-size:.7rem;">Pendiente</span>
+                            @endif
+                        </td>
                         <td>{{ $p->tipo }}</td>
                         <td>{{ $p->autor_nombre }}</td>
                         <td>{{ $p->fecha_publicacion?->format('d/m/Y') }}</td>
                         <td>
                             @if($p->publicado)
                                 <span class="badge badge-success">Publicado</span>
+                            @elseif($p->empresa_id)
+                                <span class="badge badge-warning">Pendiente</span>
                             @else
-                                <span class="badge badge-warning">Borrador</span>
+                                <span class="badge badge-secondary">Borrador</span>
                             @endif
                         </td>
                         <td>
                             <div style="display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;">
+
+                                {{-- Aprobar / Despublicar --}}
+                                <form method="POST" action="{{ route('admin.blog.publicar', $p) }}" style="display:inline;">
+                                    @csrf @method('PATCH')
+                                    <button type="submit"
+                                            title="{{ $p->publicado ? 'Despublicar' : 'Aprobar y publicar' }}"
+                                            style="padding:.35rem .7rem;border-radius:.4rem;border:none;cursor:pointer;font-size:.78rem;font-weight:600;display:inline-flex;align-items:center;gap:.25rem;
+                                                   background:{{ $p->publicado ? '#f59e0b' : 'var(--success)' }};color:#fff;">
+                                        <i class="fa-solid fa-{{ $p->publicado ? 'eye-slash' : 'check' }} fa-xs"></i>
+                                        {{ $p->publicado ? 'Despublicar' : 'Aprobar' }}
+                                    </button>
+                                </form>
+
                                 <a href="{{ route('admin.blog.edit', $p) }}" class="btn-small btn-edit btn-sm">
                                     <i class="fa-solid fa-pen fa-xs"></i> Editar
                                 </a>
@@ -315,7 +444,6 @@
     </div>
 
     @include('partials.pagination', ['paginator' => $posts, 'perPage' => $perPage])
-
 </div>
 
 {{-- MODAL CONFIRMACIÓN ELIMINAR --}}
@@ -353,57 +481,58 @@ function abrirModal() {
     document.getElementById('modal-blog').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
-
 function cerrarModal() {
     document.getElementById('modal-blog').style.display = 'none';
     document.body.style.overflow = '';
 }
-
 document.getElementById('modal-blog').addEventListener('click', function(e) {
     if (e.target === this) cerrarModal();
 });
-
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        cerrarModal();
-        cerrarConfirmBlog();
-    }
+    if (e.key === 'Escape') { cerrarModal(); cerrarConfirmBlog(); }
 });
-
 @isset($blog)
     abrirModal();
 @endisset
 
-// ── Confirmar eliminar blog ──
-let deleteBlogId = null;
+// ── Preview pendientes ──
+function abrirPreview(id) {
+    document.getElementById('preview-' + id).style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+function cerrarPreview(id) {
+    document.getElementById('preview-' + id).style.display = 'none';
+    document.body.style.overflow = '';
+}
 
+// ── Confirmar eliminar ──
+let deleteBlogId = null;
 function abrirConfirmBlog(id, titulo) {
     deleteBlogId = id;
     document.getElementById('confirm-nombre-blog').textContent = 'Vas a eliminar: ' + titulo;
     document.getElementById('confirm-check-blog').checked = false;
     document.getElementById('btn-confirmar-delete-blog').disabled = true;
     document.getElementById('btn-confirmar-delete-blog').style.opacity = '.5';
-    const modal = document.getElementById('modal-confirm-blog');
-    modal.style.display = 'flex';
+    document.getElementById('modal-confirm-blog').style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
-
 function cerrarConfirmBlog() {
     deleteBlogId = null;
     document.getElementById('modal-confirm-blog').style.display = 'none';
     document.body.style.overflow = '';
 }
-
 function ejecutarDeleteBlog() {
-    if (deleteBlogId) document.getElementById('form-delete-blog-' + deleteBlogId).submit();
+    if (!deleteBlogId) return;
+    // Intenta el form de pendientes primero, luego el de la tabla
+    const form = document.getElementById('form-delete-blog-pend-' + deleteBlogId)
+               || document.getElementById('form-delete-blog-' + deleteBlogId);
+    if (form) form.submit();
 }
-
 document.getElementById('confirm-check-blog').addEventListener('change', function () {
     const btn = document.getElementById('btn-confirmar-delete-blog');
     btn.disabled = !this.checked;
     btn.style.opacity = this.checked ? '1' : '.5';
 });
-
 document.getElementById('modal-confirm-blog').addEventListener('click', function (e) {
     if (e.target === this) cerrarConfirmBlog();
 });
@@ -412,14 +541,8 @@ function toggleFiltros() {
     const box = document.getElementById('filtrosBox');
     box.style.display = (box.style.display === 'none') ? 'block' : 'none';
 }
-
 window.addEventListener('load', function () {
-    if (
-        "{{ request('titulo') }}" ||
-        "{{ request('autor') }}" ||
-        "{{ request('fecha') }}" ||
-        "{{ request('tipo') }}"
-    ) {
+    if ("{{ request('titulo') }}" || "{{ request('autor') }}" || "{{ request('fecha') }}" || "{{ request('tipo') }}") {
         document.getElementById('filtrosBox').style.display = 'block';
     }
 });

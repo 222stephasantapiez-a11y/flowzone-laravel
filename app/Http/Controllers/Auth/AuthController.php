@@ -37,7 +37,6 @@ class AuthController extends Controller
                 ->withInput($request->only('correo'));
         }
 
-        // Regenerar sesión INMEDIATAMENTE después del attempt, antes de cualquier otra lógica
         $request->session()->regenerate();
 
         $user = Auth::user();
@@ -74,9 +73,9 @@ class AuthController extends Controller
             'password' => ['required', 'min:6', 'confirmed'],
             'rol'      => ['required', 'in:usuario,empresa'],
         ], [
-            'correo.unique'       => 'Ese correo ya está registrado.',
-            'password.confirmed'  => 'Las contraseñas no coinciden.',
-            'password.min'        => 'La contraseña debe tener al menos 6 caracteres.',
+            'correo.unique'      => 'Ese correo ya está registrado.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password.min'       => 'La contraseña debe tener al menos 6 caracteres.',
         ]);
 
         if ($request->rol === 'empresa') {
@@ -92,6 +91,8 @@ class AuthController extends Controller
                 'empresa_logo_url'  => ['nullable', 'url'],
                 'instagram'         => ['nullable', 'string', 'max:200'],
                 'facebook'          => ['nullable', 'string', 'max:200'],
+                'hotel_precio'      => ['nullable', 'numeric', 'min:0'],
+                'hotel_capacidad'   => ['nullable', 'integer', 'min:1'],
             ], [
                 'empresa_nombre.required' => 'El nombre de la empresa es obligatorio.',
                 'sitio_web.url'           => 'El sitio web debe ser una URL válida (incluye https://).',
@@ -110,7 +111,6 @@ class AuthController extends Controller
             'estado'   => $estado,
         ]);
 
-        // Crear registro en tabla empresas si el rol es empresa
         if ($request->rol === 'empresa') {
             // Manejar logo
             $logo = null;
@@ -136,15 +136,17 @@ class AuthController extends Controller
                 'aprobado'    => false,
             ]);
 
-            // Pre-crear registro en tabla especializada según tipo
+            // Pre-crear hotel si es tipo hotel
             if ($request->tipo_empresa === 'hotel') {
+                $precioHotel = $request->hotel_precio ?? 0;
                 \App\Models\Hotel::create([
                     'empresa_id'     => $empresa->id,
                     'nombre'         => $request->empresa_nombre,
                     'descripcion'    => $request->descripcion,
                     'telefono'       => $request->telefono,
-                    'precio'         => 0,
-                    'disponibilidad' => false,
+                    'precio'         => $precioHotel,
+                    'capacidad'      => $request->hotel_capacidad,
+                    'disponibilidad' => $precioHotel > 0,
                 ]);
             }
         }

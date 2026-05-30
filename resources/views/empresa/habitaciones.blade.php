@@ -58,6 +58,65 @@
     </span>
 </div>
 
+{{-- ══ MODAL Editar Hotel ══ --}}
+<div id="modalHotel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;overflow-y:auto;padding:1.5rem 1rem;">
+    <div style="background:#fff;border-radius:var(--radius-lg);max-width:640px;margin:0 auto;box-shadow:0 24px 64px rgba(0,0,0,.2);">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--gray-100);">
+            <h3 style="margin:0;font-size:1rem;font-weight:700;color:var(--gray-900);">
+                <i class="fa-solid fa-pen fa-xs" style="color:var(--green-600);"></i> Editar hotel
+            </h3>
+            <button onclick="cerrarModalHotel()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--gray-400);">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form method="POST" action="{{ route('empresa.hoteles.update', $hotelActual) }}"
+              class="admin-form" style="padding:1.5rem;">
+            @csrf @method('PUT')
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" name="nombre" required value="{{ $hotelActual->nombre }}">
+                </div>
+                <div class="form-group">
+                    <label>Precio por noche (COP) *</label>
+                    <input type="number" name="precio" required min="0" step="1000"
+                           placeholder="Ej: 120000" value="{{ $hotelActual->precio }}">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Capacidad (personas)</label>
+                    <input type="number" name="capacidad" min="1"
+                           placeholder="Ej: 10" value="{{ $hotelActual->capacidad }}">
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" value="{{ $hotelActual->telefono }}">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Ubicación</label>
+                <input type="text" name="ubicacion" value="{{ $hotelActual->ubicacion }}">
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="descripcion" rows="3">{{ $hotelActual->descripcion }}</textarea>
+            </div>
+            <div class="form-group">
+                <label>Servicios <span style="font-size:.78rem;font-weight:400;color:var(--gray-400);">(separados por coma)</span></label>
+                <input type="text" name="servicios" placeholder="WiFi, Piscina, Parqueadero..."
+                       value="{{ $hotelActual->servicios }}">
+            </div>
+            <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem;">
+                <button type="button" onclick="cerrarModalHotel()" class="btn btn-outline">Cancelar</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk fa-xs"></i> Guardar cambios
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- ══ MODAL Nueva habitación ══ --}}
 <div id="modalNueva" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;overflow-y:auto;padding:1.5rem 1rem;">
     <div style="background:#fff;border-radius:var(--radius-lg);max-width:640px;margin:0 auto;box-shadow:0 24px 64px rgba(0,0,0,.2);">
@@ -250,10 +309,24 @@
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.25rem;">
         <h2 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin:0;display:flex;align-items:center;gap:.5rem;">
             <i class="fa-solid fa-hotel" style="color:var(--green-600);"></i> {{ $hotelActual->nombre }}
+            @if($hotelActual->precio > 0)
+                <span style="font-size:.8rem;font-weight:600;color:var(--green-700);background:var(--green-50);padding:.2rem .6rem;border-radius:var(--radius-full);">
+                    ${{ number_format($hotelActual->precio, 0, ',', '.') }}/noche
+                </span>
+            @else
+                <span style="font-size:.8rem;font-weight:600;color:var(--warning);background:#fef3c7;padding:.2rem .6rem;border-radius:var(--radius-full);">
+                    Sin precio
+                </span>
+            @endif
         </h2>
-        <button type="button" onclick="abrirModalNueva()" class="btn btn-primary btn-sm">
-            <i class="fa-solid fa-plus fa-xs"></i> Nueva habitación
-        </button>
+        <div style="display:flex;gap:.5rem;">
+            <button type="button" onclick="abrirModalHotel()" class="btn btn-outline btn-sm">
+                <i class="fa-solid fa-pen fa-xs"></i> Editar hotel
+            </button>
+            <button type="button" onclick="abrirModalNueva()" class="btn btn-primary btn-sm">
+                <i class="fa-solid fa-plus fa-xs"></i> Nueva habitación
+            </button>
+        </div>
     </div>
 
     {{-- Servicios del hotel --}}
@@ -351,6 +424,19 @@
 
 @push('scripts')
 <script>
+// ── Modal Hotel ──
+function abrirModalHotel() {
+    document.getElementById('modalHotel').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+function cerrarModalHotel() {
+    document.getElementById('modalHotel').style.display = 'none';
+    document.body.style.overflow = '';
+}
+document.getElementById('modalHotel')?.addEventListener('click', function(e) {
+    if (e.target === this) cerrarModalHotel();
+});
+
 // ── Modal Nueva ──
 function abrirModalNueva() {
     document.getElementById('modalNueva').style.display = 'block';
@@ -378,18 +464,17 @@ document.getElementById('modalEditar')?.addEventListener('click', function(e) {
 });
 
 function editarHabitacion(id, data) {
-    // URL de update
     document.getElementById('formEditar').action = '{{ url("empresa/habitaciones") }}/' + id;
     document.getElementById('editarTitulo').textContent = 'Editar: ' + data.nombre;
 
-    document.getElementById('e_nombre').value      = data.nombre || '';
-    document.getElementById('e_tipo').value        = data.tipo || 'sencilla';
-    document.getElementById('e_num_camas').value   = data.num_camas || 1;
-    document.getElementById('e_tipo_cama').value   = data.tipo_cama || 'doble';
-    document.getElementById('e_capacidad').value   = data.capacidad_personas || 2;
-    document.getElementById('e_precio').value      = data.precio_noche || '';
+    document.getElementById('e_nombre').value       = data.nombre || '';
+    document.getElementById('e_tipo').value         = data.tipo || 'sencilla';
+    document.getElementById('e_num_camas').value    = data.num_camas || 1;
+    document.getElementById('e_tipo_cama').value    = data.tipo_cama || 'doble';
+    document.getElementById('e_capacidad').value    = data.capacidad_personas || 2;
+    document.getElementById('e_precio').value       = data.precio_noche || '';
     document.getElementById('e_disponible').checked = !!data.disponible;
-    document.getElementById('e_descripcion').value = data.descripcion || '';
+    document.getElementById('e_descripcion').value  = data.descripcion || '';
 
     const amenidades = Array.isArray(data.amenidades) ? data.amenidades : [];
     document.querySelectorAll('.e-amenidad').forEach(c => {
@@ -399,13 +484,20 @@ function editarHabitacion(id, data) {
     abrirModalEditar();
 }
 
-// Abrir modal nueva si hay errores de validación (tras submit fallido)
+// Abrir modal nueva si hay errores de validación
 @if($errors->any() && old('_method') !== 'PUT')
     abrirModalNueva();
 @endif
 
-
+// Cerrar con Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        cerrarModalHotel();
+        cerrarModalNueva();
+        cerrarModalEditar();
+    }
+});
 </script>
 @endpush
 
-@endsection
+@endsection 

@@ -426,6 +426,31 @@
                 </div>
             </div>
 
+            {{-- Campos específicos para hotel --}}
+            <div id="campos-hotel" style="display:{{ old('tipo_empresa') === 'hotel' ? 'block' : 'none' }};">
+                <div class="auth-section-title" style="margin-top:.5rem;">
+                    <i class="fa-solid fa-hotel fa-xs"></i> Información del hotel
+                </div>
+                <div class="auth-row-2">
+                    <div class="auth-field">
+                        <label>Precio por noche (COP)</label>
+                        <div class="auth-field-wrap">
+                            <i class="auth-icon fa-solid fa-tag"></i>
+                            <input type="number" name="hotel_precio" min="0" step="1000"
+                                   placeholder="Ej: 120000" value="{{ old('hotel_precio') }}">
+                        </div>
+                    </div>
+                    <div class="auth-field">
+                        <label>Capacidad (personas)</label>
+                        <div class="auth-field-wrap">
+                            <i class="auth-icon fa-solid fa-users"></i>
+                            <input type="number" name="hotel_capacidad" min="1"
+                                   placeholder="Ej: 10" value="{{ old('hotel_capacidad') }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {{-- Dirección --}}
             <div class="auth-field">
                 <label>Dirección</label>
@@ -535,13 +560,20 @@ function setTipo(btn, tipo) {
     document.getElementById('sec-empresa').classList.toggle('visible', tipo === 'empresa');
 }
 
-// Restaurar estado si hay old input (tras error de validación)
+document.querySelector('select[name="tipo_empresa"]').addEventListener('change', function() {
+    document.getElementById('campos-hotel').style.display = this.value === 'hotel' ? 'block' : 'none';
+});
+
 (function() {
     const rol = document.getElementById('campo-rol').value;
     if (rol === 'empresa') {
         document.querySelectorAll('.auth-tab')[1].classList.add('active');
         document.querySelectorAll('.auth-tab')[0].classList.remove('active');
         document.getElementById('sec-empresa').classList.add('visible');
+    }
+    const tipoEmpresa = document.querySelector('select[name="tipo_empresa"]').value;
+    if (tipoEmpresa === 'hotel') {
+        document.getElementById('campos-hotel').style.display = 'block';
     }
 })();
 </script>
