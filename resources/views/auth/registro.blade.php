@@ -485,14 +485,7 @@
             </div>
 
             {{-- Sitio web --}}
-            <div class="auth-field">
-                <label>Sitio web</label>
-                <div class="auth-field-wrap">
-                    <i class="auth-icon fa-solid fa-globe"></i>
-                    <input type="url" name="sitio_web" maxlength="300"
-                           placeholder="https://miempresa.com" value="{{ old('sitio_web') }}">
-                </div>
-            </div>
+           
 
             {{-- Instagram y Facebook --}}
             <div class="auth-row-2">
