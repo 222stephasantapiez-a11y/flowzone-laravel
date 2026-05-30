@@ -2,13 +2,24 @@
 // FlowZone — script.js
 // ============================================================
  
-// 1. Navbar scroll effect
+// 1. Navbar scroll effect con glassmorphism
 const navbar = document.getElementById('navbar');
 if (navbar) {
     window.addEventListener('scroll', () => {
-        navbar.classList.toggle('scrolled', window.scrollY > 80);
+        if (window.scrollY > 80) {
+            navbar.classList.add('scrolled');
+            navbar.classList.add('glass-scroll');
+        } else {
+            navbar.classList.remove('scrolled');
+            navbar.classList.remove('glass-scroll');
+        }
     }, { passive: true });
-    navbar.classList.toggle('scrolled', window.scrollY > 80);
+    
+    // Aplicar estado inicial
+    if (window.scrollY > 80) {
+        navbar.classList.add('scrolled');
+        navbar.classList.add('glass-scroll');
+    }
 }
  
 // 2. Mobile nav toggle

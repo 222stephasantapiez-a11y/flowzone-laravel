@@ -1,12 +1,12 @@
 @php use Illuminate\Support\Facades\Storage; @endphp
 @extends('layouts.admin')
- 
+
 @section('title', 'Eventos')
 @section('page-title', 'Eventos')
 @section('page-subtitle', 'Administra los eventos culturales y turísticos')
- 
+
 @section('content')
- 
+
 {{-- Barra superior --}}
 <div class="admin-section">
     <div class="admin-section-header">
@@ -42,7 +42,7 @@
         </div>
     </div>
 </div>
- 
+
 {{-- ===================== MODAL ===================== --}}
 <div id="modal-evento" style="
     display: none;
@@ -62,7 +62,6 @@
         box-shadow: 0 20px 60px rgba(0,0,0,.25);
         overflow: hidden;
     ">
-        {{-- Header modal --}}
         <div style="
             background: linear-gradient(135deg, var(--green-900), var(--green-700));
             padding: 1.25rem 1.75rem;
@@ -76,26 +75,19 @@
             </h3>
             <button onclick="cerrarModal()" style="
                 background: rgba(255,255,255,.15);
-                border: none;
-                color: #fff;
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                cursor: pointer;
-                font-size: 1rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
+                border: none; color: #fff;
+                width: 32px; height: 32px;
+                border-radius: 50%; cursor: pointer;
+                font-size: 1rem; display: flex;
+                align-items: center; justify-content: center;
                 transition: background .2s;
             " onmouseover="this.style.background='rgba(255,255,255,.3)'"
                onmouseout="this.style.background='rgba(255,255,255,.15)'">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
- 
-        {{-- Body modal --}}
+
         <div style="padding: 1.75rem;max-height:calc(90vh - 120px);overflow-y:auto;">
- 
             @isset($evento)
                 <form method="POST" action="{{ route('admin.eventos.update', $evento) }}" class="admin-form" enctype="multipart/form-data">
                 @method('PUT')
@@ -103,72 +95,72 @@
                 <form method="POST" action="{{ route('admin.eventos.store') }}" class="admin-form" enctype="multipart/form-data">
             @endisset
             @csrf
- 
-    <div class="form-row">
-        <div class="form-group">
-            <label>Nombre *</label>
-            <input type="text" name="nombre" required maxlength="150"
-                   placeholder="Ej: Festival del Folclor Tolimense"
-                   value="{{ old('nombre', $evento->nombre ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Categoría</label>
-            <input type="text" name="categoria"
-                   placeholder="Ej: Cultural, Deportivo..."
-                   value="{{ old('categoria', $evento->categoria ?? '') }}">
-        </div>
-    </div>
- 
-    <div class="form-group">
-        <label>Descripción *</label>
-        <textarea name="descripcion" rows="3" required
-                  placeholder="Describe el evento, actividades y detalles...">{{ old('descripcion', $evento->descripcion ?? '') }}</textarea>
-    </div>
- 
-    <div class="form-row">
-        <div class="form-group">
-            <label>Fecha *</label>
-            <input type="date" name="fecha" required
-                   value="{{ old('fecha', isset($evento) ? $evento->fecha->format('Y-m-d') : '') }}">
-        </div>
-        <div class="form-group">
-            <label>Hora</label>
-            <input type="time" name="hora"
-                   value="{{ old('hora', $evento->hora ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Precio (COP)</label>
-            <input type="number" step="0.01" name="precio"
-                   placeholder="0 = gratuito"
-                   value="{{ old('precio', $evento->precio ?? '0') }}">
-        </div>
-    </div>
- 
-    <div class="form-row">
-        <div class="form-group">
-            <label>Ubicación</label>
-            <input type="text" name="ubicacion"
-                   placeholder="Ej: Plaza Principal de Ortega"
-                   value="{{ old('ubicacion', $evento->ubicacion ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Organizador</label>
-            <input type="text" name="organizador"
-                   value="{{ old('organizador', $evento->organizador ?? '') }}">
-        </div>
-        <div class="form-group">
-            <label>Contacto</label>
-            <input type="text" name="contacto"
-                   placeholder="Teléfono o email"
-                   value="{{ old('contacto', $evento->contacto ?? '') }}">
-        </div>
-    </div>
- 
-    @include('partials.imagen_field', [
-        'currentImage' => $evento->imagen ?? null,
-        'fieldId'      => 'evento',
-    ])
- 
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nombre *</label>
+                    <input type="text" name="nombre" required maxlength="150"
+                           placeholder="Ej: Festival del Folclor Tolimense"
+                           value="{{ old('nombre', $evento->nombre ?? '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <input type="text" name="categoria"
+                           placeholder="Ej: Cultural, Deportivo..."
+                           value="{{ old('categoria', $evento->categoria ?? '') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Descripción *</label>
+                <textarea name="descripcion" rows="3" required
+                          placeholder="Describe el evento, actividades y detalles...">{{ old('descripcion', $evento->descripcion ?? '') }}</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" name="fecha" required
+                           value="{{ old('fecha', isset($evento) ? $evento->fecha->format('Y-m-d') : '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Hora</label>
+                    <input type="time" name="hora"
+                           value="{{ old('hora', $evento->hora ?? '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Precio (COP)</label>
+                    <input type="number" step="0.01" name="precio"
+                           placeholder="0 = gratuito"
+                           value="{{ old('precio', $evento->precio ?? '0') }}">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ubicación</label>
+                    <input type="text" name="ubicacion"
+                           placeholder="Ej: Plaza Principal de Ortega"
+                           value="{{ old('ubicacion', $evento->ubicacion ?? '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Organizador</label>
+                    <input type="text" name="organizador"
+                           value="{{ old('organizador', $evento->organizador ?? '') }}">
+                </div>
+                <div class="form-group">
+                    <label>Contacto</label>
+                    <input type="text" name="contacto"
+                           placeholder="Teléfono o email"
+                           value="{{ old('contacto', $evento->contacto ?? '') }}">
+                </div>
+            </div>
+
+            @include('partials.imagen_field', [
+                'currentImage' => $evento->imagen ?? null,
+                'fieldId'      => 'evento',
+            ])
+
             <div style="display:flex;gap:.8rem;margin-top:.5rem;flex-wrap:wrap;">
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-{{ isset($evento) ? 'floppy-disk' : 'plus' }}"></i>
@@ -184,73 +176,62 @@
                     </button>
                 @endisset
             </div>
- 
+
             </form>
         </div>
     </div>
 </div>
- 
+
 {{-- Tabla --}}
 <div class="admin-section">
     <div class="admin-section-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
- 
-    <h2>
-        <i class="fa-solid fa-list" style="color:var(--primary);"></i> Eventos Registrados
-    </h2>
- 
-    <div style="display:flex; align-items:center; gap:.5rem;">
-        <span class="badge badge-info">{{ $eventos->total() }} total</span>
- 
-        <button type="button" onclick="toggleFiltrosEventos()" class="btn btn-success btn-sm">
-            <i class="fa-solid fa-filter"></i> Filtro
-        </button>
-    </div>
- 
-  </div>
- 
-  {{-- FILTROS --}}
-  <div id="filtrosEventos" style="display:none; margin-bottom:1rem;">
-    <div style="background:#fff;border-radius:.75rem;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:1rem 1.25rem;margin-bottom:1rem;">
-    <form method="GET" action="{{ route('admin.eventos.index') }}"
-          style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;align-items:end;">
-
-        <div>
-            <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Nombre</label>
-            <input type="text" name="nombre" value="{{ request('nombre') }}" placeholder="Buscar evento..."
-                   style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;">
-        </div>
-
-        <div>
-            <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Fecha</label>
-            <input type="date" name="fecha" value="{{ request('fecha') }}"
-                   style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;">
-        </div>
-
-        <div>
-            <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Ubicación</label>
-            <input type="text" name="ubicacion" value="{{ request('ubicacion') }}" placeholder="Ciudad o lugar..."
-                   style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;">
-        </div>
-
-        <div>
-            <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Precio máx.</label>
-            <input type="number" name="precio" value="{{ request('precio') }}" placeholder="Ej: 50000"
-                   style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;box-shadow:0 1px 2px rgba(0,0,0,.05);outline:none;">
-        </div>
-
-        <div style="display:flex;gap:.5rem;align-items:flex-end;">
-            <button type="submit" style="display:inline-flex;align-items:center;gap:.4rem;background:#16a34a;color:#fff;font-size:.875rem;font-weight:700;padding:.5rem 1.1rem;border-radius:.5rem;border:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.1);">
-                <i class="fa-solid fa-magnifying-glass fa-xs"></i> Filtrar
+        <h2>
+            <i class="fa-solid fa-list" style="color:var(--primary);"></i> Eventos Registrados
+        </h2>
+        <div style="display:flex; align-items:center; gap:.5rem;">
+            <span class="badge badge-info">{{ $eventos->total() }} total</span>
+            <button type="button" onclick="toggleFiltrosEventos()" class="btn btn-success btn-sm">
+                <i class="fa-solid fa-filter"></i> Filtro
             </button>
-            <a href="{{ route('admin.eventos.index') }}" style="display:inline-flex;align-items:center;gap:.4rem;background:#f3f4f6;color:#374151;font-size:.875rem;font-weight:700;padding:.5rem 1.1rem;border-radius:.5rem;text-decoration:none;box-shadow:0 1px 3px rgba(0,0,0,.1);">
-                Limpiar
-            </a>
         </div>
-
-    </form>
     </div>
-  </div>
- 
+
+    <div id="filtrosEventos" style="display:none; margin-bottom:1rem;">
+        <div style="background:#fff;border-radius:.75rem;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:1rem 1.25rem;margin-bottom:1rem;">
+            <form method="GET" action="{{ route('admin.eventos.index') }}"
+                  style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;align-items:end;">
+                <div>
+                    <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Nombre</label>
+                    <input type="text" name="nombre" value="{{ request('nombre') }}" placeholder="Buscar evento..."
+                           style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;outline:none;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Fecha</label>
+                    <input type="date" name="fecha" value="{{ request('fecha') }}"
+                           style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;outline:none;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Ubicación</label>
+                    <input type="text" name="ubicacion" value="{{ request('ubicacion') }}" placeholder="Ciudad o lugar..."
+                           style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;outline:none;">
+                </div>
+                <div>
+                    <label style="display:block;font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem;">Precio máx.</label>
+                    <input type="number" name="precio" value="{{ request('precio') }}" placeholder="Ej: 50000"
+                           style="width:100%;border-radius:.5rem;border:1px solid #d1d5db;background:#fff;padding:.5rem .85rem;font-size:.875rem;color:#374151;outline:none;">
+                </div>
+                <div style="display:flex;gap:.5rem;align-items:flex-end;">
+                    <button type="submit" style="display:inline-flex;align-items:center;gap:.4rem;background:#16a34a;color:#fff;font-size:.875rem;font-weight:700;padding:.5rem 1.1rem;border-radius:.5rem;border:none;cursor:pointer;">
+                        <i class="fa-solid fa-magnifying-glass fa-xs"></i> Filtrar
+                    </button>
+                    <a href="{{ route('admin.eventos.index') }}" style="display:inline-flex;align-items:center;gap:.4rem;background:#f3f4f6;color:#374151;font-size:.875rem;font-weight:700;padding:.5rem 1.1rem;border-radius:.5rem;text-decoration:none;">
+                        Limpiar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
@@ -321,17 +302,20 @@
                             @endif
                         </td>
                         <td>
-                            <a href="{{ route('admin.eventos.edit', $e) }}" class="btn-small btn-edit btn-sm">
-                                <i class="fa-solid fa-pen fa-xs"></i> Editar
-                            </a>
-                            <form method="POST" action="{{ route('admin.eventos.destroy', $e) }}"
-                                  style="display:inline"
-                                  onsubmit="return confirm('¿Eliminar este evento?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn-small btn-delete btn-sm">
+                            <div style="display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;">
+                                <a href="{{ route('admin.eventos.edit', $e) }}" class="btn-small btn-edit btn-sm">
+                                    <i class="fa-solid fa-pen fa-xs"></i> Editar
+                                </a>
+                                <button type="button" class="btn-small btn-delete btn-sm"
+                                        onclick="abrirConfirmEvento({{ $e->id }}, '{{ addslashes($e->nombre) }}')">
                                     <i class="fa-solid fa-trash fa-xs"></i> Eliminar
                                 </button>
-                            </form>
+                                <form id="form-delete-evento-{{ $e->id }}" method="POST"
+                                      action="{{ route('admin.eventos.destroy', $e) }}"
+                                      style="display:none;">
+                                    @csrf @method('DELETE')
+                                </form>
+                            </div>
                         </td>
                     </tr>
                 @empty
@@ -345,51 +329,106 @@
             </tbody>
         </table>
     </div>
- 
-    {{-- Paginación --}}
+
     @include('partials.pagination', ['paginator' => $eventos, 'perPage' => $perPage])
- 
+
 </div>
- 
+
+{{-- MODAL CONFIRMACIÓN ELIMINAR --}}
+<div id="modal-confirm-evento" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:1rem;padding:2rem;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+        <div style="text-align:center;margin-bottom:1.25rem;">
+            <div style="width:56px;height:56px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;">
+                <i class="fa-solid fa-trash" style="color:#dc2626;font-size:1.4rem;"></i>
+            </div>
+            <h3 style="font-size:1.05rem;font-weight:700;color:#111827;margin-bottom:.4rem;">¿Eliminar evento?</h3>
+            <p style="font-size:.88rem;color:#6b7280;" id="confirm-nombre-evento"></p>
+        </div>
+        <label style="display:flex;align-items:center;gap:.6rem;background:#fef2f2;border:1.5px solid #fecaca;border-radius:.5rem;padding:.75rem 1rem;cursor:pointer;margin-bottom:1.25rem;">
+            <input type="checkbox" id="confirm-check-evento" style="accent-color:#dc2626;width:16px;height:16px;">
+            <span style="font-size:.85rem;color:#991b1b;font-weight:500;">Entiendo que esta acción no se puede deshacer</span>
+        </label>
+        <div style="display:flex;gap:.75rem;">
+            <button type="button" onclick="cerrarConfirmEvento()"
+                    style="flex:1;padding:.7rem;border:1.5px solid #e5e7eb;border-radius:.5rem;background:#fff;cursor:pointer;font-size:.88rem;font-weight:600;color:#374151;">
+                Cancelar
+            </button>
+            <button type="button" id="btn-confirmar-delete-evento" onclick="ejecutarDeleteEvento()" disabled
+                    style="flex:1;padding:.7rem;border:none;border-radius:.5rem;background:#dc2626;color:#fff;cursor:pointer;font-size:.88rem;font-weight:600;opacity:.5;transition:opacity .2s;">
+                Sí, eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
 @endsection
- 
+
 @push('scripts')
 <script>
 function abrirModal() {
     document.getElementById('modal-evento').style.display = 'block';
     document.body.style.overflow = 'hidden';
 }
- 
+
 function cerrarModal() {
     document.getElementById('modal-evento').style.display = 'none';
     document.body.style.overflow = '';
 }
- 
+
 document.getElementById('modal-evento').addEventListener('click', function(e) {
     if (e.target === this) cerrarModal();
 });
- 
+
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') cerrarModal();
+    if (e.key === 'Escape') {
+        cerrarModal();
+        cerrarConfirmEvento();
+    }
 });
- 
+
 @isset($evento)
     abrirModal();
 @endisset
-</script>
- 
-<script>
+
+// ── Confirmar eliminar evento ──
+let deleteEventoId = null;
+
+function abrirConfirmEvento(id, nombre) {
+    deleteEventoId = id;
+    document.getElementById('confirm-nombre-evento').textContent = 'Vas a eliminar: ' + nombre;
+    document.getElementById('confirm-check-evento').checked = false;
+    document.getElementById('btn-confirmar-delete-evento').disabled = true;
+    document.getElementById('btn-confirmar-delete-evento').style.opacity = '.5';
+    const modal = document.getElementById('modal-confirm-evento');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarConfirmEvento() {
+    deleteEventoId = null;
+    document.getElementById('modal-confirm-evento').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function ejecutarDeleteEvento() {
+    if (deleteEventoId) document.getElementById('form-delete-evento-' + deleteEventoId).submit();
+}
+
+document.getElementById('confirm-check-evento').addEventListener('change', function () {
+    const btn = document.getElementById('btn-confirmar-delete-evento');
+    btn.disabled = !this.checked;
+    btn.style.opacity = this.checked ? '1' : '.5';
+});
+
+document.getElementById('modal-confirm-evento').addEventListener('click', function (e) {
+    if (e.target === this) cerrarConfirmEvento();
+});
+
 function toggleFiltrosEventos() {
     const box = document.getElementById('filtrosEventos');
- 
-    if (box.style.display === 'none' || box.style.display === '') {
-        box.style.display = 'block';
-    } else {
-        box.style.display = 'none';
-    }
+    box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
 }
- 
-// Mantener abierto si hay filtros activos
+
 window.addEventListener('load', function () {
     if (
         "{{ request('nombre') }}" ||

@@ -30,7 +30,7 @@
                     @endif
                 </div>
 
-                <img src="{{ $img->public_url }}"
+            <img src="{{ $img->tipo === 'upload' ? asset('storage/' . $img->url) : $img->url }}"
                      alt="{{ $img->titulo ?? 'Imagen' }}"
                      style="width:100%;height:100%;object-fit:cover;display:block;"
                      onerror="this.src='https://via.placeholder.com/300x200?text=Error'">

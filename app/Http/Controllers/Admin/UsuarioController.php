@@ -77,4 +77,10 @@ class UsuarioController extends Controller
         'Algunos usuarios ya estaban registrados y no se importaron.'
     );
 }
+public function destroy(User $usuario)
+{
+    $usuario->delete();
+    return redirect()->route('admin.usuarios.index')
+        ->with('success', 'Usuario eliminado correctamente.');
+}
 }

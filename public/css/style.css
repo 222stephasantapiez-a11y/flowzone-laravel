@@ -276,9 +276,12 @@ body.no-hero .navbar {
   align-items: center;
   background-size: cover;
   background-position: center;
-  background-attachment: fixed;
+ background-attachment: scroll;
   overflow: hidden;
 }
+#hero-section { background: none !important; }
+.hero-slide { position:absolute; inset:0; background-size:cover; background-position:center; background-attachment:scroll; transition:opacity 1.2s ease-in-out; }
+#hero-carousel { position:absolute; inset:0; z-index:0; }
 
 .hero-overlay {
   position: absolute;
@@ -444,12 +447,14 @@ body.no-hero .navbar {
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-card);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-left: 3px solid transparent;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-left-color 0.3s ease;
 }
 
 .card:hover {
   transform: translateY(-6px);
-  box-shadow: var(--shadow-xl);
+  box-shadow: 0 12px 40px rgba(45,106,79,.18);
+  border-left-color: var(--green-600);
 }
 
 .card-img-wrap {
@@ -495,7 +500,27 @@ body.no-hero .navbar {
   border-radius: var(--radius-full);
 }
 
-.card-badge-accent { background: var(--gold-500); }
+.card-badge-accent { 
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-400));
+  box-shadow: 0 2px 8px rgba(212,160,23,.3);
+}
+
+/* Ribbon destacado */
+.card-ribbon {
+  position: absolute;
+  top: 1rem;
+  right: -2.5rem;
+  background: linear-gradient(135deg, var(--gold-500), var(--gold-400));
+  color: var(--white);
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: .4rem 3rem;
+  transform: rotate(45deg);
+  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  z-index: 10;
+}
 
 .card-content {
   padding: 1.4rem;
@@ -621,15 +646,16 @@ body.no-hero .navbar {
 }
 
 .btn-primary {
-  background: var(--green-800);
+  background: linear-gradient(135deg, var(--green-700), var(--green-600));
   color: var(--white);
-  border-color: var(--green-800);
+  border-color: transparent;
+  box-shadow: 0 2px 8px rgba(64,145,108,.2);
 }
 .btn-primary:hover {
-  background: var(--green-700);
-  border-color: var(--green-700);
+  background: linear-gradient(135deg, var(--green-600), var(--green-700));
+  border-color: transparent;
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(45,106,79,.35);
+  box-shadow: 0 6px 20px rgba(45,106,79,.35), 0 0 0 2px rgba(232,184,75,.3);
 }
 
 .btn-secondary {
@@ -717,10 +743,10 @@ body.no-hero .navbar {
 .stats-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  background: var(--white);
+  background: var(--green-800);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-lg);
-  margin-top: -3rem;
+  margin-top: 3rem;
   position: relative;
   z-index: 10;
   overflow: hidden;
@@ -729,7 +755,7 @@ body.no-hero .navbar {
 .stats-strip-item {
   padding: 1.75rem 1.5rem;
   text-align: center;
-  border-right: 1px solid var(--gray-100);
+  border-right: 1px solid rgba(255,255,255,.1);
 }
 
 .stats-strip-item:last-child { border-right: none; }
@@ -738,14 +764,14 @@ body.no-hero .navbar {
   font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 800;
-  color: var(--green-800);
+  color: var(--gold-400);
   line-height: 1;
   margin-bottom: .3rem;
 }
 
 .stats-strip-item p {
   font-size: .82rem;
-  color: var(--gray-400);
+  color: rgba(255,255,255,.8);
   font-weight: 500;
 }
 
@@ -899,7 +925,7 @@ body.no-hero .navbar {
 .admin-nav a.active {
   background: rgba(82,183,136,.12);
   color: var(--white);
-  border-left-color: var(--green-600);
+  border-left-color: var(--gold-400);
   font-weight: 600;
 }
 
@@ -1078,7 +1104,8 @@ a.stat-card--link:focus-visible {
 .stat-icon { font-size: 2.5rem; }
 
 .stat-info h3 {
-  font-size: 1.6rem;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
   font-weight: 800;
   color: var(--gray-900);
   line-height: 1;
@@ -3509,4 +3536,226 @@ a.stat-card--link:focus-visible {
 [data-theme="dark"] .dark-mode-toggle {
   border-color: rgba(255,255,255,.2);
   color: var(--green-400);
+}
+
+
+/* ============================================================
+   MEJORAS VIBRANTES Y TURÍSTICAS - FlowZone
+   ============================================================ */
+
+/* -- TABLAS ADMIN MEJORADAS ---------------------------------- */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--white);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.admin-table thead {
+  background: var(--green-800);
+  color: var(--white);
+}
+
+.admin-table thead th {
+  padding: .85rem 1rem;
+  text-align: left;
+  font-size: .8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  border-bottom: none;
+}
+
+.admin-table tbody tr {
+  border-bottom: 1px solid var(--gray-100);
+  transition: background .15s;
+}
+
+.admin-table tbody tr:nth-child(even) {
+  background: var(--gray-50);
+}
+
+.admin-table tbody tr:hover {
+  background: var(--green-50);
+}
+
+.admin-table tbody td {
+  padding: .75rem 1rem;
+  font-size: .875rem;
+  color: var(--gray-700);
+  vertical-align: middle;
+}
+
+/* -- BADGES DE ESTADO RESERVAS ------------------------------- */
+.badge-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  padding: .3rem .75rem;
+  border-radius: var(--radius-full);
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  white-space: nowrap;
+}
+
+.badge-estado i {
+  font-size: .7rem;
+}
+
+.badge-confirmada {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.badge-pendiente {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.badge-cancelada {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+/* -- SIDEBAR EMPRESA (diferente al admin) -------------------- */
+.empresa-sidebar {
+  background: linear-gradient(180deg, var(--green-800) 0%, #1e5a3f 100%);
+}
+
+.empresa-sidebar .admin-nav a.active {
+  border-left-color: var(--green-400);
+}
+
+/* -- TABS USUARIO (Reservas/Reseñas/Favoritos) --------------- */
+.user-tabs {
+  display: flex;
+  gap: .5rem;
+  border-bottom: 2px solid var(--gray-200);
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.user-tab {
+  padding: .75rem 1.5rem;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--gray-600);
+  font-family: var(--font-body);
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  margin-bottom: -2px;
+}
+
+.user-tab:hover {
+  color: var(--green-700);
+  background: var(--gray-50);
+}
+
+.user-tab.active {
+  color: var(--white);
+  background: var(--green-600);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  border-bottom-color: var(--green-600);
+}
+
+/* -- ICONOS DE CONFIANZA (LOGIN) ----------------------------- */
+.trust-icons {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--gray-200);
+}
+
+.trust-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  color: var(--gray-600);
+  font-size: .75rem;
+  text-align: center;
+}
+
+.trust-icon i {
+  font-size: 1.5rem;
+  color: var(--green-700);
+}
+
+.trust-icon strong {
+  display: block;
+  font-weight: 600;
+  color: var(--gray-900);
+}
+
+/* -- HERO KEYWORD HIGHLIGHT ---------------------------------- */
+.hero h1 .keyword {
+  background: linear-gradient(135deg, var(--gold-400), var(--gold-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* -- GLASSMORPHISM NAVBAR SCROLL ----------------------------- */
+.navbar.glass-scroll {
+  background: rgba(27, 67, 50, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255,255,255,.1);
+}
+
+/* -- ANIMACIÓN FADE-IN-UP PARA CARDS ------------------------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s ease both;
+}
+
+/* -- RESPONSIVE ADJUSTMENTS ---------------------------------- */
+@media (max-width: 768px) {
+  .stats-strip {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--gray-200);
+  }
+  
+  .stats-strip-item {
+    background: var(--green-800);
+    border-right: none;
+  }
+  
+  .trust-icons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .user-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .user-tab {
+    flex-shrink: 0;
+  }
 }

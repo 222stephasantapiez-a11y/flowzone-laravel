@@ -114,7 +114,7 @@
             </a>
 
             <div class="nav-section-label" style="margin-top:auto;padding-top:1.5rem;">Sesión</div>
-            <a href="{{ route('home') }}" target="_blank">
+            <a href="{{ route('home') }}">
                 <i class="fa-solid fa-globe"></i> Ver sitio
             </a>
             <form method="POST" action="{{ route('logout') }}" style="margin:0">

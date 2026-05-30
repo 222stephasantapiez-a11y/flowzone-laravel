@@ -213,6 +213,7 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::get('/usuarios/export/pdf',    [UsuarioController::class, 'exportPdf'])->name('usuarios.export.pdf');
     Route::post('/usuarios/import/excel', [UsuarioController::class, 'importExcel'])->name('usuarios.import.excel');
     Route::get('/usuarios',               [UsuarioController::class, 'index'])->name('usuarios.index');
+    Route::delete('/usuarios/{usuario}', [UsuarioController::class, 'destroy'])->name('usuarios.destroy');
 
     Route::get('/imagenes',                   [ImagenController::class, 'index'])->name('imagenes.index');
     Route::post('/imagenes',                  [ImagenController::class, 'store'])->name('imagenes.store');

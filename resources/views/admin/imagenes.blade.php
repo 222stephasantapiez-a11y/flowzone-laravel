@@ -11,7 +11,7 @@
 @if($heroActiva)
 <div class="admin-section" style="padding:0;overflow:hidden;margin-bottom:1.5rem;">
     <div class="hero-preview" style="position:relative;height:200px;overflow:hidden;border-radius:var(--radius-lg);">
-        <img id="preview-img" src="{{ $heroActiva->public_url }}" alt="Hero preview"
+        <img id="preview-img" src="{{ $heroActiva->tipo === 'upload' ? asset('storage/' . $heroActiva->url) : $heroActiva->url }}" alt="Hero preview"
              style="width:100%;height:100%;object-fit:cover;">
         <div class="hero-preview-overlay" style="position:absolute;inset:0;background:linear-gradient(160deg,rgba(27,67,50,.7) 0%,rgba(64,145,108,.35) 100%);display:flex;flex-direction:column;justify-content:flex-end;padding:1.5rem;">
             <div style="font-size:.7rem;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;">
@@ -95,59 +95,73 @@
             <div style="padding: 1.75rem;max-height:calc(90vh - 120px);overflow-y:auto;">
                 <form method="POST" action="{{ route('admin.imagenes.store') }}" enctype="multipart/form-data" class="admin-form">
                     @csrf
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Título (opcional)</label>
-                    <input type="text" name="titulo" placeholder="Ej: Paisaje del río Ortega" value="{{ old('titulo') }}">
-                </div>
-                <div class="form-group">
-                    <label>Sección *</label>
-                    <select name="seccion" required>
-                        @foreach($secciones as $key => $label)
-                            <option value="{{ $key }}" {{ old('seccion') === $key ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Título (opcional)</label>
+                            <input type="text" name="titulo" placeholder="Ej: Paisaje del río Ortega" value="{{ old('titulo') }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Sección *</label>
+                            <select name="seccion" required>
+                                @foreach($secciones as $key => $label)
+                                    <option value="{{ $key }}" {{ old('seccion') === $key ? 'selected' : '' }}>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Fuente de imagen *</label>
+                        <div class="img-source-tabs" style="display:flex;gap:.5rem;margin-bottom:.75rem;">
+                            <button type="button" class="img-tab active" onclick="setImgTipo('url',this)">
+                                <i class="fa-solid fa-link fa-xs"></i> URL
+                            </button>
+                            <button type="button" class="img-tab" onclick="setImgTipo('upload',this)">
+                                <i class="fa-solid fa-upload fa-xs"></i> Subir archivo
+                            </button>
+                        </div>
+                        <input type="hidden" name="tipo" id="img-tipo" value="url">
+
+                        <div class="img-panel active" id="panel-url">
+                            <input type="url" name="url" id="imagen_url" placeholder="https://images.unsplash.com/..." value="{{ old('url') }}">
+                            <div class="form-hint" style="margin-top:.35rem;font-size:.78rem;color:var(--gray-400);">
+                                <i class="fa-solid fa-info-circle"></i> Pega la URL completa de la imagen
+                            </div>
+                        </div>
+                        <div class="img-panel" id="panel-upload" style="display:none;">
+                            <input type="file" name="imagen" id="imagen_file" accept="image/*">
+                            <div class="form-hint" style="margin-top:.35rem;font-size:.78rem;color:var(--gray-400);">
+                                <i class="fa-solid fa-info-circle"></i> JPG, PNG, WebP — máx. 4MB
+                            </div>
+                        </div>
+
+                        {{-- Preview --}}
+                        <div class="img-preview-wrap" id="img-preview-wrap" style="margin-top:.8rem;border-radius:var(--radius-md);overflow:hidden;max-height:220px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;min-height:100px;">
+                            <div class="img-preview-placeholder" style="text-align:center;color:var(--gray-400);padding:1.5rem;">
+                                <i class="fa-solid fa-image" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.4;"></i>
+                                <span style="font-size:.82rem;">La preview aparecerá aquí</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Botones --}}
+                    <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.25rem;">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa-solid fa-plus"></i> Agregar imagen
+                        </button>
+                        <button type="button" onclick="cerrarModalImagen()" class="btn" style="
+                            background: var(--gray-100);
+                            color: var(--gray-600);
+                            border: 1px solid var(--gray-200);
+                            cursor: pointer;
+                        ">
+                            <i class="fa-solid fa-xmark"></i> Cancelar
+                        </button>
+                    </div>
+
+                </form>
             </div>
-
-            <div class="form-group">
-                <label>Fuente de imagen *</label>
-                <div class="img-source-tabs" style="display:flex;gap:.5rem;margin-bottom:.75rem;">
-                    <button type="button" class="img-tab active" onclick="setImgTipo('url',this)">
-                        <i class="fa-solid fa-link fa-xs"></i> URL
-                    </button>
-                    <button type="button" class="img-tab" onclick="setImgTipo('upload',this)">
-                        <i class="fa-solid fa-upload fa-xs"></i> Subir archivo
-                    </button>
-                </div>
-                <input type="hidden" name="tipo" id="img-tipo" value="url">
-
-                <div class="img-panel active" id="panel-url">
-                    <input type="url" name="url" id="imagen_url" placeholder="https://images.unsplash.com/..." value="{{ old('url') }}">
-                    <div class="form-hint" style="margin-top:.35rem;font-size:.78rem;color:var(--gray-400);">
-                        <i class="fa-solid fa-info-circle"></i> Pega la URL completa de la imagen
-                    </div>
-                </div>
-                <div class="img-panel" id="panel-upload" style="display:none;">
-                    <input type="file" name="imagen" id="imagen_file" accept="image/*">
-                    <div class="form-hint" style="margin-top:.35rem;font-size:.78rem;color:var(--gray-400);">
-                        <i class="fa-solid fa-info-circle"></i> JPG, PNG, WebP — máx. 4MB
-                    </div>
-                </div>
-
-                {{-- Preview --}}
-                <div class="img-preview-wrap" id="img-preview-wrap" style="margin-top:.8rem;border-radius:var(--radius-md);overflow:hidden;max-height:220px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;min-height:100px;">
-                    <div class="img-preview-placeholder" style="text-align:center;color:var(--gray-400);padding:1.5rem;">
-                        <i class="fa-solid fa-image" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.4;"></i>
-                        <span style="font-size:.82rem;">La preview aparecerá aquí</span>
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid "></i> Agregar imagen
-            </button>
-        </form>
+        </div>
     </div>
 
     {{-- Tab: Hero --}}

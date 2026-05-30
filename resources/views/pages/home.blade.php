@@ -5,18 +5,46 @@
 @section('content')
 
 @php
-    $heroImg = \App\Models\HeroImage::where('activa', true)->where('seccion', 'hero')->orderBy('orden')->first();
-    $heroBg = $heroImg ? $heroImg->public_url : null;
+    $heroImgs          = \App\Models\HeroImage::where('activa', true)->where('seccion', 'hero')->orderBy('orden')->get();
+    $categoriasLugares = \App\Models\Lugar::distinct()->pluck('categoria')->filter()->sort()->values();
+    $categoriasEventos = \App\Models\Evento::distinct()->pluck('categoria')->filter()->sort()->values();
 @endphp
 
 {{-- ═══════════════════════════════════════════════════════
-     HERO — Full screen landing
+     HERO — Carrusel de fondo
 ═══════════════════════════════════════════════════════ --}}
+<section class="hero" id="hero-section" style="position:relative;overflow:hidden;">
 
+    {{-- Carrusel de imágenes de fondo --}}
+    <div id="hero-carousel" style="position:absolute;inset:0;z-index:0;">
+        @if($heroImgs->count() > 0)
+            @foreach($heroImgs as $i => $img)
+            @php $imgUrl = str_starts_with($img->url, 'http') ? $img->url : asset('storage/' . $img->url); @endphp
+            <div class="hero-slide"
+                 style="position:absolute;inset:0;background-image:url('{{ $imgUrl }}');background-size:cover;background-position:center;opacity:{{ $i === 0 ? '1' : '0' }};transition:opacity 1.2s ease-in-out;">
+            </div>
+            @endforeach
+        @else
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,var(--green-900) 0%,var(--green-700) 100%);"></div>
+        @endif
+    </div>
 
-<section class="hero" @if($heroBg) style="background-image: url('{{ $heroBg }}')" @else style="background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%)" @endif>
-    <div class="hero-overlay"></div>
-    <div class="container">
+    {{-- Overlay --}}
+    <div class="hero-overlay" style="position:absolute;inset:0;z-index:1;background:linear-gradient(135deg,rgba(10,40,20,.65) 0%,rgba(30,80,50,.35) 100%);"></div>
+
+    {{-- Indicadores del carrusel --}}
+    @if($heroImgs->count() > 1)
+    <div id="hero-dots" style="position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:.5rem;">
+        @foreach($heroImgs as $i => $img)
+        <button onclick="goToSlide({{ $i }})"
+                class="hero-dot"
+                style="width:{{ $i === 0 ? '28px' : '10px' }};height:10px;border-radius:5px;border:none;background:{{ $i === 0 ? '#fff' : 'rgba(255,255,255,.45)' }};cursor:pointer;transition:all .3s;padding:0;"></button>
+        @endforeach
+    </div>
+    @endif
+
+    {{-- Contenido del hero --}}
+    <div class="container" style="position:relative;z-index:2;">
         <div class="hero-content fade-in">
             <div class="hero-eyebrow">
                 <i class="fa-solid fa-leaf"></i> Ortega, Tolima — Colombia
@@ -24,19 +52,62 @@
             <h1>Descubre la <span>Naturaleza</span><br>de Ortega</h1>
             <p>Explora los paisajes, sabores y tradiciones del corazón del Tolima. Una experiencia auténtica de turismo rural y cultural.</p>
 
-            <form class="hero-search" action="{{ route('lugares') }}" method="GET">
+            {{-- ══ BUSCADOR INTELIGENTE ══ --}}
+            <form class="hero-search" id="hero-search-form" action="{{ route('lugares') }}" method="GET">
                 <input type="text" name="busqueda" placeholder="¿Qué quieres explorar?">
-                <select name="categoria">
-                    <option value="">Todas las categorías</option>
-                    <option value="naturaleza">Naturaleza</option>
-                    <option value="cultura">Cultura</option>
-                    <option value="aventura">Aventura</option>
-                    <option value="gastronomia">Gastronomía</option>
+                <select name="categoria" id="hero-categoria" onchange="actualizarDestino(this)">
+
+                    {{-- Lugares --}}
+                    <option value=""
+                        data-ruta="{{ route('lugares') }}"
+                        data-nombre="busqueda">
+                         Todas las categorías
+                    </option>
+                    @foreach($categoriasLugares as $cat)
+                        <option value="{{ $cat }}"
+                            data-ruta="{{ route('lugares') }}"
+                            data-nombre="busqueda">
+                             {{ $cat }}
+                        </option>
+                    @endforeach
+
+                    {{-- Hoteles --}}
+                    <option value=""
+                        data-ruta="{{ route('hoteles') }}"
+                        data-nombre="busqueda"
+                        data-seccion="hoteles">
+                         Hoteles
+                    </option>
+
+                    {{-- Eventos --}}
+                    <option value=""
+                        data-ruta="{{ route('eventos') }}"
+                        data-nombre="busqueda"
+                        data-seccion="eventos">
+                         Todos los eventos
+                    </option>
+                    @foreach($categoriasEventos as $cat)
+                        <option value="{{ $cat }}"
+                            data-ruta="{{ route('eventos') }}"
+                            data-nombre="busqueda">
+                             {{ $cat }}
+                        </option>
+                    @endforeach
+
+                    {{-- Gastronomía --}}
+                    <option value=""
+                        data-ruta="{{ route('gastronomia') }}"
+                        data-nombre="busqueda"
+                        data-seccion="gastronomia">
+                         Gastronomía
+                    </option>
+
                 </select>
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-magnifying-glass"></i> Buscar
                 </button>
             </form>
+            {{-- ════════════════════════════ --}}
 
             <div class="hero-badges">
                 <span class="hero-badge"><i class="fa-solid fa-map-pin"></i> Lugares únicos</span>
@@ -47,7 +118,7 @@
         </div>
     </div>
 
-    <div class="hero-float-cards">
+    <div class="hero-float-cards" style="position:relative;z-index:2;">
         <div class="hero-float-card">
             <i class="fa-solid fa-map-location-dot"></i>
             <div>
@@ -64,10 +135,11 @@
         </div>
     </div>
 
-    <div class="hero-scroll">
+    <div class="hero-scroll" style="position:relative;z-index:2;">
         <i class="fa-solid fa-chevron-down"></i>
         <span>Explorar</span>
     </div>
+
 </section>
 
 {{-- ═══════════════════════════════════════════════════════
@@ -143,7 +215,6 @@
     </div>
 </section>
 
-
 {{-- ═══════════════════════════════════════════════════════
      EXPERIENCIAS — Próximos eventos
 ═══════════════════════════════════════════════════════ --}}
@@ -156,13 +227,12 @@
             </div>
             <a href="{{ route('eventos') }}" class="btn btn-outline">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
         </div>
-
         <div class="grid">
             @forelse($eventos_proximos ?? [] as $evento)
             <article class="card animate-on-scroll">
                 <div class="card-img-wrap">
                     @if($evento->imagen)
-                        @php $imgSrc = str_starts_with($evento->imagen,'http') ? $evento->imagen : asset('storage/'.[$evento->imagen]); @endphp
+                        @php $imgSrc = str_starts_with($evento->imagen,'http') ? $evento->imagen : asset('storage/'.$evento->imagen); @endphp
                         <img src="{{ $imgSrc }}" alt="{{ $evento->nombre }}" loading="lazy"
                              onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-calendar-days\'></i></div>'">
                     @else
@@ -204,6 +274,7 @@
         </div>
     </div>
 </section>
+
 {{-- ═══════════════════════════════════════════════════════
      HOTELES RECOMENDADOS
 ═══════════════════════════════════════════════════════ --}}
@@ -319,3 +390,95 @@
 </section>
 
 @endsection
+
+@push('scripts')
+<script>
+// ── Buscador inteligente ─────────────────────────────────
+const rutasPorPalabra = {
+    'hotel':       '{{ route('hoteles') }}',
+    'hospedaje':   '{{ route('hoteles') }}',
+    'alojamiento': '{{ route('hoteles') }}',
+    'finca':       '{{ route('hoteles') }}',
+    'cabaña':      '{{ route('hoteles') }}',
+    'cabana':      '{{ route('hoteles') }}',
+    'posada':      '{{ route('hoteles') }}',
+    'evento':      '{{ route('eventos') }}',
+    'festival':    '{{ route('eventos') }}',
+    'feria':       '{{ route('eventos') }}',
+    'concierto':   '{{ route('eventos') }}',
+    'restaurante': '{{ route('gastronomia') }}',
+    'comida':      '{{ route('gastronomia') }}',
+    'gastronomia': '{{ route('gastronomia') }}',
+    'gastronomía': '{{ route('gastronomia') }}',
+    'plato':       '{{ route('gastronomia') }}',
+    'cocina':      '{{ route('gastronomia') }}',
+    'lugar':       '{{ route('lugares') }}',
+    'turismo':     '{{ route('lugares') }}',
+    'parque':      '{{ route('lugares') }}',
+    'cascada':     '{{ route('lugares') }}',
+    'rio':         '{{ route('lugares') }}',
+    'río':         '{{ route('lugares') }}',
+    'reserva':     '{{ route('lugares') }}',
+};
+
+function actualizarDestino(select) {
+    const opt  = select.options[select.selectedIndex];
+    const ruta = opt.getAttribute('data-ruta');
+    const form = document.getElementById('hero-search-form');
+    if (ruta) form.action = ruta;
+}
+
+document.getElementById('hero-search-form').addEventListener('submit', function(e) {
+    const input   = this.querySelector('input[name="busqueda"]').value.toLowerCase().trim();
+    const select  = document.getElementById('hero-categoria');
+    const optRuta = select.options[select.selectedIndex].getAttribute('data-ruta');
+    const rutaLugares  = '{{ route('lugares') }}';
+    const rutaHoteles  = '{{ route('hoteles') }}';
+    const rutaEventos  = '{{ route('eventos') }}';
+    const rutaGastro   = '{{ route('gastronomia') }}';
+
+    // Si el usuario eligió una sección específica en el select, esa tiene prioridad
+    if (optRuta && optRuta !== rutaLugares) {
+        this.action = optRuta;
+        return;
+    }
+
+    // Si no, detectar por palabras clave en el texto escrito
+    for (const [palabra, ruta] of Object.entries(rutasPorPalabra)) {
+        if (input.includes(palabra)) {
+            this.action = ruta;
+            return;
+        }
+    }
+
+    // Por defecto: lugares turísticos
+    this.action = rutaLugares;
+});
+
+// ── Carrusel hero ────────────────────────────────────────
+@if($heroImgs->count() > 1)
+const slides = document.querySelectorAll('.hero-slide');
+const dots   = document.querySelectorAll('.hero-dot');
+let current  = 0;
+let timer    = null;
+
+function goToSlide(idx) {
+    slides[current].style.opacity  = '0';
+    dots[current].style.width      = '10px';
+    dots[current].style.background = 'rgba(255,255,255,.45)';
+    current = idx;
+    slides[current].style.opacity  = '1';
+    dots[current].style.width      = '28px';
+    dots[current].style.background = '#fff';
+}
+
+function nextSlide() {
+    goToSlide((current + 1) % slides.length);
+}
+
+timer = setInterval(nextSlide, 5000);
+document.getElementById('hero-section').addEventListener('mouseenter', () => clearInterval(timer));
+document.getElementById('hero-section').addEventListener('mouseleave', () => { timer = setInterval(nextSlide, 5000); });
+@endif
+</script>
+@endpush

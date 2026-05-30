@@ -13,152 +13,14 @@
             <i class="fa-solid fa-calendar-check" style="color:var(--primary);margin-right:.4rem;"></i>
             Reservas
         </h2>
-
-        <div style="display:flex; gap:.5rem; flex-wrap:wrap;">
-            <button onclick="abrirModal()" class="btn btn-primary btn-sm">
-                <i class="fa-solid fa-plus"></i> Nueva Reserva
-            </button>
-
+        <div style="display:flex;gap:.5rem;">
             <a href="{{ route('admin.reservas.export.excel') }}" class="btn btn-success btn-sm">
                 <i class="fa-solid fa-file-excel"></i> Excel
             </a>
-
             <a href="{{ route('admin.reservas.export.pdf') }}" class="btn btn-danger btn-sm">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
         </div>
-    </div>
-</div>
-
-{{-- ================= MODAL ================= --}}
-@php $editando = isset($reserva); @endphp
-
-<div id="modal-reserva" style="
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(4px);
-    z-index: 999;
-    overflow-y: auto;
-    padding: 2rem 1rem;
-">
-    <div style="
-        background: #fff;
-        border-radius: 1rem;
-        max-width: 720px;
-        margin: 0 auto;
-        box-shadow: 0 20px 60px rgba(0,0,0,.25);
-        overflow: hidden;
-    ">
-
-        {{-- Header modal --}}
-        <div style="
-            background: linear-gradient(135deg, var(--green-900), var(--green-700));
-            padding: 1.25rem 1.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        ">
-            <h3 style="color:#fff;font-size:1.05rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
-                <i class="fa-solid fa-{{ $editando ? 'pen-to-square' : 'plus-circle' }}"></i>
-                {{ $editando ? 'Editar Reserva' : 'Nueva Reserva' }}
-            </h3>
-            <button onclick="cerrarModal()" style="
-                background: rgba(255,255,255,.15);
-                border: none;
-                color: #fff;
-                width: 32px;
-                height: 32px;
-                border-radius: 50%;
-                cursor: pointer;
-                font-size: 1rem;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                transition: background .2s;
-            " onmouseover="this.style.background='rgba(255,255,255,.3)'"
-               onmouseout="this.style.background='rgba(255,255,255,.15)'">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-
-        {{-- Body modal --}}
-        <div style="padding: 1.75rem; max-height: calc(90vh - 120px); overflow-y: auto;">
-            <form method="POST" action="{{ $editando ? route('admin.reservas.update', $reserva) : route('admin.reservas.store') }}" class="admin-form">
-                @csrf
-                @if($editando) @method('PUT') @endif
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Usuario</label>
-                        <select name="usuario_id" required>
-                            @foreach($usuarios as $u)
-                                <option value="{{ $u->id }}" {{ $editando && $reserva->usuario_id == $u->id ? 'selected' : '' }}>
-                                    {{ $u->name }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Hotel</label>
-                        <select name="hotel_id" required>
-                            @foreach($hoteles as $h)
-                                <option value="{{ $h->id }}" {{ $editando && $reserva->hotel_id == $h->id ? 'selected' : '' }}>
-                                    {{ $h->nombre }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Fecha entrada</label>
-                        <input type="date" name="fecha_entrada" required
-                               value="{{ $editando ? $reserva->fecha_entrada->format('Y-m-d') : '' }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Fecha salida</label>
-                        <input type="date" name="fecha_salida" required
-                               value="{{ $editando ? $reserva->fecha_salida->format('Y-m-d') : '' }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Personas</label>
-                        <input type="number" name="num_personas" min="1"
-                               value="{{ $editando ? $reserva->num_personas : 1 }}">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Precio total</label>
-                        <input type="number" name="precio_total"
-                               value="{{ $editando ? $reserva->precio_total : 0 }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Estado</label>
-                        <select name="estado">
-                            <option value="pendiente"  {{ $editando && $reserva->estado == 'pendiente'  ? 'selected' : '' }}>Pendiente</option>
-                            <option value="confirmada" {{ $editando && $reserva->estado == 'confirmada' ? 'selected' : '' }}>Confirmada</option>
-                            <option value="cancelada"  {{ $editando && $reserva->estado == 'cancelada'  ? 'selected' : '' }}>Cancelada</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div style="display:flex; gap:.8rem; margin-top:.5rem; flex-wrap:wrap;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-{{ $editando ? 'floppy-disk' : 'plus' }}"></i>
-                        {{ $editando ? 'Actualizar Reserva' : 'Guardar Reserva' }}
-                    </button>
-                    <button type="button" onclick="cerrarModal()" class="btn btn-outline">
-                        <i class="fa-solid fa-xmark"></i> Cancelar
-                    </button>
-                </div>
-            </form>
-        </div>
-
     </div>
 </div>
 
@@ -281,41 +143,31 @@
                     <td>{{ \Carbon\Carbon::parse($r->fecha_salida)->format('d/m/Y') }}</td>
                     <td>${{ number_format($r->precio_total) }}</td>
                     <td>
-                        <span class="estado-badge estado-{{ $r->estado }}">
+                        <span class="badge-estado badge-{{ $r->estado }}">
+                            @if($r->estado === 'confirmada')
+                                <i class="fa-solid fa-circle-check"></i>
+                            @elseif($r->estado === 'pendiente')
+                                <i class="fa-solid fa-clock"></i>
+                            @else
+                                <i class="fa-solid fa-circle-xmark"></i>
+                            @endif
                             {{ ucfirst($r->estado) }}
                         </span>
                     </td>
-                    <td style="min-width:200px;">
-                        <div style="display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;">
-                            @if($r->estado !== 'confirmada')
-                            <form method="POST" action="{{ route('admin.reservas.estado', $r) }}" style="display:contents">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="estado" value="confirmada">
-                                <button type="submit" class="btn-small btn-sm" style="background:#155724;color:#fff;border:none;padding:.3rem .7rem;border-radius:.4rem;cursor:pointer;font-size:.75rem;font-weight:700;">
-                                    <i class="fa-solid fa-circle-check fa-xs"></i> Confirmar
-                                </button>
-                            </form>
-                            @endif
-                            @if($r->estado === 'confirmada')
-                            <form method="POST" action="{{ route('admin.reservas.estado', $r) }}" style="display:contents">
-                                @csrf @method('PATCH')
-                                <input type="hidden" name="estado" value="pendiente">
-                                <button type="submit" class="btn-small btn-sm" style="background:#856404;color:#fff;border:none;padding:.3rem .7rem;border-radius:.4rem;cursor:pointer;font-size:.75rem;font-weight:700;">
-                                    <i class="fa-solid fa-clock fa-xs"></i> Pendiente
-                                </button>
-                            </form>
-                            @endif
-                            <a href="{{ route('admin.reservas.edit', $r) }}" class="btn-small btn-edit btn-sm" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
-                                <i class="fa-solid fa-pen fa-xs"></i> Editar
-                            </a>
-                            <form method="POST" action="{{ route('admin.reservas.destroy', $r) }}" style="display:contents"
-                                  onsubmit="return confirm('¿Eliminar esta reserva?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="btn-small btn-delete btn-sm" style="font-size:.75rem;font-weight:700;padding:.3rem .7rem;border-radius:.4rem;">
-                                    <i class="fa-solid fa-trash fa-xs"></i> Eliminar
-                                </button>
-                            </form>
-                        </div>
+                    <td>
+                        {{-- Formulario oculto para el DELETE --}}
+                        <form id="form-delete-reserva-{{ $r->id }}" method="POST"
+                              action="{{ route('admin.reservas.destroy', $r) }}"
+                              style="display:none;">
+                            @csrf @method('DELETE')
+                        </form>
+
+                        <button type="button"
+                                class="btn btn-sm"
+                                style="background:var(--danger);color:#fff;border:none;padding:.4rem .8rem;border-radius:var(--radius-sm);cursor:pointer;font-size:.8rem;font-weight:600;display:inline-flex;align-items:center;gap:.3rem;"
+                                onclick="abrirConfirmReserva({{ $r->id }}, '{{ addslashes($r->usuario->name) }}', '{{ addslashes($r->hotel->nombre) }}')">
+                            <i class="fa-solid fa-trash fa-xs"></i> Eliminar
+                        </button>
                     </td>
                 </tr>
                 @empty
@@ -335,6 +187,34 @@
 
 </div>
 
+{{-- ================= MODAL CONFIRMACIÓN ELIMINAR ================= --}}
+<div id="modal-confirm-reserva"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:1rem;padding:2rem;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,.25);">
+        <div style="text-align:center;margin-bottom:1.25rem;">
+            <div style="width:56px;height:56px;background:#fee2e2;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem;">
+                <i class="fa-solid fa-trash" style="color:#dc2626;font-size:1.4rem;"></i>
+            </div>
+            <h3 style="font-size:1.05rem;font-weight:700;color:#111827;margin-bottom:.4rem;">¿Eliminar reserva?</h3>
+            <p style="font-size:.88rem;color:#6b7280;" id="confirm-info-reserva"></p>
+        </div>
+        <label style="display:flex;align-items:center;gap:.6rem;background:#fef2f2;border:1.5px solid #fecaca;border-radius:.5rem;padding:.75rem 1rem;cursor:pointer;margin-bottom:1.25rem;">
+            <input type="checkbox" id="confirm-check-reserva" style="accent-color:#dc2626;width:16px;height:16px;">
+            <span style="font-size:.85rem;color:#991b1b;font-weight:500;">Entiendo que esta acción no se puede deshacer</span>
+        </label>
+        <div style="display:flex;gap:.75rem;">
+            <button type="button" onclick="cerrarConfirmReserva()"
+                    style="flex:1;padding:.7rem;border:1.5px solid #e5e7eb;border-radius:.5rem;background:#fff;cursor:pointer;font-size:.88rem;font-weight:600;color:#374151;">
+                Cancelar
+            </button>
+            <button type="button" id="btn-confirmar-delete-reserva" onclick="ejecutarDeleteReserva()" disabled
+                    style="flex:1;padding:.7rem;border:none;border-radius:.5rem;background:#dc2626;color:#fff;cursor:pointer;font-size:.88rem;font-weight:600;opacity:.5;transition:opacity .2s;">
+                Sí, eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
 {{-- ================= ESTILOS ================= --}}
 <style>
 .estado-badge {
@@ -351,24 +231,7 @@
 {{-- ================= SCRIPTS ================= --}}
 @push('scripts')
 <script>
-function abrirModal() {
-    document.getElementById('modal-reserva').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-
-function cerrarModal() {
-    document.getElementById('modal-reserva').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-document.getElementById('modal-reserva').addEventListener('click', function(e) {
-    if (e.target === this) cerrarModal();
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') cerrarModal();
-});
-
+// ── Filtros ──
 function toggleFiltros() {
     const box = document.getElementById('filtrosBox');
     box.style.display = box.style.display === 'none' ? 'block' : 'none';
@@ -377,18 +240,56 @@ function toggleFiltros() {
 window.addEventListener('load', function () {
     if (
         "{{ request('fecha_inicio') }}" ||
-        "{{ request('fecha_fin') }}" ||
-        "{{ request('usuario') }}" ||
-        "{{ request('hotel') }}" ||
+        "{{ request('fecha_fin') }}"    ||
+        "{{ request('usuario') }}"      ||
+        "{{ request('hotel') }}"        ||
         "{{ request('estado') }}"
     ) {
         document.getElementById('filtrosBox').style.display = 'block';
     }
 });
 
-@if(isset($reserva))
-    abrirModal();
-@endif
+// ── Modal confirmar eliminar reserva ──
+let deleteReservaId = null;
+
+function abrirConfirmReserva(id, usuario, hotel) {
+    deleteReservaId = id;
+    document.getElementById('confirm-info-reserva').textContent =
+        'Reserva de ' + usuario + ' en ' + hotel;
+    document.getElementById('confirm-check-reserva').checked = false;
+    const btn = document.getElementById('btn-confirmar-delete-reserva');
+    btn.disabled      = true;
+    btn.style.opacity = '.5';
+    const modal = document.getElementById('modal-confirm-reserva');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarConfirmReserva() {
+    deleteReservaId = null;
+    document.getElementById('modal-confirm-reserva').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function ejecutarDeleteReserva() {
+    if (deleteReservaId) {
+        document.getElementById('form-delete-reserva-' + deleteReservaId).submit();
+    }
+}
+
+document.getElementById('confirm-check-reserva').addEventListener('change', function () {
+    const btn = document.getElementById('btn-confirmar-delete-reserva');
+    btn.disabled      = !this.checked;
+    btn.style.opacity = this.checked ? '1' : '.5';
+});
+
+document.getElementById('modal-confirm-reserva').addEventListener('click', function (e) {
+    if (e.target === this) cerrarConfirmReserva();
+});
+
+document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') cerrarConfirmReserva();
+});
 </script>
 @endpush
 
