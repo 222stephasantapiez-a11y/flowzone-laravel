@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Empresa;
 use App\Models\Reserva;
 use App\Models\Calificacion;
+use App\Notifications\ReservaConfirmada;
+use App\Notifications\ReservaCancelada;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -36,10 +38,10 @@ class ReservaEmpresaController extends Controller
 
         $reservas = (clone $query)->latest()->paginate(15)->withQueryString();
 
-        $totalReservas  = (clone $query)->count();
-        $ingresos       = Reserva::whereIn('hotel_id', $hotelIds)
+        $totalReservas = (clone $query)->count();
+        $ingresos      = Reserva::whereIn('hotel_id', $hotelIds)
                             ->where('estado', 'confirmada')->sum('precio_total');
-        $pendientes     = Reserva::whereIn('hotel_id', $hotelIds)
+        $pendientes    = Reserva::whereIn('hotel_id', $hotelIds)
                             ->where('estado', 'pendiente')->count();
 
         $calificaciones = Calificacion::where('tipo', 'hotel')
@@ -63,7 +65,18 @@ class ReservaEmpresaController extends Controller
         abort_unless($hotelIds->contains($reserva->hotel_id), 403);
 
         $request->validate(['estado' => 'required|in:pendiente,confirmada,cancelada']);
+
+        $estadoAnterior = $reserva->estado;
         $reserva->update(['estado' => $request->estado]);
+
+        // Enviar notificación al usuario
+        if ($reserva->usuario) {
+            if ($request->estado === 'confirmada' && $estadoAnterior !== 'confirmada') {
+                $reserva->usuario->notify(new ReservaConfirmada($reserva));
+            } elseif ($request->estado === 'cancelada' && $estadoAnterior !== 'cancelada') {
+                $reserva->usuario->notify(new ReservaCancelada($reserva));
+            }
+        }
 
         return back()->with('success', 'Estado de reserva actualizado.');
     }

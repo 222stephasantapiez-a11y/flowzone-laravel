@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Empresa;
+use App\Models\HeroImage;
 use App\Models\NotificacionAdmin;
 use App\Models\Calificacion;
 use App\Models\Favorito;
@@ -23,12 +24,12 @@ class EmpresaDashboardController extends Controller
         $promedioEmpresa     = 0;
         $totalFavoritosEmp   = 0;
         $totalReseñasEmp     = 0;
+        $resenasDetalladas   = collect();
 
         if ($empresa) {
-            $hotelIds      = $empresa->hoteles()->pluck('id');
+            $hotelIds       = $empresa->hoteles()->pluck('id');
             $gastronomiaIds = \App\Models\Gastronomia::where('empresa_id', $empresa->id)->pluck('id');
 
-            // Calificaciones de hoteles
             $statsHoteles = collect();
             if ($hotelIds->isNotEmpty()) {
                 $statsHoteles = Calificacion::where('tipo', 'hotel')
@@ -37,13 +38,12 @@ class EmpresaDashboardController extends Controller
                     ->groupBy('item_id')
                     ->get()
                     ->map(function ($row) {
-                        $row->nombre = \App\Models\Hotel::find($row->item_id)?->nombre ?? 'Hotel #'.$row->item_id;
+                        $row->nombre     = \App\Models\Hotel::find($row->item_id)?->nombre ?? 'Hotel #' . $row->item_id;
                         $row->tipo_label = 'Hotel';
                         return $row;
                     });
             }
 
-            // Calificaciones de gastronomía
             $statsGastronomia = collect();
             if ($gastronomiaIds->isNotEmpty()) {
                 $statsGastronomia = Calificacion::where('tipo', 'gastronomia')
@@ -52,15 +52,12 @@ class EmpresaDashboardController extends Controller
                     ->groupBy('item_id')
                     ->get()
                     ->map(function ($row) {
-                        $row->nombre = \App\Models\Gastronomia::find($row->item_id)?->nombre ?? 'Plato #'.$row->item_id;
+                        $row->nombre     = \App\Models\Gastronomia::find($row->item_id)?->nombre ?? 'Plato #' . $row->item_id;
                         $row->tipo_label = 'Gastronomía';
                         return $row;
                     });
             }
 
-            $statsCalificaciones = $statsHoteles->merge($statsGastronomia);
-
-            // Calificaciones directas tipo 'empresa'
             $statsEmpresaDirecta = Calificacion::where('tipo', 'empresa')
                 ->where('item_id', $empresa->id)
                 ->selectRaw('item_id, round(avg(calificacion),1) as promedio, count(*) as total')
@@ -74,7 +71,6 @@ class EmpresaDashboardController extends Controller
 
             $statsCalificaciones = $statsHoteles->merge($statsGastronomia)->merge($statsEmpresaDirecta);
 
-            // Reseñas detalladas con comentario
             $resenasDetalladas = Calificacion::with('usuario')
                 ->where(function ($q) use ($hotelIds, $gastronomiaIds, $empresa) {
                     $q->where(function ($q2) use ($hotelIds) {
@@ -127,21 +123,104 @@ class EmpresaDashboardController extends Controller
         }
 
         return view('empresa.dashboard', [
-            'empresa'             => $empresa,
-            'historial'           => $empresa
+            'empresa'                 => $empresa,
+            'historial'               => $empresa
                 ? NotificacionAdmin::where('empresa_id', $empresa->id)->latest()->get()
                 : collect(),
-            'statsCalificaciones' => $statsCalificaciones,
-            'promedioEmpresa'     => $promedioEmpresa,
-            'totalFavoritosEmp'   => $totalFavoritosEmp,
-            'totalReseñasEmp'     => $totalReseñasEmp,
+            'statsCalificaciones'     => $statsCalificaciones,
+            'promedioEmpresa'         => $promedioEmpresa,
+            'totalFavoritosEmp'       => $totalFavoritosEmp,
+            'totalReseñasEmp'         => $totalReseñasEmp,
             'totalHabitaciones'       => $empresa ? Habitacion::whereHas('hotel', fn($q) => $q->where('empresa_id', $empresa->id))->count() : 0,
             'habitacionesDisponibles' => $empresa ? Habitacion::whereHas('hotel', fn($q) => $q->where('empresa_id', $empresa->id))->where('disponible', true)->count() : 0,
-            'totalPaquetes'       => $empresa ? PaqueteTuristico::where('empresa_id', $empresa->id)->count() : 0,
-            'paquetesActivos'     => $empresa ? PaqueteTuristico::where('empresa_id', $empresa->id)->where('activo', true)->count() : 0,
-            'resenasDetalladas'   => $resenasDetalladas ?? collect(),
+            'totalPaquetes'           => $empresa ? PaqueteTuristico::where('empresa_id', $empresa->id)->count() : 0,
+            'paquetesActivos'         => $empresa ? PaqueteTuristico::where('empresa_id', $empresa->id)->where('activo', true)->count() : 0,
+            'resenasDetalladas'       => $resenasDetalladas,
+            // ── Imágenes hero de la empresa ──
+            'heroImagenes'            => $empresa
+                ? HeroImage::where('empresa_id', $empresa->id)->where('seccion', 'hero')->orderBy('orden')->get()
+                : collect(),
         ]);
     }
+
+    // ══════════════════════════════════════════════════════════
+    //  GESTIÓN DE IMAGEN PRINCIPAL (HERO) DESDE EMPRESA
+    // ══════════════════════════════════════════════════════════
+
+    /**
+     * Subir una nueva imagen hero desde el panel empresa.
+     */
+    public function heroStore(Request $request)
+    {
+        $empresa = Empresa::where('usuario_id', Auth::id())->firstOrFail();
+
+        $request->validate([
+            'titulo' => 'nullable|string|max:200',
+            'tipo'   => 'required|in:url,upload',
+            'url'    => 'required_if:tipo,url|nullable|url|max:500',
+            'imagen' => 'required_if:tipo,upload|nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+        ], [
+            'imagen.required_if' => 'Debes seleccionar una imagen para subir.',
+            'url.required_if'    => 'Debes ingresar la URL de la imagen.',
+            'imagen.max'         => 'La imagen no puede superar 4MB.',
+        ]);
+
+        $data = [
+            'titulo'     => $request->titulo,
+            'seccion'    => 'hero',
+            'tipo'       => $request->tipo,
+            'activa'     => true,
+            'empresa_id' => $empresa->id,
+            'orden'      => HeroImage::where('empresa_id', $empresa->id)->where('seccion', 'hero')->max('orden') + 1,
+        ];
+
+        if ($request->tipo === 'upload' && $request->hasFile('imagen')) {
+            $data['url'] = $request->file('imagen')->store('hero/empresas', 'public');
+        } else {
+            $data['url'] = $request->url;
+        }
+
+        HeroImage::create($data);
+
+        return back()->with('success', 'Imagen principal agregada correctamente.');
+    }
+
+    /**
+     * Activar / desactivar una imagen hero de la empresa.
+     */
+    public function heroToggle(HeroImage $heroImage)
+    {
+        $empresa = Empresa::where('usuario_id', Auth::id())->firstOrFail();
+
+        // Solo puede tocar sus propias imágenes
+        abort_if($heroImage->empresa_id !== $empresa->id, 403);
+
+        $heroImage->update(['activa' => !$heroImage->activa]);
+
+        return back()->with('success', 'Estado de la imagen actualizado.');
+    }
+
+    /**
+     * Eliminar una imagen hero de la empresa.
+     */
+    public function heroDestroy(HeroImage $heroImage)
+    {
+        $empresa = Empresa::where('usuario_id', Auth::id())->firstOrFail();
+
+        abort_if($heroImage->empresa_id !== $empresa->id, 403);
+
+        if ($heroImage->tipo === 'upload') {
+            Storage::disk('public')->delete($heroImage->url);
+        }
+
+        $heroImage->delete();
+
+        return back()->with('success', 'Imagen eliminada correctamente.');
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  RESTO DE MÉTODOS ORIGINALES
+    // ══════════════════════════════════════════════════════════
 
     public function responderResena(Request $request, Calificacion $calificacion)
     {
@@ -167,7 +246,8 @@ class EmpresaDashboardController extends Controller
         return back()->with('success', 'Respuesta publicada correctamente.');
     }
 
-    public function enviarSolicitud(Request $request)    {
+    public function enviarSolicitud(Request $request)
+    {
         $request->validate([
             'tipo'        => ['required', 'in:hotel,restaurante,actualizacion,novedad'],
             'descripcion' => ['required', 'string', 'min:10', 'max:1000'],
@@ -220,7 +300,6 @@ class EmpresaDashboardController extends Controller
             'empresa_logo_url'  => ['nullable', 'url'],
         ]);
 
-        // Manejar logo
         $logo = $empresa->logo;
         if ($request->hasFile('empresa_logo_file')) {
             $logo = Storage::disk('public')->putFile('logos/empresas', $request->file('empresa_logo_file'));

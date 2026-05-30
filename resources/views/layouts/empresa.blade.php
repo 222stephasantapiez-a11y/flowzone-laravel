@@ -49,9 +49,18 @@
             <a href="{{ route('empresa.habitaciones.index') }}" class="{{ request()->routeIs('empresa.habitaciones.*') ? 'active' : '' }}">
                 <i class="fa-solid fa-bed"></i> Habitaciones
             </a>
-            <a href="{{ route('empresa.reservas.index') }}" class="{{ request()->routeIs('empresa.reservas.*') ? 'active' : '' }}">
-                <i class="fa-solid fa-calendar-check"></i> Reservas
-            </a>
+                @php
+    $reservasPendientesEmpresa = $empresaNav
+        ? \App\Models\Reserva::whereIn('hotel_id', $empresaNav->hoteles()->pluck('id'))
+            ->where('estado', 'pendiente')->count()
+        : 0;
+@endphp
+<a href="{{ route('empresa.reservas.index') }}" class="{{ request()->routeIs('empresa.reservas.*') ? 'active' : '' }}">
+    <i class="fa-solid fa-calendar-check"></i> Reservas
+    @if($reservasPendientesEmpresa > 0)
+        <span class="admin-notif-badge">{{ $reservasPendientesEmpresa }}</span>
+    @endif
+</a>
             @endif
 
             @if($empresaNav && in_array($empresaNav->tipo_empresa, ['agencia_turismo','transporte']))

@@ -12,6 +12,68 @@
     ];
 @endphp
 
+{{-- ══ MODAL CONFIRMAR ══ --}}
+<div id="modal-confirmar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;overflow-y:auto;padding:2rem 1rem;">
+    <div style="background:#fff;border-radius:1rem;max-width:460px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#166534,#16a34a);padding:1.25rem 1.75rem;display:flex;align-items:center;justify-content:space-between;">
+            <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-circle-check"></i> Confirmar reserva
+            </h3>
+            <button onclick="cerrarModal('modal-confirmar')" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div style="padding:1.75rem;">
+            <p style="color:var(--gray-700);margin-bottom:1.25rem;font-size:.95rem;">
+                ¿Confirmas esta reserva? El usuario recibirá su reserva como <strong>confirmada</strong>.
+            </p>
+            <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer;margin-bottom:1.5rem;font-size:.88rem;color:var(--gray-700);">
+                <input type="checkbox" id="check-confirmar" style="margin-top:.15rem;accent-color:#16a34a;width:16px;height:16px;flex-shrink:0;">
+                Entiendo que esta acción notificará al usuario
+            </label>
+            <form id="form-confirmar" method="POST" style="display:flex;gap:.75rem;">
+                @csrf @method('PATCH')
+                <input type="hidden" name="estado" value="confirmada">
+                <button type="button" onclick="cerrarModal('modal-confirmar')" class="btn btn-outline" style="flex:1;">Cancelar</button>
+                <button type="submit" id="btn-confirmar" disabled class="btn btn-primary" style="flex:1;opacity:.5;cursor:not-allowed;">
+                    <i class="fa-solid fa-check fa-xs"></i> Confirmar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- ══ MODAL CANCELAR ══ --}}
+<div id="modal-cancelar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:9999;overflow-y:auto;padding:2rem 1rem;">
+    <div style="background:#fff;border-radius:1rem;max-width:460px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#991b1b,#ef4444);padding:1.25rem 1.75rem;display:flex;align-items:center;justify-content:space-between;">
+            <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
+                <i class="fa-solid fa-ban"></i> Cancelar reserva
+            </h3>
+            <button onclick="cerrarModal('modal-cancelar')" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div style="padding:1.75rem;">
+            <p style="color:var(--gray-700);margin-bottom:1.25rem;font-size:.95rem;">
+                ¿Cancelar esta reserva? Esta acción cambiará el estado a <strong>cancelada</strong>.
+            </p>
+            <label style="display:flex;align-items:flex-start;gap:.6rem;cursor:pointer;margin-bottom:1.5rem;font-size:.88rem;color:var(--gray-700);">
+                <input type="checkbox" id="check-cancelar" style="margin-top:.15rem;accent-color:#ef4444;width:16px;height:16px;flex-shrink:0;">
+                Entiendo que esta acción no se puede deshacer fácilmente
+            </label>
+            <form id="form-cancelar" method="POST" style="display:flex;gap:.75rem;">
+                @csrf @method('PATCH')
+                <input type="hidden" name="estado" value="cancelada">
+                <button type="button" onclick="cerrarModal('modal-cancelar')" class="btn btn-outline" style="flex:1;">Volver</button>
+                <button type="submit" id="btn-cancelar" disabled class="btn btn-danger" style="flex:1;opacity:.5;cursor:not-allowed;">
+                    <i class="fa-solid fa-ban fa-xs"></i> Cancelar reserva
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- ══ CARDS RESUMEN ══ --}}
 <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;">
     <div style="background:#fff;border-radius:var(--radius-lg);padding:1.25rem 1.5rem;border:1px solid var(--gray-200);box-shadow:0 2px 8px rgba(0,0,0,.05);">
@@ -124,20 +186,27 @@
                             {{ $ec['label'] }}
                         </span>
                     </td>
-                    <td style="white-space:nowrap;">
-                        @foreach(['pendiente','confirmada','cancelada'] as $est)
-                        @if($r->estado !== $est)
-                        <form method="POST" action="{{ route('empresa.reservas.estado', $r) }}" style="display:inline">
-                            @csrf @method('PATCH')
-                            <input type="hidden" name="estado" value="{{ $est }}">
-                            <button type="submit" class="btn-small {{ $est === 'confirmada' ? 'btn-success' : ($est === 'cancelada' ? 'btn-delete' : 'btn-warning') }}"
-                                    title="{{ ucfirst($est) }}"
-                                    onclick="return confirm('¿Cambiar estado a {{ $est }}?')">
-                                <i class="fa-solid fa-{{ $est === 'confirmada' ? 'check' : ($est === 'cancelada' ? 'ban' : 'clock') }} fa-xs"></i>
+                    <td style="white-space:nowrap;display:flex;flex-direction:column;gap:.3rem;">
+                        @if($r->estado === 'pendiente')
+                            <button type="button"
+                                    onclick="abrirConfirmar('{{ route('empresa.reservas.estado', $r) }}')"
+                                    class="btn btn-sm" style="background:#16a34a;color:#fff;font-size:.78rem;padding:.3rem .75rem;border:none;border-radius:var(--radius-md);cursor:pointer;display:flex;align-items:center;gap:.35rem;">
+                                <i class="fa-solid fa-check fa-xs"></i> Confirmar
                             </button>
-                        </form>
+                            <button type="button"
+                                    onclick="abrirCancelar('{{ route('empresa.reservas.estado', $r) }}')"
+                                    class="btn btn-sm" style="background:#ef4444;color:#fff;font-size:.78rem;padding:.3rem .75rem;border:none;border-radius:var(--radius-md);cursor:pointer;display:flex;align-items:center;gap:.35rem;">
+                                <i class="fa-solid fa-ban fa-xs"></i> Cancelar
+                            </button>
+                        @elseif($r->estado === 'confirmada')
+                            <button type="button"
+                                    onclick="abrirCancelar('{{ route('empresa.reservas.estado', $r) }}')"
+                                    class="btn btn-sm" style="background:#ef4444;color:#fff;font-size:.78rem;padding:.3rem .75rem;border:none;border-radius:var(--radius-md);cursor:pointer;display:flex;align-items:center;gap:.35rem;">
+                                <i class="fa-solid fa-ban fa-xs"></i> Cancelar
+                            </button>
+                        @else
+                            <span style="font-size:.75rem;color:var(--gray-400);">—</span>
                         @endif
-                        @endforeach
                     </td>
                 </tr>
                 @endforeach
@@ -196,3 +265,60 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script>
+function cerrarModal(id) {
+    document.getElementById(id).style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function abrirConfirmar(url) {
+    document.getElementById('form-confirmar').action = url;
+    document.getElementById('check-confirmar').checked = false;
+    document.getElementById('btn-confirmar').disabled = true;
+    document.getElementById('btn-confirmar').style.opacity = '.5';
+    document.getElementById('btn-confirmar').style.cursor = 'not-allowed';
+    document.getElementById('modal-confirmar').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function abrirCancelar(url) {
+    document.getElementById('form-cancelar').action = url;
+    document.getElementById('check-cancelar').checked = false;
+    document.getElementById('btn-cancelar').disabled = true;
+    document.getElementById('btn-cancelar').style.opacity = '.5';
+    document.getElementById('btn-cancelar').style.cursor = 'not-allowed';
+    document.getElementById('modal-cancelar').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+document.getElementById('check-confirmar').addEventListener('change', function() {
+    const btn = document.getElementById('btn-confirmar');
+    btn.disabled = !this.checked;
+    btn.style.opacity = this.checked ? '1' : '.5';
+    btn.style.cursor = this.checked ? 'pointer' : 'not-allowed';
+});
+
+document.getElementById('check-cancelar').addEventListener('change', function() {
+    const btn = document.getElementById('btn-cancelar');
+    btn.disabled = !this.checked;
+    btn.style.opacity = this.checked ? '1' : '.5';
+    btn.style.cursor = this.checked ? 'pointer' : 'not-allowed';
+});
+
+document.getElementById('modal-confirmar').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal('modal-confirmar');
+});
+document.getElementById('modal-cancelar').addEventListener('click', function(e) {
+    if (e.target === this) cerrarModal('modal-cancelar');
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        cerrarModal('modal-confirmar');
+        cerrarModal('modal-cancelar');
+    }
+});
+</script>
+@endpush
