@@ -8,6 +8,8 @@
     use Illuminate\Support\Facades\Storage;
     $currentImage = $currentImage ?? null;
     $fieldId      = $fieldId ?? 'img';
+    $nameUrl      = $nameUrl  ?? 'imagen_url';
+    $nameFile     = $nameFile ?? 'imagen_file';
     $isUrl        = $currentImage && str_starts_with($currentImage, 'http');
     $defaultTab   = $isUrl ? 'url' : ($currentImage ? 'file' : 'url');
 @endphp
@@ -28,16 +30,16 @@
 
     {{-- Panel URL --}}
     <div class="img-panel {{ $defaultTab === 'url' ? 'active' : '' }}" id="{{ $fieldId }}-panel-url">
-        <input type="url" name="imagen_url" id="{{ $fieldId }}-url-input"
+        <input type="url" name="{{ $nameUrl }}" id="{{ $fieldId }}-url-input"
                placeholder="https://ejemplo.com/imagen.jpg"
-               value="{{ old('imagen_url', $isUrl ? $currentImage : '') }}"
+               value="{{ old($nameUrl, $isUrl ? $currentImage : '') }}"
                oninput="previewFromUrl('{{ $fieldId }}', this.value)">
         <p class="form-hint">Pega la URL directa de la imagen (https://...)</p>
     </div>
 
     {{-- Panel archivo --}}
     <div class="img-panel {{ $defaultTab === 'file' ? 'active' : '' }}" id="{{ $fieldId }}-panel-file">
-        <input type="file" name="imagen_file" id="{{ $fieldId }}-file-input"
+        <input type="file" name="{{ $nameFile }}" id="{{ $fieldId }}-file-input"
                accept="image/jpeg,image/png,image/webp"
                onchange="previewFromFile('{{ $fieldId }}', this)">
         <p class="form-hint">JPG, PNG o WebP · máx. 4 MB</p>

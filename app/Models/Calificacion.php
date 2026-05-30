@@ -9,7 +9,7 @@ class Calificacion extends Model
     protected $table = 'calificaciones';
 
     protected $fillable = [
-        'usuario_id', 'tipo', 'item_id', 'calificacion', 'comentario',
+        'usuario_id', 'tipo', 'item_id', 'calificacion', 'comentario', 'respuesta_empresa',
     ];
 
     protected $casts = [

@@ -188,6 +188,22 @@ class EmpresaController extends Controller
     // ==========================
     // NOTIFICACIONES
     // ==========================
+    public function responder(Request $request, NotificacionAdmin $notificacion)
+    {
+        $request->validate([
+            'respuesta' => 'required|string|min:5|max:1000',
+        ]);
+
+        NotificacionAdmin::create([
+            'empresa_id' => $notificacion->empresa_id,
+            'mensaje'    => 'RESPUESTA DEL ADMIN: ' . $request->respuesta,
+        ]);
+
+        $notificacion->update(['leido' => true]);
+
+        return back()->with('success', 'Respuesta enviada a la empresa.');
+    }
+
     public function marcarLeida(NotificacionAdmin $notificacion)
     {
         $notificacion->update(['leido' => true]);

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Empresa;
 use App\Http\Controllers\Controller;
 use App\Models\BlogPost;
 use App\Models\Empresa;
+use App\Models\NotificacionAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -63,6 +64,12 @@ class BlogEmpresaController extends Controller
             'imagen'           => $this->handleImage($request),
         ]);
 
+        NotificacionAdmin::create([
+            'empresa_id' => $empresa->id,
+            'mensaje'    => 'PUBLICACIÓN BLOG PENDIENTE DE APROBACIÓN: ' . $request->titulo,
+            'leido'      => false,
+        ]);
+
         return redirect()->route('empresa.blog.index')
                          ->with('success', 'Publicación enviada. Pendiente de aprobación.');
     }
@@ -94,6 +101,12 @@ class BlogEmpresaController extends Controller
             'tipo'      => $request->tipo,
             'publicado' => false, // vuelve a revisión
             'imagen'    => $this->handleImage($request, $post->imagen),
+        ]);
+
+        NotificacionAdmin::create([
+            'empresa_id' => $empresa->id,
+            'mensaje'    => 'PUBLICACIÓN BLOG ACTUALIZADA, REQUIERE REVISIÓN: ' . $request->titulo,
+            'leido'      => false,
         ]);
 
         return redirect()->route('empresa.blog.index')

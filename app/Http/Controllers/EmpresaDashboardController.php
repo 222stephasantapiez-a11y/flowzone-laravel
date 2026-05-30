@@ -60,6 +60,44 @@ class EmpresaDashboardController extends Controller
 
             $statsCalificaciones = $statsHoteles->merge($statsGastronomia);
 
+            // Calificaciones directas tipo 'empresa'
+            $statsEmpresaDirecta = Calificacion::where('tipo', 'empresa')
+                ->where('item_id', $empresa->id)
+                ->selectRaw('item_id, round(avg(calificacion),1) as promedio, count(*) as total')
+                ->groupBy('item_id')
+                ->get()
+                ->map(function ($row) use ($empresa) {
+                    $row->nombre     = $empresa->nombre;
+                    $row->tipo_label = 'Empresa';
+                    return $row;
+                });
+
+            $statsCalificaciones = $statsHoteles->merge($statsGastronomia)->merge($statsEmpresaDirecta);
+
+            // Reseñas detalladas con comentario
+            $resenasDetalladas = Calificacion::with('usuario')
+                ->where(function ($q) use ($hotelIds, $gastronomiaIds, $empresa) {
+                    $q->where(function ($q2) use ($hotelIds) {
+                        $q2->where('tipo', 'hotel')->whereIn('item_id', $hotelIds);
+                    })->orWhere(function ($q2) use ($gastronomiaIds) {
+                        $q2->where('tipo', 'gastronomia')->whereIn('item_id', $gastronomiaIds);
+                    })->orWhere(function ($q2) use ($empresa) {
+                        $q2->where('tipo', 'empresa')->where('item_id', $empresa->id);
+                    });
+                })
+                ->whereNotNull('comentario')
+                ->latest()
+                ->get()
+                ->map(function ($cal) {
+                    $cal->item_nombre = match ($cal->tipo) {
+                        'hotel'       => \App\Models\Hotel::find($cal->item_id)?->nombre ?? 'Hotel eliminado',
+                        'gastronomia' => \App\Models\Gastronomia::find($cal->item_id)?->nombre ?? 'Plato eliminado',
+                        'empresa'     => \App\Models\Empresa::find($cal->item_id)?->nombre ?? 'Empresa',
+                        default       => ucfirst($cal->tipo) . ' #' . $cal->item_id,
+                    };
+                    return $cal;
+                });
+
             $promedioEmpresa = round(
                 Calificacion::where(function ($q) use ($hotelIds, $gastronomiaIds) {
                     $q->where(function ($q2) use ($hotelIds) {
@@ -101,11 +139,35 @@ class EmpresaDashboardController extends Controller
             'habitacionesDisponibles' => $empresa ? Habitacion::whereHas('hotel', fn($q) => $q->where('empresa_id', $empresa->id))->where('disponible', true)->count() : 0,
             'totalPaquetes'       => $empresa ? PaqueteTuristico::where('empresa_id', $empresa->id)->count() : 0,
             'paquetesActivos'     => $empresa ? PaqueteTuristico::where('empresa_id', $empresa->id)->where('activo', true)->count() : 0,
+            'resenasDetalladas'   => $resenasDetalladas ?? collect(),
         ]);
     }
 
-    public function enviarSolicitud(Request $request)
+    public function responderResena(Request $request, Calificacion $calificacion)
     {
+        $empresa = Empresa::where('usuario_id', Auth::id())->firstOrFail();
+
+        $esPropia = match ($calificacion->tipo) {
+            'hotel'       => $empresa->hoteles()->where('id', $calificacion->item_id)->exists(),
+            'gastronomia' => \App\Models\Gastronomia::where('empresa_id', $empresa->id)->where('id', $calificacion->item_id)->exists(),
+            'empresa'     => $calificacion->item_id === $empresa->id,
+            default       => false,
+        };
+
+        abort_if(!$esPropia, 403);
+
+        $request->validate([
+            'respuesta_empresa' => 'required|string|min:5|max:800',
+        ]);
+
+        $calificacion->update([
+            'respuesta_empresa' => $request->respuesta_empresa,
+        ]);
+
+        return back()->with('success', 'Respuesta publicada correctamente.');
+    }
+
+    public function enviarSolicitud(Request $request)    {
         $request->validate([
             'tipo'        => ['required', 'in:hotel,restaurante,actualizacion,novedad'],
             'descripcion' => ['required', 'string', 'min:10', 'max:1000'],

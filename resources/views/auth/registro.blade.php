@@ -476,16 +476,12 @@
             {{-- Logo --}}
             <div class="auth-field">
                 <label>Logo de la empresa</label>
-                <div class="auth-field-wrap" style="margin-bottom:.5rem;">
-                    <i class="auth-icon fa-solid fa-image"></i>
-                    <input type="file" name="empresa_logo_file" accept="image/*"
-                           style="width:100%;padding:.8rem 1rem .8rem 2.6rem;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-family:var(--font-body);font-size:.85rem;outline:none;">
-                </div>
-                <div class="auth-field-wrap">
-                    <i class="auth-icon fa-solid fa-link"></i>
-                    <input type="url" name="empresa_logo_url"
-                           placeholder="O pega una URL: https://..." value="{{ old('empresa_logo_url') }}">
-                </div>
+                @include('partials.imagen_field', [
+                    'currentImage' => null,
+                    'fieldId'      => 'empresa-logo',
+                    'nameUrl'      => 'empresa_logo_url',
+                    'nameFile'     => 'empresa_logo_file',
+                ])
             </div>
 
             {{-- Sitio web --}}

@@ -153,6 +153,15 @@ class HabitacionController extends Controller
             ->with('success', 'Hotel registrado. Ahora puedes agregar habitaciones.');
     }
 
+    public function destroyHotel(Hotel $hotel)
+    {
+        $empresa = $this->empresa();
+        abort_if($hotel->empresa_id !== $empresa->id, 403);
+        $hotel->delete();
+        return redirect()->route('empresa.habitaciones.index')
+            ->with('success', 'Hotel eliminado correctamente.');
+    }
+
     public function updateHotel(Request $request, Hotel $hotel)
     {
         $empresa = $this->empresa();

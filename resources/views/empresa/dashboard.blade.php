@@ -21,84 +21,117 @@
 @endphp
 
 {{-- Stats --}}
+{{-- Stats --}}
 <div class="stats-grid" style="margin-bottom:1.5rem;">
-    <div class="stat-card green">
-        <div class="stat-icon-wrap" style="background:rgba(64,145,108,.12);color:var(--green-700);">
-            <i class="fa-solid fa-newspaper"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $totalBlog }}</h3>
-            <p>Posts del blog</p>
-        </div>
-    </div>
-    <div class="stat-card teal">
-        <div class="stat-icon-wrap" style="background:rgba(6,182,212,.12);color:#06b6d4;">
-            <i class="fa-solid fa-eye"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $blogPublicados }}</h3>
-            <p>Posts publicados</p>
-        </div>
-    </div>
-    <div class="stat-card orange">
-        <div class="stat-icon-wrap" style="background:rgba(217,119,6,.12);color:var(--warning);">
-            <i class="fa-solid fa-utensils"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $totalPlatos }}</h3>
-            <p>Platos / servicios</p>
-        </div>
-    </div>
-    <div class="stat-card blue">
-        <div class="stat-icon-wrap" style="background:rgba(59,130,246,.12);color:#3b82f6;">
-            <i class="fa-solid fa-inbox"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $historial->count() }}</h3>
-            <p>Solicitudes enviadas</p>
-        </div>
-    </div>
-    <div class="stat-card red">
-        <div class="stat-icon-wrap" style="background:rgba(239,68,68,.12);color:#ef4444;">
-            <i class="fa-solid fa-heart"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $totalFavoritosEmp }}</h3>
-            <p>Favoritos recibidos</p>
-        </div>
-    </div>
-    <div class="stat-card purple">
-        <div class="stat-icon-wrap" style="background:rgba(139,92,246,.12);color:#8b5cf6;">
-            <i class="fa-solid fa-star"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $promedioEmpresa > 0 ? $promedioEmpresa.'/5' : '—' }}</h3>
-            <p>Calificación promedio</p>
-            @if($totalReseñasEmp > 0)
-                <span class="stat-sub ok">{{ $totalReseñasEmp }} reseña(s)</span>
-            @endif
-        </div>
-    </div>
-    <div class="stat-card blue">
-        <div class="stat-icon-wrap" style="background:rgba(59,130,246,.12);color:#3b82f6;">
-            <i class="fa-solid fa-bed"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $habitacionesDisponibles }} <span style="font-size:.75rem;font-weight:400;color:var(--gray-400);">/ {{ $totalHabitaciones }}</span></h3>
-            <p>Habitaciones disponibles</p>
-        </div>
-    </div>
-    <div class="stat-card teal">
-        <div class="stat-icon-wrap" style="background:rgba(6,182,212,.12);color:#06b6d4;">
-            <i class="fa-solid fa-map-location-dot"></i>
-        </div>
-        <div class="stat-info">
-            <h3>{{ $paquetesActivos }} <span style="font-size:.75rem;font-weight:400;color:var(--gray-400);">/ {{ $totalPaquetes }}</span></h3>
-            <p>Paquetes activos</p>
-        </div>
-    </div>
-</div>
 
+    <a href="{{ route('empresa.blog.index') }}" style="text-decoration:none;display:contents;">
+        <div class="stat-card green" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="stat-icon-wrap" style="background:rgba(64,145,108,.12);color:var(--green-700);">
+                <i class="fa-solid fa-newspaper"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ $totalBlog }}</h3>
+                <p>Posts del blog</p>
+            </div>
+        </div>
+    </a>
+
+    <a href="{{ route('empresa.blog.index') }}" style="text-decoration:none;display:contents;">
+        <div class="stat-card teal" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="stat-icon-wrap" style="background:rgba(6,182,212,.12);color:#06b6d4;">
+                <i class="fa-solid fa-eye"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ $blogPublicados }}</h3>
+                <p>Posts publicados</p>
+            </div>
+        </div>
+    </a>
+
+    {{-- Gastronomía: solo restaurantes y hoteles con restaurante propio --}}
+    @php
+        $tieneGastronomia = in_array($empresa->tipo_empresa, ['restaurante'])
+            || ($empresa->tipo_empresa === 'hotel' && in_array('Restaurante propio', $empresa->servicios ?? []));
+    @endphp
+
+    @if($tieneGastronomia)
+    <a href="{{ route('empresa.gastronomia.index') }}" style="text-decoration:none;display:contents;">
+        <div class="stat-card orange" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="stat-icon-wrap" style="background:rgba(217,119,6,.12);color:var(--warning);">
+                <i class="fa-solid fa-utensils"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ $totalPlatos }}</h3>
+                <p>Platos / servicios</p>
+            </div>
+        </div>
+    </a>
+    @endif
+
+    <a href="#historial" style="text-decoration:none;display:contents;">
+        <div class="stat-card blue" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="stat-icon-wrap" style="background:rgba(59,130,246,.12);color:#3b82f6;">
+                <i class="fa-solid fa-inbox"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ $historial->count() }}</h3>
+                <p>Solicitudes enviadas</p>
+            </div>
+        </div>
+    </a>
+
+    <a href="{{ route('empresa.dashboard') }}" style="text-decoration:none;display:contents;">
+        <div class="stat-card red" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="stat-icon-wrap" style="background:rgba(239,68,68,.12);color:#ef4444;">
+                <i class="fa-solid fa-heart"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ $totalFavoritosEmp }}</h3>
+                <p>Favoritos recibidos</p>
+            </div>
+        </div>
+    </a>
+
+    <a href="#resenas" style="text-decoration:none;display:contents;">
+        <div class="stat-card purple" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="stat-icon-wrap" style="background:rgba(139,92,246,.12);color:#8b5cf6;">
+                <i class="fa-solid fa-star"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ $promedioEmpresa > 0 ? $promedioEmpresa.'/5' : '—' }}</h3>
+                <p>Calificación promedio</p>
+                @if($totalReseñasEmp > 0)
+                    <span class="stat-sub ok">{{ $totalReseñasEmp }} reseña(s)</span>
+                @endif
+            </div>
+        </div>
+    </a>
+
+    <a href="{{ route('empresa.habitaciones.index') }}" style="text-decoration:none;display:contents;">
+        <div class="stat-card blue" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="stat-icon-wrap" style="background:rgba(59,130,246,.12);color:#3b82f6;">
+                <i class="fa-solid fa-bed"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ $habitacionesDisponibles }} <span style="font-size:.75rem;font-weight:400;color:var(--gray-400);">/ {{ $totalHabitaciones }}</span></h3>
+                <p>Habitaciones disponibles</p>
+            </div>
+        </div>
+    </a>
+
+    <a href="{{ route('empresa.planes.index') }}" style="text-decoration:none;display:contents;">
+        <div class="stat-card teal" style="cursor:pointer;transition:transform .15s,box-shadow .15s;" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.1)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+            <div class="stat-icon-wrap" style="background:rgba(6,182,212,.12);color:#06b6d4;">
+                <i class="fa-solid fa-map-location-dot"></i>
+            </div>
+            <div class="stat-info">
+                <h3>{{ $paquetesActivos }} <span style="font-size:.75rem;font-weight:400;color:var(--gray-400);">/ {{ $totalPaquetes }}</span></h3>
+                <p>Paquetes activos</p>
+            </div>
+        </div>
+    </a>
+
+</div>
 {{-- Calificaciones por servicio --}}
 @if($statsCalificaciones->isNotEmpty())
 <div class="admin-section" style="margin-bottom:1.5rem;">
@@ -128,6 +161,57 @@
     </div>
 </div>
 @endif
+
+{{-- Reseñas de usuarios --}}
+<div class="admin-section" style="margin-bottom:1.5rem;">
+    <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;">
+        <i class="fa-solid fa-comments" style="color:var(--green-600);"></i> Reseñas de usuarios
+    </h2>
+    @if($resenasDetalladas->isNotEmpty())
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+        @foreach($resenasDetalladas as $resena)
+        <div style="border:1px solid var(--gray-100);border-radius:var(--radius-md);padding:1rem 1.25rem;background:#fff;">
+            {{-- Cabecera: usuario + ítem + estrellas --}}
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem;">
+                <div style="display:flex;align-items:center;gap:.5rem;">
+                    <span style="font-weight:700;color:var(--gray-900);">{{ $resena->usuario->name ?? 'Usuario' }}</span>
+                    <span class="badge badge-info">{{ ucfirst($resena->tipo) }}</span>
+                    <span style="font-size:.82rem;color:var(--gray-500);">— {{ $resena->item_nombre }}</span>
+                </div>
+                <div style="color:var(--gold-500);font-weight:700;font-size:.95rem;">
+                    @for($i = 1; $i <= 5; $i++)
+                        <i class="fa-{{ $i <= $resena->calificacion ? 'solid' : 'regular' }} fa-star fa-xs"></i>
+                    @endfor
+                    <span style="font-size:.82rem;color:var(--gray-600);margin-left:.3rem;">{{ $resena->calificacion }}/5</span>
+                </div>
+            </div>
+            {{-- Comentario del usuario --}}
+            <p style="font-size:.9rem;color:var(--gray-700);margin:0 0 .75rem;">"{{ $resena->comentario }}"</p>
+            {{-- Respuesta o formulario --}}
+            @if($resena->respuesta_empresa)
+            <div style="background:#f0fdf4;border-left:3px solid var(--green-500);border-radius:var(--radius-sm);padding:.6rem 1rem;">
+                <span style="font-size:.75rem;font-weight:700;color:var(--green-700);text-transform:uppercase;letter-spacing:.05em;">Tu respuesta</span>
+                <p style="margin:.3rem 0 0;font-size:.88rem;color:var(--gray-700);">{{ $resena->respuesta_empresa }}</p>
+            </div>
+            @else
+            <form method="POST" action="{{ route('empresa.resenas.responder', $resena) }}">
+                @csrf @method('PATCH')
+                <textarea name="respuesta_empresa" rows="2"
+                          placeholder="Escribe tu respuesta a esta reseña..."
+                          style="width:100%;resize:vertical;padding:.5rem .75rem;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:.88rem;margin-bottom:.5rem;"
+                          required></textarea>
+                <button type="submit" class="btn btn-primary btn-sm">
+                    <i class="fa-solid fa-reply fa-xs"></i> Responder
+                </button>
+            </form>
+            @endif
+        </div>
+        @endforeach
+    </div>
+    @else
+    <p style="color:var(--gray-400);font-size:.9rem;">Aún no tienes reseñas con comentarios.</p>
+    @endif
+</div>
 
 {{-- Info empresa --}}
 <div class="admin-section">
@@ -237,8 +321,6 @@
                 <label for="tipo">Tipo de solicitud *</label>
                 <select id="tipo" name="tipo" required>
                     <option value="">— Selecciona —</option>
-                    <option value="hotel"         {{ old('tipo') === 'hotel'         ? 'selected' : '' }}>🏨 Solicitar nuevo hotel</option>
-                    <option value="restaurante"   {{ old('tipo') === 'restaurante'   ? 'selected' : '' }}>🍽️ Solicitar nuevo restaurante</option>
                     <option value="actualizacion" {{ old('tipo') === 'actualizacion' ? 'selected' : '' }}>✏️ Actualización de datos</option>
                     <option value="novedad"       {{ old('tipo') === 'novedad'       ? 'selected' : '' }}>📢 Novedad / Reporte</option>
                 </select>

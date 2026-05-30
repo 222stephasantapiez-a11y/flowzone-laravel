@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Admin\Traits\HandlesImport;
 use App\Models\BlogPost;
 use App\Models\Empresa;
+use App\Models\NotificacionAdmin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
@@ -188,6 +189,14 @@ class BlogController extends Controller
     public function togglePublicado(BlogPost $blog)
     {
         $blog->update(['publicado' => !$blog->publicado]);
+
+        if ($blog->publicado && $blog->empresa_id) {
+            NotificacionAdmin::create([
+                'empresa_id' => $blog->empresa_id,
+                'mensaje'    => 'TU PUBLICACIÓN FUE APROBADA Y PUBLICADA: ' . $blog->titulo,
+                'leido'      => false,
+            ]);
+        }
 
         return back()->with(
             'success',

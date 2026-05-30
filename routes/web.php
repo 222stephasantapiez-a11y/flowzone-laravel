@@ -118,6 +118,7 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::get('/habitaciones', [HabitacionController::class, 'index'])->name('habitaciones.index');
     Route::post('/hoteles', [HabitacionController::class, 'storeHotel'])->name('hoteles.store');
     Route::put('/hoteles/{hotel}', [HabitacionController::class, 'updateHotel'])->name('hoteles.update');
+    Route::delete('/hoteles/{hotel}', [HabitacionController::class, 'destroyHotel'])->name('hoteles.destroy');
     Route::post('/hoteles/{hotel}/habitaciones', [HabitacionController::class, 'store'])->name('habitaciones.store');
     Route::put('/habitaciones/{habitacion}', [HabitacionController::class, 'update'])->name('habitaciones.update');
     Route::delete('/habitaciones/{habitacion}', [HabitacionController::class, 'destroy'])->name('habitaciones.destroy');
@@ -132,6 +133,7 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
 
     Route::get('/reservas', [ReservaEmpresaController::class, 'index'])->name('reservas.index');
     Route::patch('/reservas/{reserva}/estado', [ReservaEmpresaController::class, 'cambiarEstado'])->name('reservas.estado');
+    Route::patch('/resenas/{calificacion}/responder', [EmpresaDashboardController::class, 'responderResena'])->name('resenas.responder');
 });
 
 // ── Panel admin ──────────────────────────────────────────────
@@ -176,6 +178,7 @@ Route::middleware(['auth', 'es_admin'])->prefix('admin')->name('admin.')->group(
     Route::delete('/empresas/{empresa}',         [EmpresaController::class, 'destroy'])->name('empresas.destroy');
     Route::patch('/notificaciones/{notificacion}/leer', [EmpresaController::class, 'marcarLeida'])->name('notificaciones.leer');
     Route::post('/notificaciones/leer-todas',           [EmpresaController::class, 'marcarTodasLeidas'])->name('notificaciones.leer-todas');
+    Route::post('/notificaciones/{notificacion}/responder', [EmpresaController::class, 'responder'])->name('notificaciones.responder');
 
     Route::get('/reservas/export/excel',       [ReservaController::class, 'exportExcel'])->name('reservas.export.excel');
     Route::get('/reservas/export/pdf',         [ReservaController::class, 'exportPdf'])->name('reservas.export.pdf');

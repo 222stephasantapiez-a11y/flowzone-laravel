@@ -4,12 +4,6 @@
 @section('page-subtitle', 'Gestiona las habitaciones de tus hoteles')
 
 @section('topbar-actions')
-    @if($hotelActual)
-    <button type="button" onclick="abrirModalNueva()"
-            class="btn btn-primary btn-sm">
-        <i class="fa-solid fa-plus fa-xs"></i> Nueva habitación
-    </button>
-    @endif
 @endsection
 
 @section('content')
@@ -257,9 +251,8 @@
         <h2 style="font-size:1.05rem;font-weight:700;color:var(--gray-900);margin:0;display:flex;align-items:center;gap:.5rem;">
             <i class="fa-solid fa-hotel" style="color:var(--green-600);"></i> {{ $hotelActual->nombre }}
         </h2>
-        <button type="button" onclick="abrirModalHotel()"
-                style="display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .9rem;font-size:.82rem;font-weight:700;border-radius:var(--radius-full);border:1.5px solid var(--gray-300);background:#fff;color:var(--gray-700);cursor:pointer;">
-            <i class="fa-solid fa-pen fa-xs"></i> Editar hotel
+        <button type="button" onclick="abrirModalNueva()" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus fa-xs"></i> Nueva habitación
         </button>
     </div>
 
@@ -356,81 +349,6 @@
 
 @endif {{-- fin @if($hotelActual) --}}
 
-{{-- ══ MODAL Editar Hotel ══ --}}
-@if($hotelActual)
-<div id="modalHotel" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;overflow-y:auto;padding:1.5rem 1rem;">
-    <div style="background:#fff;border-radius:var(--radius-lg);max-width:600px;margin:0 auto;box-shadow:0 24px 64px rgba(0,0,0,.2);">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--gray-100);">
-            <h3 style="margin:0;font-size:1rem;font-weight:700;color:var(--gray-900);">
-                <i class="fa-solid fa-hotel fa-xs" style="color:var(--green-600);"></i> Editar hotel
-            </h3>
-            <button onclick="cerrarModalHotel()" style="background:none;border:none;cursor:pointer;font-size:1.2rem;color:var(--gray-400);">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
-        <form method="POST" action="{{ route('empresa.hoteles.update', $hotelActual) }}" class="admin-form" style="padding:1.5rem;">
-            @csrf @method('PUT')
-            <div class="form-group">
-                <label>Nombre del hotel *</label>
-                <input type="text" name="nombre" required maxlength="200" value="{{ old('nombre', $hotelActual->nombre) }}">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Precio base / noche (COP)</label>
-                    <input type="number" name="precio" min="0" step="0.01"
-                           placeholder="Ej: 150000" value="{{ old('precio', $hotelActual->precio) }}">
-                </div>
-                <div class="form-group">
-                    <label>Capacidad total</label>
-                    <input type="number" name="capacidad" min="1"
-                           placeholder="Ej: 30" value="{{ old('capacidad', $hotelActual->capacidad) }}">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Ubicación / Dirección</label>
-                <input type="text" name="ubicacion" maxlength="400" value="{{ old('ubicacion', $hotelActual->ubicacion) }}">
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="text" name="telefono" maxlength="30" value="{{ old('telefono', $hotelActual->telefono) }}">
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" name="email" maxlength="200" value="{{ old('email', $hotelActual->email) }}">
-                </div>
-            </div>
-            <div class="form-group">
-                <label>Descripción</label>
-                <textarea name="descripcion" rows="3" maxlength="1000">{{ old('descripcion', $hotelActual->descripcion) }}</textarea>
-            </div>
-            <div class="form-group">
-                <label>Servicios / Amenidades del hotel
-                    <span style="font-size:.75rem;font-weight:400;color:var(--gray-400);">(separados por coma)</span>
-                </label>
-                <input type="text" name="servicios" maxlength="500"
-                       placeholder="Ej: Desayuno incluido, Piscina, WiFi, Parqueadero, Spa"
-                       value="{{ old('servicios', $hotelActual->servicios) }}">
-                <div style="display:flex;flex-wrap:wrap;gap:.35rem;margin-top:.5rem;">
-                    @foreach(['Desayuno incluido','Piscina','WiFi','Parqueadero','Spa','Gimnasio','Restaurante','Bar','Aire acondicionado','Servicio a la habitación'] as $srv)
-                    <button type="button" onclick="agregarServicio('{{ $srv }}')"
-                            style="padding:.2rem .6rem;font-size:.75rem;border-radius:2rem;border:1px solid #b7e4c7;background:#f0fdf4;color:var(--green-700);cursor:pointer;">
-                        + {{ $srv }}
-                    </button>
-                    @endforeach
-                </div>
-            </div>
-            <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem;">
-                <button type="button" onclick="cerrarModalHotel()" class="btn btn-outline">Cancelar</button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fa-solid fa-floppy-disk fa-xs"></i> Guardar cambios
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-@endif
-
 @push('scripts')
 <script>
 // ── Modal Nueva ──
@@ -486,28 +404,7 @@ function editarHabitacion(id, data) {
     abrirModalNueva();
 @endif
 
-// ── Modal Hotel ──
-function abrirModalHotel() {
-    document.getElementById('modalHotel').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-}
-function cerrarModalHotel() {
-    document.getElementById('modalHotel').style.display = 'none';
-    document.body.style.overflow = '';
-}
-document.getElementById('modalHotel')?.addEventListener('click', function(e) {
-    if (e.target === this) cerrarModalHotel();
-});
 
-function agregarServicio(srv) {
-    const input = document.querySelector('[name="servicios"]');
-    if (!input) return;
-    const actual = input.value.split(',').map(s => s.trim()).filter(Boolean);
-    if (!actual.includes(srv)) {
-        actual.push(srv);
-        input.value = actual.join(', ');
-    }
-}
 </script>
 @endpush
 

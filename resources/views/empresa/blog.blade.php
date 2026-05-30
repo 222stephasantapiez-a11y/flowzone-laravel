@@ -3,18 +3,13 @@
 @section('page-title', 'Blog')
 @section('page-subtitle')Publicaciones de {{ $empresa->nombre }}@endsection
 
-@section('topbar-actions')
-    @unless(isset($post))
-        <a href="{{ route('empresa.blog.index') }}#form" class="btn btn-primary btn-sm">
-            <i class="fa-solid fa-plus fa-xs"></i> Nueva publicación
-        </a>
-    @endunless
-@endsection
+{{-- Quitamos el botón del topbar --}}
 
 @section('content')
 
-{{-- Formulario crear / editar --}}
-<div class="admin-section" id="form">
+{{-- Formulario crear / editar (oculto por defecto salvo al editar) --}}
+<div class="admin-section" id="form-section"
+     style="{{ isset($post) ? '' : 'display:none;' }}">
     <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;">
         <i class="fa-solid fa-{{ isset($post) ? 'pen-to-square' : 'plus-circle' }}" style="color:var(--green-600);"></i>
         {{ isset($post) ? 'Editar: ' . Str::limit($post->titulo, 50) : 'Nueva publicación' }}
@@ -67,8 +62,11 @@
             <i class="fa-solid fa-{{ isset($post) ? 'floppy-disk' : 'paper-plane' }} fa-xs"></i>
             {{ isset($post) ? 'Actualizar' : 'Enviar para revisión' }}
         </button>
+        <button type="button" class="btn btn-outline" onclick="toggleForm()">
+            Cancelar
+        </button>
         @isset($post)
-            <a href="{{ route('empresa.blog.index') }}" class="btn btn-outline">Cancelar</a>
+            <a href="{{ route('empresa.blog.index') }}" class="btn btn-outline">Volver</a>
         @endisset
     </div>
     </form>
@@ -76,11 +74,19 @@
 
 {{-- Lista de publicaciones --}}
 <div class="admin-section">
+
     <div class="admin-section-header">
         <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:.5rem;">
             <i class="fa-solid fa-list" style="color:var(--green-600);"></i> Mis publicaciones
         </h2>
-        <span class="badge badge-info">{{ $posts->count() }}</span>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+            <span class="badge badge-info">{{ $posts->count() }}</span>
+            @unless(isset($post))
+                <button type="button" class="btn btn-primary btn-sm" onclick="toggleForm()">
+                    <i class="fa-solid fa-plus fa-xs"></i> Nueva publicación
+                </button>
+            @endunless
+        </div>
     </div>
 
     @if($posts->isEmpty())
@@ -138,5 +144,20 @@
         </div>
     @endif
 </div>
+
+<script>
+function toggleForm() {
+    const section = document.getElementById('form-section');
+    const isHidden = section.style.display === 'none' || section.style.display === '';
+
+    if (isHidden) {
+        section.style.display = 'block';
+        // Scroll suave hacia el formulario
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        section.style.display = 'none';
+    }
+}
+</script>
 
 @endsection

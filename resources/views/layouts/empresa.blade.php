@@ -42,7 +42,7 @@
             @endif
 
             <a href="{{ route('empresa.planes.index') }}" class="{{ request()->routeIs('empresa.planes.*') ? 'active' : '' }}">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> Planes turísticos
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Generador
             </a>
 
             @if($empresaNav && ($empresaNav->tipo_empresa === 'hotel' || $empresaNav->hoteles()->exists()))

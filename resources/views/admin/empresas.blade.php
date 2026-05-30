@@ -35,23 +35,70 @@
                 </tr>
             </thead>
 
-            <tbody>
-                @foreach($notificaciones as $notif)
-                <tr>
-                    <td><strong>{{ $notif->empresa->nombre ?? '—' }}</strong></td>
-                    <td>{{ $notif->mensaje }}</td>
-                    <td>{{ $notif->created_at->format('d/m/Y H:i') }}</td>
-                    <td>
-                        <form method="POST" action="{{ route('admin.notificaciones.leer', $notif) }}">
-                            @csrf @method('PATCH')
-                            <button class="btn-small btn-success">
-                                Leída
+           <tbody>
+    @foreach($notificaciones as $notif)
+    <tr>
+        <td><strong>{{ $notif->empresa->nombre ?? '—' }}</strong></td>
+        <td>{{ $notif->mensaje }}</td>
+        <td>{{ $notif->created_at->format('d/m/Y H:i') }}</td>
+        <td style="min-width:260px;">
+            <div style="display:flex;flex-direction:column;gap:.5rem;">
+
+               
+                {{-- Caja de respuesta --}}
+                <form method="POST" action="{{ route('admin.notificaciones.responder', $notif) }}">
+                    @csrf
+                    <div style="
+                        border:1.5px solid var(--gray-200);
+                        border-radius:.65rem;
+                        overflow:hidden;
+                        background:#fff;
+                        box-shadow:0 1px 4px rgba(0,0,0,.06);
+                    ">
+                        <textarea
+                            name="respuesta"
+                            rows="2"
+                            minlength="5"
+                            maxlength="1000"
+                            required
+                            placeholder="Escribe tu respuesta..."
+                            style="
+                                width:100%;
+                                border:none;
+                                outline:none;
+                                resize:none;
+                                padding:.6rem .75rem;
+                                font-size:.82rem;
+                                color:var(--gray-700);
+                                background:#fff;
+                                font-family:inherit;
+                                box-sizing:border-box;
+                            "
+                        ></textarea>
+                        <div style="
+                            background:var(--gray-50);
+                            border-top:1px solid var(--gray-200);
+                            padding:.35rem .6rem;
+                            display:flex;
+                            justify-content:flex-end;
+                        ">  <form method="POST" action="{{ route('admin.notificaciones.leer', $notif) }}">
+                    @csrf @method('PATCH')
+                    <button class="btn-small btn-success">
+                        <i class="fa-solid fa-check fa-xs"></i> Leída
+                    </button>
+                </form>
+                            <button type="submit" class="btn btn-primary btn-sm" style="font-size:.78rem;padding:.28rem .8rem;">
+                                <i class="fa-solid fa-paper-plane fa-xs"></i> Responder
                             </button>
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </td>
+    </tr>
+    @endforeach
+</tbody>
         </table>
     </div>
 </div>
