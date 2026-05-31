@@ -134,10 +134,6 @@
             @endauth
         </div>
 
-        <button class="dark-mode-toggle" id="darkToggle" title="Modo oscuro" aria-label="Cambiar tema">
-            <i class="fa-solid fa-moon" id="darkIcon"></i>
-        </button>
-
         <button class="nav-hamburger" id="navToggle" aria-label="Abrir menú">
             <span></span><span></span><span></span>
         </button>

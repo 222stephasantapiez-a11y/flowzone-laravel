@@ -5,7 +5,9 @@
 @section('content')
 
 @php
-    $heroImgs          = \App\Models\HeroImage::where('activa', true)->where('seccion', 'hero')->orderBy('orden')->get();
+    $heroImgs          = \App\Models\HeroImage::where('activa', true)->where('seccion', 'hero')->where(function ($q) {
+        $q->whereNull('empresa_id')->orWhereHas('empresa', fn($e) => $e->where('aprobado', true));
+    })->orderBy('orden')->get();
     $categoriasLugares = \App\Models\Lugar::distinct()->pluck('categoria')->filter()->sort()->values();
     $categoriasEventos = \App\Models\Evento::distinct()->pluck('categoria')->filter()->sort()->values();
 @endphp
@@ -163,9 +165,17 @@
             @forelse($hoteles_destacados ?? [] as $hotel)
             <div class="card animate-on-scroll">
                 <div class="card-img-wrap">
-                    @if($hotel->imagen)
-                        @php $imgSrc = str_starts_with($hotel->imagen,'http') ? $hotel->imagen : asset('storage/'.$hotel->imagen); @endphp
-                        <img src="{{ $imgSrc }}" alt="{{ $hotel->nombre }}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-hotel\'></i></div>'">
+                    @php
+                        $hImgSrc = null;
+                        if ($hotel->imagen) {
+                            $hImgSrc = str_starts_with($hotel->imagen,'http') ? $hotel->imagen : asset('storage/'.$hotel->imagen);
+                        } elseif ($hotel->empresa_id) {
+                            $hFallback = \App\Models\EmpresaImagen::where('empresa_id', $hotel->empresa_id)->where('activa', true)->orderBy('orden')->first();
+                            if ($hFallback) { $hImgSrc = str_starts_with($hFallback->ruta,'http') ? $hFallback->ruta : asset('storage/'.$hFallback->ruta); }
+                        }
+                    @endphp
+                    @if($hImgSrc)
+                        <img src="{{ $hImgSrc }}" alt="{{ $hotel->nombre }}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-hotel\'></i></div>'">
                     @else<div class="card-img-fallback"><i class="fa-solid fa-hotel"></i></div>@endif
                     <span class="card-badge card-badge-accent"><i class="fa-solid fa-star fa-xs"></i> Destacado</span>
                     <div class="card-img-overlay"></div>

@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class HeroImage extends Model
 {
-    protected $fillable = ['titulo', 'url', 'seccion', 'activa', 'orden', 'tipo'];
+    protected $fillable = ['titulo', 'url', 'seccion', 'activa', 'orden', 'tipo', 'empresa_id'];
 
     protected $casts = ['activa' => 'boolean'];
 
@@ -30,5 +30,10 @@ class HeroImage extends Model
     public function scopeSeccion($query, string $seccion)
     {
         return $query->where('seccion', $seccion);
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
     }
 }

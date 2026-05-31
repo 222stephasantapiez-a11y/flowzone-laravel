@@ -57,6 +57,35 @@ class AuthController extends Controller
                 ->withInput($request->only('correo'));
         }
 
+        // Validar que el rol coincida con el contexto del tab seleccionado
+        $contexto = $request->input('contexto', 'usuario'); // usuario | empresa | admin
+
+        $mensajes = [
+            // rol real => [contextos que NO le corresponden => mensaje]
+            'empresa' => [
+                'usuario' => 'Esta cuenta es de empresa. Usa el tab "Empresa" para ingresar.',
+                'admin'   => 'Esta cuenta es de empresa, no de administrador.',
+            ],
+            'admin' => [
+                'usuario' => 'Esta cuenta es de administrador.',
+                'empresa' => 'Esta cuenta es de administrador, no de empresa.',
+            ],
+            'usuario' => [
+                'empresa' => 'Esta cuenta no corresponde a una empresa.',
+                'admin'   => 'Esta cuenta no corresponde a un administrador.',
+            ],
+        ];
+
+        $rolReal = $user->rol ?? 'usuario';
+
+        if (isset($mensajes[$rolReal][$contexto])) {
+            Auth::logout();
+            $request->session()->invalidate();
+            return back()
+                ->withErrors(['correo' => $mensajes[$rolReal][$contexto]])
+                ->withInput($request->only('correo'));
+        }
+
         return $this->redirectByRole($user);
     }
 

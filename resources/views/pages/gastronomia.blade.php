@@ -39,7 +39,63 @@
             <a href="{{ route('gastronomia') }}" class="btn btn-outline">Limpiar</a>
         </form>
     </div>
- 
+
+    {{-- ══ RESTAURANTES ══ --}}
+    @if(isset($restaurantes) && $restaurantes->count() > 0)
+    <div style="margin-bottom:2.5rem;">
+        <h2 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;">
+            <i class="fa-solid fa-store" style="color:var(--green-600);"></i> Restaurantes y locales
+        </h2>
+        <div class="grid">
+            @foreach($restaurantes as $rest)
+            <div class="card animate-on-scroll">
+                <div class="card-img-wrap">
+                    @if($rest->logo)
+                        @php $logoSrc = str_starts_with($rest->logo,'http') ? $rest->logo : asset('storage/'.$rest->logo); @endphp
+                        <img src="{{ $logoSrc }}" alt="{{ $rest->nombre }}"
+                             style="object-fit:contain;padding:1rem;background:#f8fafc;"
+                             onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-store\'></i></div>'">
+                    @else
+                        <div class="card-img-fallback"><i class="fa-solid fa-store"></i></div>
+                    @endif
+                    <span class="card-badge">Restaurante</span>
+                    <div class="card-img-overlay"></div>
+                </div>
+                <div class="card-content">
+                    <h3>{{ $rest->nombre }}</h3>
+                    @if($rest->direccion)
+                    <p class="card-meta"><i class="fa-solid fa-location-dot fa-xs"></i> {{ $rest->direccion }}</p>
+                    @endif
+                    @if($rest->telefono)
+                    <p class="card-meta"><i class="fa-solid fa-phone fa-xs"></i> {{ $rest->telefono }}</p>
+                    @endif
+                    @if($rest->descripcion)
+                    <p class="card-desc">{{ Str::limit($rest->descripcion, 100) }}</p>
+                    @endif
+                    @if($rest->servicios && count($rest->servicios))
+                    <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem;">
+                        @foreach(array_slice($rest->servicios, 0, 3) as $srv)
+                        <span style="background:var(--green-50);color:var(--green-700);border-radius:2rem;padding:.15rem .55rem;font-size:.72rem;font-weight:600;">{{ $srv }}</span>
+                        @endforeach
+                    </div>
+                    @endif
+                    <div class="card-actions" style="margin-top:.75rem;">
+                        <a href="{{ route('empresas.detalle', $rest) }}" class="btn btn-outline btn-sm">
+                            Ver local <i class="fa-solid fa-arrow-right fa-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--gray-100);margin-bottom:2rem;">
+    <h2 style="font-size:1.15rem;font-weight:700;color:var(--gray-900);margin-bottom:1.25rem;display:flex;align-items:center;gap:.5rem;">
+        <i class="fa-solid fa-utensils" style="color:var(--green-600);"></i> Platos y especialidades
+    </h2>
+    @endif
+
+    {{-- ══ PLATOS ══ --}}
     <div class="grid">
         @forelse($platos as $plato)
             <article class="card animate-on-scroll">

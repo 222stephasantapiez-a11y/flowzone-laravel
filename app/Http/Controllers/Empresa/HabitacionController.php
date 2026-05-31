@@ -8,6 +8,7 @@ use App\Models\Hotel;
 use App\Models\Habitacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class HabitacionController extends Controller
 {
@@ -176,7 +177,18 @@ class HabitacionController extends Controller
             'email'       => 'nullable|email|max:200',
             'descripcion' => 'nullable|string|max:1000',
             'servicios'   => 'nullable|string|max:500',
+            'imagen_file' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
         ]);
+
+        $imagen = $hotel->imagen;
+        if ($request->hasFile('imagen_file')) {
+            if ($imagen && !str_starts_with($imagen, 'http')) {
+                Storage::disk('public')->delete($imagen);
+            }
+            $imagen = $request->file('imagen_file')->store("hoteles/{$hotel->id}", 'public');
+        } elseif ($request->filled('imagen_url')) {
+            $imagen = $request->imagen_url;
+        }
 
         $hotel->update([
             'nombre'      => $request->nombre,
@@ -187,6 +199,7 @@ class HabitacionController extends Controller
             'email'       => $request->email,
             'descripcion' => $request->descripcion,
             'servicios'   => $request->servicios,
+            'imagen'      => $imagen,
         ]);
 
         return redirect()->route('empresa.habitaciones.index', ['hotel_id' => $hotel->id])

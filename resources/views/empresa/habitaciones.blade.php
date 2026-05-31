@@ -70,7 +70,7 @@
             </button>
         </div>
         <form method="POST" action="{{ route('empresa.hoteles.update', $hotelActual) }}"
-              class="admin-form" style="padding:1.5rem;">
+              enctype="multipart/form-data" class="admin-form" style="padding:1.5rem;">
             @csrf @method('PUT')
             <div class="form-row">
                 <div class="form-group">
@@ -106,6 +106,23 @@
                 <label>Servicios <span style="font-size:.78rem;font-weight:400;color:var(--gray-400);">(separados por coma)</span></label>
                 <input type="text" name="servicios" placeholder="WiFi, Piscina, Parqueadero..."
                        value="{{ $hotelActual->servicios }}">
+            </div>
+            {{-- Imagen del hotel --}}
+            <div class="form-group">
+                <label>Imagen del hotel</label>
+                @if($hotelActual->imagen)
+                @php $hImgSrc = str_starts_with($hotelActual->imagen,'http') ? $hotelActual->imagen : asset('storage/'.$hotelActual->imagen); @endphp
+                <div style="margin-bottom:.6rem;">
+                    <img src="{{ $hImgSrc }}" alt="Imagen actual"
+                         style="width:120px;height:80px;object-fit:cover;border-radius:var(--radius-md);border:1.5px solid var(--gray-200);">
+                    <div style="font-size:.75rem;color:var(--gray-400);margin-top:.25rem;">Imagen actual</div>
+                </div>
+                @endif
+                <input type="file" name="imagen_file" accept="image/jpg,image/jpeg,image/png,image/webp"
+                       style="margin-bottom:.4rem;">
+                <input type="url" name="imagen_url" placeholder="O pega una URL: https://..."
+                       style="width:100%;padding:.65rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.9rem;font-family:var(--font-body);outline:none;">
+                <p style="font-size:.75rem;color:var(--gray-400);margin-top:.25rem;">Máx. 4MB — JPG, PNG, WEBP</p>
             </div>
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem;">
                 <button type="button" onclick="cerrarModalHotel()" class="btn btn-outline">Cancelar</button>

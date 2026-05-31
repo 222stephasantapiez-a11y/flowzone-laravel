@@ -130,38 +130,4 @@ document.querySelectorAll('.stars .star').forEach(star => {
     });
 });
  
-// 8. Modo oscuro
-const darkToggle = document.getElementById('darkToggle');
-const darkIcon   = document.getElementById('darkIcon');
- 
-function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    if (darkIcon) {
-        darkIcon.className = theme === 'dark'
-            ? 'fa-solid fa-sun'
-            : 'fa-solid fa-moon';
-    }
-}
- 
-function getPreferredTheme() {
-    const saved = localStorage.getItem('fz-theme');
-    if (saved) return saved;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
- 
-applyTheme(getPreferredTheme());
- 
-if (darkToggle) {
-    darkToggle.addEventListener('click', () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        const next    = current === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('fz-theme', next);
-        applyTheme(next);
-    });
-}
- 
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-    if (!localStorage.getItem('fz-theme')) {
-        applyTheme(e.matches ? 'dark' : 'light');
-    }
-});
+// ── fin script.js ──

@@ -15,6 +15,7 @@ use App\Http\Controllers\Empresa\PlanTuristicoController;
 use App\Http\Controllers\Empresa\HabitacionController;
 use App\Http\Controllers\Empresa\PaqueteController;
 use App\Http\Controllers\Empresa\ReservaEmpresaController;
+use App\Http\Controllers\Empresa\EmpresaImagenController;
 use App\Http\Controllers\Admin\HotelController;
 use App\Http\Controllers\Admin\LugarController;
 use App\Http\Controllers\Admin\EventoController;
@@ -31,6 +32,7 @@ Route::get('/empresas', [EmpresaController::class, 'index'])->name('empresas.ind
 Route::get('/', [PageController::class, 'home'])->name('home');
 Route::get('/hoteles', [PageController::class, 'hoteles'])->name('hoteles');
 Route::get('/hoteles/{hotel}', [PageController::class, 'detalleHotel'])->name('hoteles.detalle');
+Route::get('/empresas/{empresa}', [PageController::class, 'detalleEmpresa'])->name('empresas.detalle');
 Route::get('/lugares', [PageController::class, 'lugares'])->name('lugares');
 Route::get('/lugares/{lugar}', [PageController::class, 'detalleLugar'])->name('lugares.detalle');
 Route::get('/eventos', [PageController::class, 'eventos'])->name('eventos');
@@ -102,6 +104,11 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::post('/hero',                     [EmpresaDashboardController::class, 'heroStore'])->name('hero.store');
     Route::patch('/hero/{heroImage}/toggle', [EmpresaDashboardController::class, 'heroToggle'])->name('hero.toggle');
     Route::delete('/hero/{heroImage}',       [EmpresaDashboardController::class, 'heroDestroy'])->name('hero.destroy');
+
+    // ── Galería de imágenes ──────────────────────────────────
+    Route::post('/galeria',                    [EmpresaImagenController::class, 'store'])->name('galeria.store');
+    Route::patch('/galeria/{imagen}/toggle',   [EmpresaImagenController::class, 'toggle'])->name('galeria.toggle');
+    Route::delete('/galeria/{imagen}',         [EmpresaImagenController::class, 'destroy'])->name('galeria.destroy');
 
     Route::get('/blog', [BlogEmpresaController::class, 'index'])->name('blog.index');
     Route::post('/blog', [BlogEmpresaController::class, 'store'])->name('blog.store');

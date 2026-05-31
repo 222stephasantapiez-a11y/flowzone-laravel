@@ -97,6 +97,13 @@ class EmpresaController extends Controller
             ]);
         }
 
+        // Notificar a la empresa
+        NotificacionAdmin::create([
+            'empresa_id' => $empresa->id,
+            'mensaje'    => 'APROBACIÓN: Tu empresa ha sido aprobada. Ya apareces en el sitio público.',
+            'leido'      => false,
+        ]);
+
         return redirect()->route('admin.empresas.index')
             ->with('success', "Empresa \"{$empresa->nombre}\" aprobada.");
     }

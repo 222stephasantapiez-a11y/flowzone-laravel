@@ -40,9 +40,20 @@
         @forelse($hoteles as $hotel)
             <article class="card animate-on-scroll">
                 <div class="card-img-wrap">
-                    @if($hotel->imagen)
-                        @php $imgSrc = str_starts_with($hotel->imagen,'http') ? $hotel->imagen : asset('storage/'.$hotel->imagen); @endphp
-                        <img src="{{ $imgSrc }}" alt="{{ $hotel->nombre }}" loading="lazy"
+                    @php
+                        $hImgSrc = null;
+                        if ($hotel->imagen) {
+                            $hImgSrc = str_starts_with($hotel->imagen,'http') ? $hotel->imagen : asset('storage/'.$hotel->imagen);
+                        } elseif ($hotel->empresa_id) {
+                            $hFallback = \App\Models\EmpresaImagen::where('empresa_id', $hotel->empresa_id)
+                                ->where('activa', true)->orderBy('orden')->first();
+                            if ($hFallback) {
+                                $hImgSrc = str_starts_with($hFallback->ruta,'http') ? $hFallback->ruta : asset('storage/'.$hFallback->ruta);
+                            }
+                        }
+                    @endphp
+                    @if($hImgSrc)
+                        <img src="{{ $hImgSrc }}" alt="{{ $hotel->nombre }}" loading="lazy"
                              onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-hotel\'></i></div>'">
                     @else
                         <div class="card-img-fallback"><i class="fa-solid fa-hotel" aria-hidden="true"></i></div>

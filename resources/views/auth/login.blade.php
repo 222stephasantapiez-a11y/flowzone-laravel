@@ -471,6 +471,7 @@
 
     <form method="POST" action="{{ route('login') }}">
         @csrf
+        <input type="hidden" name="contexto" id="campo-contexto" value="usuario">
         <div class="auth-field">
             <label for="campo-correo">Correo electrónico</label>
             <div class="auth-field-wrap">
@@ -536,26 +537,31 @@ const badges = {
 function selRol(btn, rol) {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('rol-badge').textContent = badges[rol];
+    document.getElementById('rol-badge').textContent  = badges[rol];
+    document.getElementById('campo-contexto').value   = rol;
 }
 
 function llenar(correo, pass, rol) {
-    document.getElementById('campo-correo').value   = correo;
-    document.getElementById('campo-password').value = pass;
+    document.getElementById('campo-correo').value    = correo;
+    document.getElementById('campo-password').value  = pass;
+    document.getElementById('campo-contexto').value  = rol;
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + rol).classList.add('active');
     document.getElementById('rol-badge').textContent = badges[rol];
 }
 
+// Restaurar tab activo si hay old('correo') tras un error
 const correoActual = document.getElementById('campo-correo').value;
 if (correoActual.includes('admin@')) {
     document.getElementById('tab-admin').classList.add('active');
     document.getElementById('tab-usuario').classList.remove('active');
-    document.getElementById('rol-badge').textContent = badges['admin'];
+    document.getElementById('rol-badge').textContent  = badges['admin'];
+    document.getElementById('campo-contexto').value   = 'admin';
 } else if (correoActual.includes('empresa')) {
     document.getElementById('tab-empresa').classList.add('active');
     document.getElementById('tab-usuario').classList.remove('active');
-    document.getElementById('rol-badge').textContent = badges['empresa'];
+    document.getElementById('rol-badge').textContent  = badges['empresa'];
+    document.getElementById('campo-contexto').value   = 'empresa';
 }
 </script>
 </body>

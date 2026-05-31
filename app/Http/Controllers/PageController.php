@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Hotel;
 use App\Models\Lugar;
 use App\Models\Evento;
+use App\Models\Empresa;
 use App\Models\Gastronomia;
 use App\Models\Reserva;
 use App\Models\BlogPost;
@@ -24,8 +25,10 @@ class PageController extends Controller
             'lugares_destacados' => Lugar::latest()->take(3)->get(),
             'eventos_proximos'   => Evento::where('fecha', '>=', now())->orderBy('fecha')->take(3)->get(),
             'blog_recientes'     => BlogPost::where('publicado', true)->latest('fecha_publicacion')->take(3)->get(),
-            // ── Imágenes hero: consulta directa sin scopes para evitar errores silenciosos
-            'heroImgs'           => HeroImage::where('activa', true)->where('seccion', 'hero')->orderBy('orden')->get(),
+            // ── Imágenes hero: filtradas por empresa aprobada (se sobreescribe en la vista también)
+            'heroImgs'           => HeroImage::where('activa', true)->where('seccion', 'hero')->where(function ($q) {
+                $q->whereNull('empresa_id')->orWhereHas('empresa', fn($e) => $e->where('aprobado', true));
+            })->orderBy('orden')->get(),
             'totalHoteles'       => Hotel::count(),
             'totalLugares'       => Lugar::count(),
             'totalEventos'       => Evento::count(),
@@ -150,11 +153,21 @@ class PageController extends Controller
             $query->where(fn($q2) => $q2->where('nombre', 'like', "%$q%")->orWhere('descripcion', 'like', "%$q%"));
         }
 
+        $restaurantesQuery = Empresa::where('tipo_empresa', 'restaurante')->where('aprobado', true);
+
+        if ($request->filled('busqueda')) {
+            $q = $request->busqueda;
+            $restaurantesQuery->where(
+                fn($q2) => $q2->where('nombre', 'like', "%$q%")->orWhere('descripcion', 'like', "%$q%")
+            );
+        }
+
         return view('pages.gastronomia', [
-            'platos'      => $query->latest()->get(),
-            'tipos'       => Gastronomia::distinct()->pluck('tipo')->filter()->sort()->values(),
-            'tipo_filtro' => $request->tipo ?? '',
-            'busqueda'    => $request->busqueda ?? '',
+            'platos'       => $query->latest()->get(),
+            'tipos'        => Gastronomia::distinct()->pluck('tipo')->filter()->sort()->values(),
+            'tipo_filtro'  => $request->tipo ?? '',
+            'busqueda'     => $request->busqueda ?? '',
+            'restaurantes' => $restaurantesQuery->get(),
         ]);
     }
 
@@ -260,9 +273,7 @@ class PageController extends Controller
                 'url'         => route('hoteles.detalle', $h),
                 'precio'      => '$' . number_format($h->precio, 0, ',', '.') . ' COP/noche',
             ]);
-
-        $puntos = $lugares->merge($hoteles)->values();
-
+$puntos = collect($lugares)->merge(collect($hoteles))->values();
         return view('pages.maps', compact('puntos'));
     }
 
@@ -429,5 +440,20 @@ class PageController extends Controller
         $lugares = Lugar::whereIn('id', $favs->where('tipo', 'lugar')->pluck('item_id'))->get();
 
         return view('pages.favoritos', compact('hoteles', 'lugares'));
+    }
+
+    // ── Detalle empresa pública ───────────────────────────────
+    public function detalleEmpresa(Empresa $empresa)
+    {
+        abort_if(!$empresa->aprobado, 404);
+
+        $empresa->load([
+            'imagenesActivas',
+            'heroImagenes',
+            'hoteles.habitaciones',
+            'gastronomias' => fn($q) => $q->where('disponible_hoy', true),
+        ]);
+
+        return view('pages.detalle_empresa', compact('empresa'));
     }
 }

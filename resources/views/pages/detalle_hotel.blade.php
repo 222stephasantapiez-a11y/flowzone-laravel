@@ -3,9 +3,16 @@
 @section('title', $hotel->nombre)
 
 @php
-    $imgSrc = $hotel->imagen
-        ? (str_starts_with($hotel->imagen, 'http') ? $hotel->imagen : asset('storage/' . $hotel->imagen))
-        : null;
+    $imgSrc = null;
+    if ($hotel->imagen) {
+        $imgSrc = str_starts_with($hotel->imagen, 'http') ? $hotel->imagen : asset('storage/' . $hotel->imagen);
+    } elseif ($hotel->empresa_id) {
+        $fallback = \App\Models\EmpresaImagen::where('empresa_id', $hotel->empresa_id)
+            ->where('activa', true)->orderBy('orden')->first();
+        if ($fallback) {
+            $imgSrc = str_starts_with($fallback->ruta, 'http') ? $fallback->ruta : asset('storage/' . $fallback->ruta);
+        }
+    }
 @endphp
 
 @section('content')

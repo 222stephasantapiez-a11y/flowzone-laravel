@@ -39,4 +39,30 @@ class Empresa extends Model
     {
         return $this->hasMany(\App\Models\Gastronomia::class, 'empresa_id');
     }
+
+    public function imagenes()
+    {
+        return $this->hasMany(EmpresaImagen::class)->orderBy('orden');
+    }
+
+    public function imagenesActivas()
+    {
+        return $this->hasMany(EmpresaImagen::class)->where('activa', true)->orderBy('orden');
+    }
+
+    public function heroImagenes()
+    {
+        return $this->hasMany(HeroImage::class)->where('seccion', 'hero')->where('activa', true)->orderBy('orden');
+    }
+
+    public function getLogoUrlAttribute(): string
+    {
+        if (!$this->logo) {
+            return '';
+        }
+        if (str_starts_with($this->logo, 'http')) {
+            return $this->logo;
+        }
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($this->logo);
+    }
 }
