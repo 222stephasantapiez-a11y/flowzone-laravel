@@ -9,9 +9,13 @@ use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
+use Maatwebsite\Excel\Validators\Failure;
+use Throwable;
 
 class EventosImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnError, SkipsOnFailure, SkipsEmptyRows
 {
+    public int $imported = 0;
+
     public function model(array $row): ?Evento
     {
         $nombre = trim($row['nombre'] ?? '');
@@ -50,5 +54,17 @@ class EventosImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnE
             'fecha.required'  => 'El campo "fecha" es obligatorio.',
             'fecha.date'      => 'El campo "fecha" debe ser una fecha válida.',
         ];
+    }
+
+    public function onError(Throwable $e): void
+    {
+        \Log::error('Error en importación de eventos: ' . $e->getMessage());
+    }
+
+    public function onFailure(Failure ...$failures): void
+    {
+        foreach ($failures as $failure) {
+            \Log::warning('Fila ' . $failure->row() . ' falló: ' . implode(', ', $failure->errors()));
+        }
     }
 }
