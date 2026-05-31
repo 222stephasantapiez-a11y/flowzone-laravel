@@ -22,10 +22,10 @@ class PageController extends Controller
     public function home()
     {
         return view('pages.home', [
-            'hoteles_destacados' => Hotel::where('disponibilidad', true)->latest()->take(3)->get(),
-            'lugares_destacados' => Lugar::latest()->take(3)->get(),
-            'eventos_proximos'   => Evento::where('fecha', '>=', now())->orderBy('fecha')->take(3)->get(),
-            'blog_recientes'     => BlogPost::where('publicado', true)->latest('fecha_publicacion')->take(3)->get(),
+            'hoteles_destacados' => Hotel::where('disponibilidad', true)->latest()->take(6)->get(),
+            'lugares_destacados' => Lugar::latest()->take(6)->get(),
+            'eventos_proximos'   => Evento::where('fecha', '>=', now())->orderBy('fecha')->take(6)->get(),
+            'blog_recientes'     => BlogPost::where('publicado', true)->latest('fecha_publicacion')->take(6)->get(),
             'heroImgs'           => HeroImage::where('activa', true)->where('seccion', 'hero')->where(function ($q) {
                 $q->whereNull('empresa_id')->orWhereHas('empresa', fn($e) => $e->where('aprobado', true));
             })->orderBy('orden')->get(),
@@ -341,9 +341,11 @@ class PageController extends Controller
             return redirect()->route('hoteles')->with('error', 'Hotel no disponible.');
         }
 
+        // Fechas seleccionadas para filtrar disponibilidad
         $fechaEntrada = $request->fecha_entrada ?? now()->format('Y-m-d');
         $fechaSalida  = $request->fecha_salida  ?? now()->addDay()->format('Y-m-d');
 
+        // Habitaciones disponibles (no reservadas activamente en esas fechas)
         $habitacionesOcupadas = Reserva::where('hotel_id', $hotel->id)
             ->whereNotIn('estado', ['cancelada'])
             ->whereNotNull('habitacion_id')
@@ -365,7 +367,14 @@ class PageController extends Controller
 
     public function habitacionesDisponibles(Request $request)
     {
-        $hotel = Hotel::findOrFail($request->hotel_id);
+        $hotel = Hotel::where('id', $request->hotel_id)
+            ->where('disponibilidad', true)
+            ->whereHas('empresa', fn($q) => $q->where('aprobado', true))
+            ->first();
+
+        if (!$hotel) {
+            return response()->json(['redirect' => route('hoteles')]);
+        }
 
         $ocupadas = Reserva::where('hotel_id', $hotel->id)
             ->whereNotIn('estado', ['cancelada'])
@@ -416,6 +425,7 @@ class PageController extends Controller
 
         $dias = now()->parse($request->fecha_entrada)->diffInDays($request->fecha_salida);
 
+        // Usar precio de habitación si se seleccionó
         $habitacion = null;
         if ($request->filled('habitacion_id')) {
             $habitacion = Habitacion::where('id', $request->habitacion_id)
@@ -423,6 +433,7 @@ class PageController extends Controller
                 ->where('disponible', true)
                 ->firstOrFail();
 
+            // Verificar que no esté ocupada en esas fechas
             $conflicto = Reserva::where('habitacion_id', $habitacion->id)
                 ->whereNotIn('estado', ['cancelada'])
                 ->where('fecha_entrada', '<', $request->fecha_salida)
@@ -476,12 +487,25 @@ class PageController extends Controller
         return redirect()->away($widgetUrl);
     }
 
-    public function misReservas()
+    public function misReservas(Request $request)
     {
         $reservas = Reserva::with('hotel')
             ->where('usuario_id', Auth::id())
             ->latest()
             ->get();
+
+        if ($request->filled('cancelar')) {
+            $reserva = Reserva::where('id', $request->cancelar)
+                ->where('usuario_id', Auth::id())
+                ->where('estado', 'pendiente')
+                ->first();
+
+            if ($reserva) {
+                $reserva->update(['estado' => 'cancelada']);
+                return redirect()->route('mis-reservas')->with('success', 'Reserva cancelada.');
+            }
+            return redirect()->route('mis-reservas')->with('error', 'No se pudo cancelar la reserva.');
+        }
 
         return view('pages.mis_reservas', [
             'reservas'      => $reservas,
@@ -490,23 +514,6 @@ class PageController extends Controller
             'canceladas'    => $reservas->where('estado', 'cancelada'),
             'total_gastado' => $reservas->whereNotIn('estado', ['cancelada'])->sum('precio_total'),
         ]);
-    }
-
-    public function cancelarReserva(Reserva $reserva)
-    {
-        // Solo el dueño puede cancelar
-        if ($reserva->usuario_id !== Auth::id()) {
-            abort(403);
-        }
-
-        // Solo se pueden cancelar reservas pendientes
-        if ($reserva->estado !== 'pendiente') {
-            return back()->with('error', 'Solo puedes cancelar reservas pendientes.');
-        }
-
-        $reserva->update(['estado' => 'cancelada']);
-
-        return back()->with('success', 'Reserva cancelada correctamente.');
     }
 
     // ── Favoritos (requiere auth) ─────────────────────────────

@@ -110,8 +110,7 @@
                     <p class="card-desc">{{ Str::limit($lugar->descripcion, 80) }}</p>
                     <div class="card-actions">
                         <a href="{{ route('lugares.detalle', $lugar) }}" class="btn btn-outline btn-sm">Ver más</a>
-                        @auth<a href="{{ route('reservar') }}" class="btn btn-primary btn-sm">Reservar</a>
-                        @else<a href="{{ route('login') }}" class="btn btn-primary btn-sm">Reservar</a>@endauth
+                        <a href="{{ route('hoteles') }}" class="btn btn-primary btn-sm">Ver Hoteles</a>
                     </div>
                 </div>
             </div>

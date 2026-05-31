@@ -29,12 +29,11 @@ class PlanTuristicoController extends Controller
             ->with(['evento','gastronomia','hotel','lugar','habitacion'])
             ->latest()->get();
 
-        // Datos según tipo de empresa
-        $hoteles     = $empresa->hoteles()->get();
+        $hoteles      = $empresa->hoteles()->get();
         $habitaciones = Habitacion::whereIn('hotel_id', $hoteles->pluck('id'))->where('disponible', true)->get();
-        $platos      = Gastronomia::where('empresa_id', $empresa->id)->where('disponible_hoy', true)->get();
-        $lugares     = Lugar::latest()->take(20)->get();
-        $eventos     = Evento::where('fecha', '>=', now())->orderBy('fecha')->take(20)->get();
+        $platos       = Gastronomia::where('empresa_id', $empresa->id)->where('disponible_hoy', true)->get();
+        $lugares      = Lugar::latest()->take(20)->get();
+        $eventos      = Evento::where('fecha', '>=', now())->orderBy('fecha')->take(20)->get();
 
         return view('empresa.planes', compact(
             'empresa', 'planes', 'hoteles', 'habitaciones', 'platos', 'lugares', 'eventos'
@@ -151,10 +150,12 @@ class PlanTuristicoController extends Controller
 
         return response()->json([
             ...$resultado,
-            'subtotal'         => (float)$subtotal,
-            'descuento'        => (float)$descuento,
-            'precioFinal'      => (float)$precioFinal,
-            'filtros_aplicados'=> array_filter([
+            'subtotal'          => (float)$subtotal,
+            'descuento'         => (float)$descuento,
+            'precioFinal'       => (float)$precioFinal,
+            'fecha_inicio'      => $fechaI,
+            'fecha_fin'         => $fechaF,
+            'filtros_aplicados' => array_filter([
                 'fechas'    => ($fechaI || $fechaF) ? "$fechaI → $fechaF" : null,
                 'horario'   => ($horaI || $horaF) ? "$horaI → $horaF" : null,
                 'ubicacion' => ($lat && $lng) ? "lat:$lat lng:$lng radio:{$radio}km" : null,
@@ -184,11 +185,12 @@ class PlanTuristicoController extends Controller
             'publicado'    => 'nullable|boolean',
             'imagen_file'  => 'nullable|file|mimes:jpg,jpeg,png,webp|max:2048',
             'imagen_url'   => 'nullable|url',
+            'fecha_inicio' => 'nullable|date',
+            'fecha_fin'    => 'nullable|date|after_or_equal:fecha_inicio',
         ]);
 
         $empresa = $this->empresa();
 
-        // Imagen
         $imagen = null;
         if ($request->hasFile('imagen_file')) {
             $imagen = $request->file('imagen_file')->store('planes', 'public');
@@ -211,6 +213,8 @@ class PlanTuristicoController extends Controller
             'precio_final'   => $request->precio_final,
             'publicado'      => $request->boolean('publicado', false),
             'imagen'         => $imagen,
+            'fecha_inicio'   => $request->fecha_inicio ?: null,
+            'fecha_fin'      => $request->fecha_fin ?: null,
         ]);
 
         return back()->with('success', '¡Plan guardado! ' . ($request->boolean('publicado') ? 'Ya es visible en el sitio público.' : 'Guardado como borrador.'));
@@ -236,7 +240,4 @@ class PlanTuristicoController extends Controller
         $plan->delete();
         return back()->with('success', 'Plan eliminado.');
     }
-
-    // ── Compatibilidad: generar desde gastronomia (legacy) ─────
-    // Mantiene la ruta empresa.gastronomia.planes.generar funcionando
 }
