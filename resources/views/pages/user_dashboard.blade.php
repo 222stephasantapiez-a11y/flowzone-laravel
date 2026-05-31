@@ -152,7 +152,6 @@
  
     <div class="ud-layout">
         <aside class="ud-sidebar">
- 
             <div class="ud-panel">
                 <div class="ud-panel-header">
                     <h3>Resumen</h3><p>Tu actividad</p>
@@ -189,7 +188,6 @@
                     <li><a href="{{ route('hoteles') }}"><i class="fa-solid fa-plus"></i> Nueva Reserva</a></li>
                 </ul>
             </div>
- 
         </aside>
  
         <main>
@@ -249,11 +247,22 @@
                                     <div class="res-price-label">COP total</div>
                                 </div>
                                 <div class="res-actions">
-                                    <a href="{{ route('hoteles.detalle', $r->hotel) }}" class="btn btn-outline btn-sm"><i class="fa-solid fa-eye fa-xs"></i> Ver hotel</a>
+                                    <a href="{{ route('hoteles.detalle', $r->hotel) }}" class="btn btn-outline btn-sm">
+                                        <i class="fa-solid fa-eye fa-xs"></i> Ver hotel
+                                    </a>
                                     @if($r->estado === 'pendiente')
-                                        <form method="POST" action="{{ route('dashboard.cancelar', $r->id) }}" onsubmit="return confirm('¿Cancelar esta reserva?')">
+                                        {{-- Botón que abre el modal --}}
+                                        <button type="button"
+                                                onclick="abrirCancelar({{ $r->id }}, '{{ addslashes($r->hotel->nombre) }}', '{{ $r->fecha_entrada->format('d/m/Y') }}', '{{ $r->fecha_salida->format('d/m/Y') }}')"
+                                                class="btn btn-danger btn-sm" style="width:100%;">
+                                            <i class="fa-solid fa-xmark fa-xs"></i> Cancelar
+                                        </button>
+                                        {{-- Form oculto que se envía al confirmar --}}
+                                        <form id="form-cancelar-{{ $r->id }}"
+                                              method="POST"
+                                              action="{{ route('dashboard.cancelar', $r->id) }}"
+                                              style="display:none;">
                                             @csrf
-                                            <button type="submit" class="btn btn-danger btn-sm" style="width:100%;"><i class="fa-solid fa-xmark fa-xs"></i> Cancelar</button>
                                         </form>
                                     @endif
                                 </div>
@@ -261,7 +270,9 @@
                         </div>
                         @endforeach
                         <div style="text-align:center;margin-top:1.5rem;">
-                            <a href="{{ route('hoteles') }}" class="btn btn-primary"><i class="fa-solid fa-plus fa-xs"></i> Nueva Reserva</a>
+                            <a href="{{ route('hoteles') }}" class="btn btn-primary">
+                                <i class="fa-solid fa-plus fa-xs"></i> Nueva Reserva
+                            </a>
                         </div>
                     @endif
                 </div>
@@ -309,7 +320,9 @@
                         <hr class="ud-divider">
                         <div style="display:flex;justify-content:flex-end;gap:.75rem;">
                             <a href="#" class="btn btn-outline ud-nav-link" data-tab="reservas">Cancelar</a>
-                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk fa-xs"></i> Guardar cambios</button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-floppy-disk fa-xs"></i> Guardar cambios
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -317,6 +330,60 @@
         </main>
     </div>
 </div>
+
+{{-- ══════════ MODAL CANCELAR RESERVA ══════════ --}}
+<div id="modal-cancelar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:2000;align-items:center;justify-content:center;padding:1rem;">
+    <div style="background:#fff;border-radius:1rem;max-width:440px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);overflow:hidden;">
+
+        {{-- Header --}}
+        <div style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:1.25rem 1.5rem;display:flex;align-items:center;gap:.75rem;">
+            <div style="width:40px;height:40px;background:rgba(255,255,255,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fa-solid fa-calendar-xmark" style="color:#fff;font-size:1rem;"></i>
+            </div>
+            <div>
+                <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">Cancelar reserva</h3>
+                <p style="color:rgba(255,255,255,.75);font-size:.8rem;margin:0;">Esta acción no se puede deshacer</p>
+            </div>
+        </div>
+
+        {{-- Body --}}
+        <div style="padding:1.5rem;">
+            <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:.6rem;padding:1rem;margin-bottom:1.25rem;">
+                <p style="font-size:.88rem;color:#991b1b;font-weight:700;margin:0 0 .3rem;">
+                    <i class="fa-solid fa-hotel fa-xs"></i> <span id="cancelar-hotel"></span>
+                </p>
+                <p style="font-size:.84rem;color:#b91c1c;margin:0;">
+                    <i class="fa-solid fa-calendar fa-xs"></i> <span id="cancelar-fechas"></span>
+                </p>
+            </div>
+
+            <p style="font-size:.88rem;color:var(--gray-600);margin-bottom:1.25rem;line-height:1.6;">
+                ¿Estás seguro que deseas cancelar esta reserva? Una vez cancelada no podrás reactivarla.
+            </p>
+
+            <label style="display:flex;align-items:center;gap:.6rem;background:#fef2f2;border:1.5px solid #fecaca;border-radius:.5rem;padding:.75rem 1rem;cursor:pointer;margin-bottom:1.25rem;">
+                <input type="checkbox" id="confirm-check-cancelar"
+                       style="accent-color:#dc2626;width:16px;height:16px;flex-shrink:0;">
+                <span style="font-size:.85rem;color:#991b1b;font-weight:500;">
+                    Entiendo que esta acción no se puede deshacer
+                </span>
+            </label>
+
+            <div style="display:flex;gap:.75rem;">
+                <button type="button" onclick="cerrarCancelar()"
+                        style="flex:1;padding:.7rem;border:1.5px solid var(--gray-200);border-radius:.5rem;background:#fff;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--gray-700);">
+                    <i class="fa-solid fa-arrow-left fa-xs"></i> Volver
+                </button>
+                <button type="button" id="btn-confirmar-cancelar" onclick="ejecutarCancelar()" disabled
+                        style="flex:1;padding:.7rem;border:none;border-radius:.5rem;background:#dc2626;color:#fff;cursor:pointer;font-size:.88rem;font-weight:600;opacity:.5;transition:opacity .2s;">
+                    <i class="fa-solid fa-xmark fa-xs"></i> Sí, cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{{-- ═══════════════════════════════════════════ --}}
+
 @endsection
  
 @push('scripts')
@@ -354,5 +421,44 @@
         switchTab('perfil');
     @endif
 })();
+
+// ── Cancelar reserva ──────────────────────────
+let cancelarId = null;
+
+function abrirCancelar(id, hotel, entrada, salida) {
+    cancelarId = id;
+    document.getElementById('cancelar-hotel').textContent  = hotel;
+    document.getElementById('cancelar-fechas').textContent = entrada + ' → ' + salida;
+    document.getElementById('confirm-check-cancelar').checked = false;
+    const btn = document.getElementById('btn-confirmar-cancelar');
+    btn.disabled       = true;
+    btn.style.opacity  = '.5';
+    document.getElementById('modal-cancelar').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function cerrarCancelar() {
+    cancelarId = null;
+    document.getElementById('modal-cancelar').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+function ejecutarCancelar() {
+    if (cancelarId) document.getElementById('form-cancelar-' + cancelarId).submit();
+}
+
+document.getElementById('confirm-check-cancelar').addEventListener('change', function () {
+    const btn = document.getElementById('btn-confirmar-cancelar');
+    btn.disabled      = !this.checked;
+    btn.style.opacity = this.checked ? '1' : '.5';
+});
+
+document.getElementById('modal-cancelar').addEventListener('click', function(e) {
+    if (e.target === this) cerrarCancelar();
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') cerrarCancelar();
+});
 </script>
 @endpush

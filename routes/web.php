@@ -66,8 +66,10 @@ Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->name('wompi.
 // ── Área de usuario autenticado ──────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::get('/reservar', [PageController::class, 'reservaForm'])->name('reservar');
+    Route::get('/reservar/habitaciones', [PageController::class, 'habitacionesDisponibles'])->name('reservar.habitaciones');
     Route::post('/reservar', [PageController::class, 'reservaStore'])->name('reservar.store');
     Route::get('/mis-reservas', [PageController::class, 'misReservas'])->name('mis-reservas');
+    Route::post('/mis-reservas/{reserva}/cancelar', [PageController::class, 'cancelarReserva'])->name('mis-reservas.cancelar');
     Route::get('/favoritos', [PageController::class, 'favoritos'])->name('favoritos');
     Route::post('/favoritos/toggle', [FavoritoController::class, 'toggle'])->name('favoritos.toggle');
     Route::post('/calificaciones', [CalificacionController::class, 'store'])->name('calificaciones.store');

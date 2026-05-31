@@ -498,40 +498,17 @@
                 </div>
             </div>
 
-            {{-- Logo --}}
+
+
+            {{-- Facebook --}}
             <div class="auth-field">
-                <label>Logo de la empresa</label>
-                @include('partials.imagen_field', [
-                    'currentImage' => null,
-                    'fieldId'      => 'empresa-logo',
-                    'nameUrl'      => 'empresa_logo_url',
-                    'nameFile'     => 'empresa_logo_file',
-                ])
-            </div>
-
-            {{-- Sitio web --}}
-           
-
-            {{-- Instagram y Facebook --}}
-            <div class="auth-row-2">
-                <div class="auth-field">
-                    <label>Instagram</label>
-                    <div class="auth-field-wrap">
-                        <i class="auth-icon fa-brands fa-instagram"></i>
-                        <input type="text" name="instagram" maxlength="200"
-                               placeholder="@miempresa" value="{{ old('instagram') }}">
-                    </div>
-                </div>
-                <div class="auth-field">
-                    <label>Facebook</label>
-                    <div class="auth-field-wrap">
-                        <i class="auth-icon fa-brands fa-facebook"></i>
-                        <input type="text" name="facebook" maxlength="200"
-                               placeholder="facebook.com/miempresa" value="{{ old('facebook') }}">
-                    </div>
+                <label>Facebook <small style="color:var(--gray-400);font-weight:400;">(opcional)</small></label>
+                <div class="auth-field-wrap">
+                    <i class="auth-icon fa-brands fa-facebook"></i>
+                    <input type="text" name="facebook" maxlength="200"
+                           placeholder="facebook.com/miempresa" value="{{ old('facebook') }}">
                 </div>
             </div>
-
         </div>
 
         <button type="submit" class="auth-submit">

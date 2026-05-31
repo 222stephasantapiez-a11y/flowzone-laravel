@@ -26,7 +26,7 @@
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;max-width:900px;margin:0 auto;align-items:start;">
 
-        {{-- Info del hotel --}}
+        {{-- Info del hotel + habitaciones --}}
         <div class="admin-section" style="border-top:4px solid var(--green-700);">
             @php
                 $hotelImg = $hotel->imagen
@@ -52,33 +52,33 @@
                     <i class="fa-solid fa-users" style="color:var(--green-600);width:16px;text-align:center;"></i>
                     Capacidad: {{ $hotel->capacidad }} personas
                 </div>
-                <div style="display:flex;align-items:center;gap:.6rem;font-size:1rem;font-weight:700;color:var(--green-800);margin-top:.25rem;">
-                    <i class="fa-solid fa-tag" style="color:var(--gold-500);width:16px;text-align:center;"></i>
-                    ${{ number_format($hotel->precio, 0, ',', '.') }} COP / noche
-                </div>
+            </div>
+
+            {{-- Aviso selección de fechas --}}
+            <div id="aviso-fechas" style="margin-top:1.25rem;padding:.85rem 1rem;background:#fef9c3;border:1px solid #fde047;border-radius:var(--radius-md);">
+                <p style="font-size:.82rem;color:#854d0e;margin:0;"><i class="fa-solid fa-calendar fa-xs"></i> Selecciona las fechas para ver disponibilidad de habitaciones.</p>
+            </div>
+
+            {{-- Habitaciones (se renderizan dinámicamente) --}}
+            <div id="habitaciones-container" style="margin-top:1.25rem;display:none;">
+                <h4 style="font-size:.82rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">
+                    <i class="fa-solid fa-bed fa-xs"></i> Habitaciones
+                </h4>
+                <div id="habitaciones-lista" style="display:flex;flex-direction:column;gap:.5rem;"></div>
             </div>
 
             <div id="precio-calculado" style="margin-top:1.25rem;padding:1rem;background:var(--green-50);border-radius:var(--radius-md);border-left:3px solid var(--green-600);display:none;">
                 <p style="font-size:.8rem;color:var(--gray-600);margin-bottom:.2rem;">Total estimado</p>
                 <p id="precio-texto" style="font-size:1.3rem;font-weight:800;color:var(--green-800);"></p>
+                <p id="hab-seleccionada-texto" style="font-size:.78rem;color:var(--gray-500);margin-top:.2rem;"></p>
             </div>
 
-            <div style="margin-top:1.5rem;padding:.85rem 1rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-md);">
+            <div style="margin-top:1rem;padding:.85rem 1rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:var(--radius-md);">
                 <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem;">
                     <i class="fa-solid fa-shield-halved" style="color:#16a34a;font-size:1.1rem;"></i>
                     <span style="font-size:.82rem;color:#166534;font-weight:700;">Pago 100% seguro con Wompi</span>
                 </div>
-                <p style="font-size:.76rem;color:#166534;margin:0;">
-                    Serás redirigido al checkout de Wompi para elegir tu método de pago:
-                    tarjeta, Nequi, PSE o transferencia Bancolombia.
-                </p>
-            </div>
-
-            <div style="margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
-                <span style="font-size:.72rem;color:var(--gray-400);font-weight:600;">Acepta:</span>
-                @foreach(['Nequi','PSE','Visa','Mastercard','Bancolombia'] as $mp)
-                    <span style="padding:.2rem .55rem;border:1px solid var(--gray-200);border-radius:4px;font-size:.72rem;color:var(--gray-600);font-weight:600;background:#fff;">{{ $mp }}</span>
-                @endforeach
+                <p style="font-size:.76rem;color:#166534;margin:0;">Tarjeta, Nequi, PSE o transferencia Bancolombia.</p>
             </div>
         </div>
 
@@ -93,49 +93,55 @@
                 <div class="alert alert-error" style="margin-bottom:1.25rem;">{{ $errors->first() }}</div>
             @endif
 
-                <form method="POST" action="{{ route('reservar.store') }}">
+            <form method="POST" action="{{ route('reservar.store') }}">
                 @csrf
                 <input type="hidden" name="hotel_id" value="{{ $hotel->id }}">
+                <input type="hidden" name="habitacion_id" id="campo-habitacion-id" value="{{ old('habitacion_id') }}">
 
                 <div class="form-group" style="margin-bottom:1.25rem;">
                     <label for="fecha_entrada" style="display:block;font-size:.85rem;font-weight:600;color:var(--gray-900);margin-bottom:.4rem;">
-                        Fecha de Entrada
+                        Fecha de Entrada *
                     </label>
                     <input type="date" id="fecha_entrada" name="fecha_entrada" required
                            min="{{ date('Y-m-d') }}" value="{{ old('fecha_entrada') }}"
-                           style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.95rem;font-family:var(--font-body);color:var(--gray-900);background:#fff;transition:border-color .2s;">
+                           style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.95rem;font-family:var(--font-body);color:var(--gray-900);background:#fff;">
                 </div>
 
                 <div class="form-group" style="margin-bottom:1.25rem;">
                     <label for="fecha_salida" style="display:block;font-size:.85rem;font-weight:600;color:var(--gray-900);margin-bottom:.4rem;">
-                        Fecha de Salida
+                        Fecha de Salida *
                     </label>
                     <input type="date" id="fecha_salida" name="fecha_salida" required
                            min="{{ date('Y-m-d', strtotime('+1 day')) }}" value="{{ old('fecha_salida') }}"
-                           style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.95rem;font-family:var(--font-body);color:var(--gray-900);background:#fff;transition:border-color .2s;">
+                           style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.95rem;font-family:var(--font-body);color:var(--gray-900);background:#fff;">
+                </div>
+
+                {{-- Habitación seleccionada --}}
+                <div class="form-group" style="margin-bottom:1.25rem;">
+                    <label style="display:block;font-size:.85rem;font-weight:600;color:var(--gray-900);margin-bottom:.4rem;">
+                        <i class="fa-solid fa-bed fa-xs" style="color:var(--green-600);"></i> Habitación seleccionada
+                    </label>
+                    <div id="hab-seleccionada-label" style="padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.9rem;color:var(--gray-400);background:#fff;">
+                        Selecciona fechas y luego una habitación
+                    </div>
                 </div>
 
                 <div class="form-group" style="margin-bottom:1.75rem;">
                     <label for="num_personas" style="display:block;font-size:.85rem;font-weight:600;color:var(--gray-900);margin-bottom:.4rem;">
-                        Número de Personas
+                        Número de Personas *
                     </label>
                     <input type="number" id="num_personas" name="num_personas" required
                            min="1" max="{{ $hotel->capacidad }}" value="{{ old('num_personas', 1) }}"
-                           style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.95rem;font-family:var(--font-body);color:var(--gray-900);background:#fff;transition:border-color .2s;">
-                    <p style="font-size:.78rem;color:var(--gray-400);margin-top:.3rem;">Máximo {{ $hotel->capacidad }} personas</p>
+                           style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.95rem;font-family:var(--font-body);color:var(--gray-900);background:#fff;">
+                    <p id="cap-hint" style="font-size:.78rem;color:var(--gray-400);margin-top:.3rem;">Máximo {{ $hotel->capacidad }} personas</p>
                 </div>
 
                 <div style="padding:1rem;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:var(--radius-md);margin-bottom:1.5rem;">
                     <div style="display:flex;align-items:flex-start;gap:.65rem;">
                         <i class="fa-solid fa-circle-info" style="color:#2563eb;margin-top:.1rem;"></i>
-                        <div>
-                            <p style="font-size:.82rem;font-weight:700;color:#1e40af;margin-bottom:.3rem;">¿Cómo funciona el pago?</p>
-                            <p style="font-size:.78rem;color:#1e40af;line-height:1.5;margin:0;">
-                                Al hacer clic en <strong>"Ir a pagar"</strong> serás redirigido al checkout seguro de Wompi,
-                                donde podrás elegir entre <strong>Nequi, PSE, tarjeta o Bancolombia</strong>.
-                                Una vez aprobado el pago, regresarás automáticamente con tu reserva confirmada.
-                            </p>
-                        </div>
+                        <p style="font-size:.78rem;color:#1e40af;line-height:1.5;margin:0;">
+                            Al hacer clic en <strong>"Ir a pagar"</strong> serás redirigido al checkout seguro de Wompi.
+                        </p>
                     </div>
                 </div>
 
@@ -144,8 +150,7 @@
                 </button>
 
                 <p style="text-align:center;font-size:.75rem;color:var(--gray-400);margin-top:.75rem;">
-                    <i class="fa-solid fa-shield-halved fa-xs"></i>
-                    Pago seguro procesado por <strong>Wompi</strong>
+                    <i class="fa-solid fa-shield-halved fa-xs"></i> Pago seguro por <strong>Wompi</strong>
                 </p>
             </form>
         </div>
@@ -157,28 +162,146 @@
 
 @push('scripts')
 <script>
-const precioPorNoche = {{ $hotel->precio }};
-const inputEntrada   = document.getElementById('fecha_entrada');
-const inputSalida    = document.getElementById('fecha_salida');
-const precioBox      = document.getElementById('precio-calculado');
-const precioTexto    = document.getElementById('precio-texto');
+const HOTEL_ID        = {{ $hotel->id }};
+const PRECIO_BASE     = {{ $hotel->precio ?? 0 }};
+const URL_HABITACIONES = '{{ route("reservar.habitaciones") }}';
+const PLAN_HAB_ID     = {{ request('plan_hab_id', 0) }};
+
+let precioActual   = 0;
+let habNombre      = '';
+let habitacionesData = [];
+
+const inputEntrada = document.getElementById('fecha_entrada');
+const inputSalida  = document.getElementById('fecha_salida');
+const precioBox    = document.getElementById('precio-calculado');
+const precioTexto  = document.getElementById('precio-texto');
+const habTexto     = document.getElementById('hab-seleccionada-texto');
+const container    = document.getElementById('habitaciones-container');
+const lista        = document.getElementById('habitaciones-lista');
+const avisofechas  = document.getElementById('aviso-fechas');
+
+function resetHabitacion() {
+    document.getElementById('campo-habitacion-id').value = '';
+    document.getElementById('hab-seleccionada-label').textContent = 'Selecciona una habitación';
+    document.getElementById('hab-seleccionada-label').style.color = 'var(--gray-400)';
+    document.getElementById('hab-seleccionada-label').style.fontWeight = 'normal';
+    precioActual = 0;
+    habNombre    = '';
+    precioBox.style.display = 'none';
+}
+
+function cargarHabitaciones() {
+    const entrada  = inputEntrada.value;
+    const salida   = inputSalida.value;
+    const personas = document.getElementById('num_personas').value || 1;
+    if (!entrada || !salida || salida <= entrada) return;
+
+    lista.innerHTML = '<p style="color:var(--gray-400);font-size:.82rem;padding:.5rem 0;"><i class="fa-solid fa-spinner fa-spin fa-xs"></i> Verificando disponibilidad...</p>';
+    container.style.display = 'block';
+    avisofechas.style.display = 'none';
+    resetHabitacion();
+
+    fetch(`${URL_HABITACIONES}?hotel_id=${HOTEL_ID}&fecha_entrada=${entrada}&fecha_salida=${salida}&num_personas=${personas}`)
+        .then(r => r.json())
+        .then(habs => {
+            habitacionesData = habs;
+            lista.innerHTML  = '';
+
+            if (!habs.length) {
+                lista.innerHTML = '<p style="color:var(--gray-400);font-size:.82rem;">No hay habitaciones disponibles para esa cantidad de personas.</p>';
+                return;
+            }
+
+            habs.forEach(hab => {
+                const div = document.createElement('div');
+                div.id = 'hab-card-' + hab.id;
+                div.style.cssText = `background:${hab.ocupada ? '#fff5f5' : '#f8fafc'};border:1.5px solid ${hab.ocupada ? '#fecaca' : 'var(--gray-200)'};border-radius:var(--radius-md);padding:.75rem 1rem;transition:border-color .2s;${hab.ocupada ? 'opacity:.65;cursor:not-allowed;' : 'cursor:pointer;'}`;
+
+                const amenidades = (hab.amenidades || []).slice(0, 3).map(a =>
+                    `<span style="background:var(--green-50);color:var(--green-700);border-radius:2rem;padding:.1rem .45rem;font-size:.68rem;font-weight:600;">${a}</span>`
+                ).join('');
+
+                div.innerHTML = `
+                    <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-weight:700;font-size:.88rem;color:var(--gray-800);">
+                                ${hab.nombre}
+                                ${hab.ocupada ? '<span style="background:#fee2e2;color:#dc2626;border-radius:2rem;padding:.1rem .5rem;font-size:.68rem;font-weight:700;margin-left:.35rem;">Ocupada</span>' : ''}
+                            </div>
+                            <div style="font-size:.75rem;color:var(--gray-400);margin-top:.15rem;">
+                                ${hab.tipo || ''} · ${hab.capacidad} personas${hab.tipo_cama ? ' · ' + hab.tipo_cama : ''}
+                            </div>
+                            ${amenidades ? `<div style="display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.35rem;">${amenidades}</div>` : ''}
+                        </div>
+                        <div style="text-align:right;flex-shrink:0;margin-left:.75rem;">
+                            <div style="font-weight:800;color:var(--green-700);font-size:.95rem;">$${hab.precio.toLocaleString('es-CO')}</div>
+                            <div style="font-size:.7rem;color:var(--gray-400);">/ noche</div>
+                        </div>
+                    </div>`;
+
+                if (!hab.ocupada) {
+                    div.addEventListener('click', () => seleccionarHabitacion(hab.id, hab.precio, hab.nombre, hab.capacidad));
+                }
+                lista.appendChild(div);
+
+                // Auto-seleccionar si viene de un plan
+                if (PLAN_HAB_ID && hab.id == PLAN_HAB_ID && !hab.ocupada) {
+                    seleccionarHabitacion(hab.id, hab.precio, hab.nombre, hab.capacidad);
+                }
+            });
+        })
+        .catch(() => {
+            lista.innerHTML = '<p style="color:var(--danger);font-size:.82rem;">Error al cargar habitaciones.</p>';
+        });
+}
+
+function seleccionarHabitacion(id, precio, nombre, capacidad) {
+    document.querySelectorAll('[id^="hab-card-"]').forEach(c => {
+        const hab = habitacionesData.find(h => h.id == c.id.replace('hab-card-', ''));
+        if (hab && !hab.ocupada) {
+            c.style.borderColor = 'var(--gray-200)';
+            c.style.background  = '#f8fafc';
+        }
+    });
+    const card = document.getElementById('hab-card-' + id);
+    if (card) {
+        card.style.borderColor = 'var(--green-600)';
+        card.style.background  = '#f0fdf4';
+    }
+    document.getElementById('campo-habitacion-id').value = id;
+    document.getElementById('hab-seleccionada-label').textContent = nombre + ' — $' + precio.toLocaleString('es-CO') + '/noche';
+    document.getElementById('hab-seleccionada-label').style.color = 'var(--gray-900)';
+    document.getElementById('hab-seleccionada-label').style.fontWeight = '600';
+    document.getElementById('num_personas').max = capacidad;
+    document.getElementById('cap-hint').textContent = 'Máximo ' + capacidad + ' personas para esta habitación';
+    precioActual = precio;
+    habNombre    = nombre;
+    calcular();
+}
 
 function calcular() {
     const entrada = inputEntrada.value;
     const salida  = inputSalida.value;
-    if (entrada && salida) {
+    const habId   = document.getElementById('campo-habitacion-id').value;
+
+    // Solo mostrar total si hay habitación seleccionada y fechas válidas
+    if (entrada && salida && habId && precioActual > 0) {
         const dias = (new Date(salida) - new Date(entrada)) / 86400000;
         if (dias > 0) {
-            const total = dias * precioPorNoche;
+            const total = dias * precioActual;
             precioTexto.textContent = '$' + total.toLocaleString('es-CO') + ' COP (' + dias + ' noche' + (dias > 1 ? 's' : '') + ')';
+            if (habNombre) habTexto.textContent = '🛏 ' + habNombre;
             precioBox.style.display = 'block';
         } else {
             precioBox.style.display = 'none';
         }
+    } else {
+        precioBox.style.display = 'none';
     }
 }
 
-inputEntrada.addEventListener('change', calcular);
-inputSalida.addEventListener('change', calcular);
+inputEntrada.addEventListener('change', cargarHabitaciones);
+inputSalida.addEventListener('change',  cargarHabitaciones);
+document.getElementById('num_personas').addEventListener('change', cargarHabitaciones);
 </script>
 @endpush

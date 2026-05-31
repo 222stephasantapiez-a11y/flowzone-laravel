@@ -85,39 +85,11 @@
             </div>
         </div>
 
-        {{-- Logo --}}
+        {{-- Facebook (opcional) --}}
         <div class="form-group">
-            <label>Logo</label>
-            @if($empresa->logo)
-            <div style="margin-bottom:.75rem;">
-                <img src="{{ Str::startsWith($empresa->logo, 'http') ? $empresa->logo : Storage::url($empresa->logo) }}"
-                     alt="Logo actual" style="width:80px;height:80px;object-fit:cover;border-radius:var(--radius-md);border:1.5px solid var(--gray-200);">
-                <div style="font-size:.78rem;color:var(--gray-400);margin-top:.3rem;">Logo actual</div>
-            </div>
-            @endif
-            <input type="file" name="empresa_logo_file" accept="image/*" style="margin-bottom:.5rem;">
-            <input type="url" name="empresa_logo_url" value="{{ old('empresa_logo_url') }}"
-                   placeholder="O pega una URL: https://..."
-                   style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-family:var(--font-body);font-size:.9rem;outline:none;">
-        </div>
-
-        <div class="form-group">
-            <label>Sitio web</label>
-            <input type="url" name="sitio_web" value="{{ old('sitio_web', $empresa->sitio_web) }}"
-                   placeholder="https://miempresa.com" maxlength="300">
-        </div>
-
-        <div class="form-row">
-            <div class="form-group">
-                <label>Instagram</label>
-                <input type="text" name="instagram" value="{{ old('instagram', $empresa->instagram) }}"
-                       placeholder="@miempresa" maxlength="200">
-            </div>
-            <div class="form-group">
-                <label>Facebook</label>
-                <input type="text" name="facebook" value="{{ old('facebook', $empresa->facebook) }}"
-                       placeholder="facebook.com/miempresa" maxlength="200">
-            </div>
+            <label>Facebook <small style="color:var(--gray-400);font-weight:400;">(opcional)</small></label>
+            <input type="text" name="facebook" value="{{ old('facebook', $empresa->facebook) }}"
+                   placeholder="facebook.com/miempresa" maxlength="200">
         </div>
 
         <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:.5rem;">

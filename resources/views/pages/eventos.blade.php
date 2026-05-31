@@ -84,7 +84,7 @@
                         <p class="card-desc">{{ Str::limit($evento->descripcion, 120) }}</p>
                     @endif
                     <div class="card-actions">
-                        <a href="{{ route('eventos') }}" class="btn btn-primary btn-sm">
+                       <a href="{{ route('eventos.detalle', $evento) }}" class="btn btn-primary btn-sm">
                             Ver detalles <i class="fa-solid fa-arrow-right fa-xs" aria-hidden="true"></i>
                         </a>
                     </div>

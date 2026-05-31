@@ -1,197 +1,159 @@
 @extends('layouts.app')
 
-@section('title', $evento->nombre)
-
-@php
-    $imgSrc = $evento->imagen
-        ? (str_starts_with($evento->imagen, 'http') ? $evento->imagen : asset('storage/' . $evento->imagen))
-        : null;
-@endphp
+@section('title', $evento->nombre . ' — FlowZone')
+@section('body-class', 'no-hero')
 
 @section('content')
+<main>
 
-{{-- Hero --}}
-<section class="detalle-hero"
-    style="min-height:55vh;display:flex;align-items:flex-end;position:relative;overflow:hidden;
-           background:{{ $imgSrc ? 'url(\''.$imgSrc.'\') center/cover no-repeat' : 'linear-gradient(135deg,var(--green-900),var(--green-700))' }};">
-    <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(27,67,50,.88) 0%,rgba(27,67,50,.4) 60%,transparent 100%);"></div>
-    <div class="container" style="position:relative;z-index:2;padding-bottom:3rem;padding-top:calc(var(--navbar-height) + 2rem);">
-        <div style="display:flex;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem;align-items:center;">
-            <span class="hero-eyebrow"><i class="fa-solid fa-calendar-days fa-xs"></i> Evento</span>
+<section class="page-hero" style="
+    background:
+        @if($evento->imagen)
+        linear-gradient(135deg,rgba(10,40,20,.75) 0%,rgba(30,80,50,.55) 100%),
+        url('{{ str_starts_with($evento->imagen,"http") ? $evento->imagen : asset("storage/".$evento->imagen) }}') center/cover no-repeat
+        @else
+        linear-gradient(135deg,var(--green-900) 0%,var(--green-700) 100%)
+        @endif
+    ;">
+    <div class="container">
+        <div class="page-hero-content">
+            <span class="page-hero-eyebrow"><i class="fa-solid fa-calendar-days"></i> Evento</span>
+            <h1>{{ $evento->nombre }}</h1>
             @if($evento->categoria)
-                <span style="background:var(--green-600);color:#fff;font-size:.75rem;font-weight:700;padding:.3rem .85rem;border-radius:var(--radius-full);">
-                    {{ $evento->categoria }}
-                </span>
-            @endif
-        </div>
-        <h1 style="font-family:var(--font-display);font-size:clamp(1.8rem,5vw,3rem);font-weight:900;color:#fff;line-height:1.1;margin-bottom:.75rem;">
-            {{ $evento->nombre }}
-        </h1>
-        <div style="display:flex;flex-wrap:wrap;gap:1.25rem;align-items:center;">
-            <span style="color:rgba(255,255,255,.9);font-size:1rem;">
-                <i class="fa-solid fa-calendar fa-xs"></i>
-                {{ $evento->fecha->format('d \d\e F \d\e Y') }}
-                @if($evento->hora)
-                    &nbsp;·&nbsp; <i class="fa-solid fa-clock fa-xs"></i>
-                    {{ \Carbon\Carbon::parse($evento->hora)->format('H:i') }}
-                @endif
+            <span style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:2rem;padding:.3rem .9rem;font-size:.82rem;font-weight:600;">
+                {{ $evento->categoria }}
             </span>
-            @if($evento->precio > 0)
-                <span style="color:var(--gold-400);font-size:1.1rem;font-weight:700;">
-                    <i class="fa-solid fa-ticket fa-xs"></i>
-                    ${{ number_format($evento->precio, 0, ',', '.') }} COP
-                </span>
-            @else
-                <span style="background:rgba(255,255,255,.15);color:#fff;font-size:.85rem;font-weight:600;padding:.35rem 1rem;border-radius:var(--radius-full);backdrop-filter:blur(6px);">
-                    <i class="fa-solid fa-circle-check fa-xs"></i> Entrada gratuita
-                </span>
             @endif
+            <nav class="breadcrumb" aria-label="Breadcrumb" style="margin-top:1rem;">
+                <a href="{{ route('home') }}">Inicio</a>
+                <i class="fa-solid fa-chevron-right"></i>
+                <a href="{{ route('eventos') }}">Eventos</a>
+                <i class="fa-solid fa-chevron-right"></i>
+                <span>{{ Str::limit($evento->nombre, 30) }}</span>
+            </nav>
         </div>
     </div>
 </section>
 
-{{-- Contenido --}}
 <section class="container section">
-    <div style="display:grid;grid-template-columns:1fr 320px;gap:2.5rem;align-items:start;">
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start;">
 
         {{-- Columna principal --}}
         <div>
-            <div class="admin-section">
-                <h2 style="font-family:var(--font-display);color:var(--green-800);margin-bottom:1rem;font-size:1.4rem;">
-                    <i class="fa-solid fa-circle-info fa-xs" style="color:var(--green-600);margin-right:.5rem;"></i>Sobre este evento
+            {{-- Imagen --}}
+            @if($evento->imagen)
+            @php $imgSrc = str_starts_with($evento->imagen,'http') ? $evento->imagen : asset('storage/'.$evento->imagen); @endphp
+            <div style="border-radius:var(--radius-lg);overflow:hidden;margin-bottom:2rem;box-shadow:0 4px 20px rgba(0,0,0,.1);">
+                <img src="{{ $imgSrc }}" alt="{{ $evento->nombre }}" style="width:100%;max-height:420px;object-fit:cover;">
+            </div>
+            @endif
+
+            {{-- Descripción --}}
+            @if($evento->descripcion)
+            <div style="background:#fff;border-radius:var(--radius-lg);padding:1.75rem;border:1px solid var(--gray-100);margin-bottom:1.5rem;">
+                <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;">
+                    <i class="fa-solid fa-circle-info" style="color:var(--green-600);"></i> Sobre este evento
                 </h2>
-                <p style="line-height:1.8;color:var(--gray-600);">{{ $evento->descripcion }}</p>
+                <p style="color:var(--gray-600);line-height:1.8;font-size:.95rem;">{{ $evento->descripcion }}</p>
             </div>
+            @endif
 
-            <div class="admin-section">
-                <h3 style="color:var(--gray-900);margin-bottom:1rem;font-size:1.1rem;">
-                    <i class="fa-solid fa-circle-info fa-xs" style="color:var(--green-600);margin-right:.5rem;"></i>Información
-                </h3>
-                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;">
-                    <div style="display:flex;gap:.75rem;align-items:flex-start;">
-                        <div style="width:36px;height:36px;background:var(--green-50);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <i class="fa-solid fa-calendar" style="color:var(--green-700);"></i>
-                        </div>
-                        <div>
-                            <p style="font-size:.75rem;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Fecha</p>
-                            <p style="font-size:.9rem;color:var(--gray-900);">{{ $evento->fecha->format('d/m/Y') }}</p>
-                        </div>
-                    </div>
-                    @if($evento->hora)
-                    <div style="display:flex;gap:.75rem;align-items:flex-start;">
-                        <div style="width:36px;height:36px;background:var(--green-50);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <i class="fa-solid fa-clock" style="color:var(--green-700);"></i>
-                        </div>
-                        <div>
-                            <p style="font-size:.75rem;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Hora</p>
-                            <p style="font-size:.9rem;color:var(--gray-900);">{{ \Carbon\Carbon::parse($evento->hora)->format('H:i') }}</p>
-                        </div>
-                    </div>
-                    @endif
-                    @if($evento->ubicacion)
-                    <div style="display:flex;gap:.75rem;align-items:flex-start;">
-                        <div style="width:36px;height:36px;background:var(--green-50);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <i class="fa-solid fa-location-dot" style="color:var(--green-700);"></i>
-                        </div>
-                        <div>
-                            <p style="font-size:.75rem;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Ubicación</p>
-                            <p style="font-size:.9rem;color:var(--gray-900);">{{ $evento->ubicacion }}</p>
-                        </div>
-                    </div>
-                    @endif
-                    @if($evento->organizador)
-                    <div style="display:flex;gap:.75rem;align-items:flex-start;">
-                        <div style="width:36px;height:36px;background:var(--green-50);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <i class="fa-solid fa-user-tie" style="color:var(--green-700);"></i>
-                        </div>
-                        <div>
-                            <p style="font-size:.75rem;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Organizador</p>
-                            <p style="font-size:.9rem;color:var(--gray-900);">{{ $evento->organizador }}</p>
-                        </div>
-                    </div>
-                    @endif
-                    @if($evento->contacto)
-                    <div style="display:flex;gap:.75rem;align-items:flex-start;">
-                        <div style="width:36px;height:36px;background:var(--green-50);border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <i class="fa-solid fa-phone" style="color:var(--green-700);"></i>
-                        </div>
-                        <div>
-                            <p style="font-size:.75rem;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:.05em;">Contacto</p>
-                            <p style="font-size:.9rem;color:var(--gray-900);">{{ $evento->contacto }}</p>
-                        </div>
-                    </div>
-                    @endif
-                </div>
-            </div>
-
-            {{-- Eventos relacionados --}}
-            @if($relacionados->count())
-            <div class="admin-section">
-                <h3 style="color:var(--gray-900);margin-bottom:1.25rem;font-size:1.1rem;">
-                    <i class="fa-solid fa-calendar-days fa-xs" style="color:var(--green-600);margin-right:.5rem;"></i>Otros eventos
-                </h3>
-                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;">
-                    @foreach($relacionados as $rel)
-                    @php $relImg = $rel->imagen ? (str_starts_with($rel->imagen,'http') ? $rel->imagen : asset('storage/'.$rel->imagen)) : null; @endphp
-                    <a href="{{ route('eventos.detalle', $rel) }}" style="text-decoration:none;display:block;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;transition:box-shadow .15s;" onmouseover="this.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'" onmouseout="this.style.boxShadow='none'">
-                        <div style="height:120px;overflow:hidden;background:var(--green-50);">
-                            @if($relImg)
-                                <img src="{{ $relImg }}" alt="{{ $rel->nombre }}" style="width:100%;height:100%;object-fit:cover;">
-                            @else
-                                <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-calendar-days" style="font-size:2rem;color:var(--green-300);"></i></div>
-                            @endif
-                        </div>
-                        <div style="padding:.75rem;">
-                            <p style="font-weight:700;color:#111;font-size:.9rem;margin-bottom:.25rem;">{{ $rel->nombre }}</p>
-                            <p style="font-size:.78rem;color:#6b7280;"><i class="fa-solid fa-calendar fa-xs"></i> {{ $rel->fecha->format('d/m/Y') }}</p>
-                        </div>
-                    </a>
-                    @endforeach
-                </div>
+            {{-- Organizador --}}
+            @if($evento->organizador)
+            <div style="background:#f0fdf4;border-radius:var(--radius-lg);padding:1.25rem 1.5rem;border:1px solid #bbf7d0;">
+                <p style="margin:0;font-size:.88rem;color:var(--green-800);">
+                    <i class="fa-solid fa-user-tie fa-xs"></i>
+                    <strong>Organizador:</strong> {{ $evento->organizador }}
+                </p>
             </div>
             @endif
         </div>
 
-        {{-- Sidebar --}}
-        <div style="position:sticky;top:calc(var(--navbar-height) + 1.5rem);">
-            <div class="admin-section" style="border-top:4px solid var(--green-700);">
-                <p style="font-size:.75rem;color:var(--gray-400);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem;">Precio de entrada</p>
-                @if($evento->precio > 0)
-                    <p style="font-family:var(--font-display);font-size:2.2rem;font-weight:800;color:var(--green-800);line-height:1;">
-                        ${{ number_format($evento->precio, 0, ',', '.') }}
-                        <span style="font-size:.9rem;font-weight:400;color:var(--gray-400);">COP</span>
-                    </p>
-                @else
-                    <p style="font-size:1.3rem;font-weight:700;color:var(--success);">
-                        <i class="fa-solid fa-circle-check fa-xs"></i> Entrada gratuita
-                    </p>
-                @endif
+        {{-- Sidebar info --}}
+        <div style="position:sticky;top:1.5rem;">
+            <div style="background:#fff;border-radius:var(--radius-lg);border:1px solid var(--gray-100);box-shadow:0 2px 16px rgba(0,0,0,.06);overflow:hidden;">
+                <div style="background:linear-gradient(135deg,var(--green-900),var(--green-700));padding:1.25rem 1.5rem;">
+                    <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">Información del evento</h3>
+                </div>
+                <div style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem;">
 
-                <hr style="border:none;border-top:1px solid var(--gray-200);margin:1.25rem 0;">
+                    {{-- Fecha --}}
+                    <div style="display:flex;align-items:center;gap:.75rem;">
+                        <div style="width:38px;height:38px;background:#f0fdf4;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-calendar" style="color:var(--green-700);font-size:.9rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;font-weight:600;letter-spacing:.06em;">Fecha</div>
+                            <div style="font-weight:600;color:var(--gray-800);font-size:.9rem;">{{ $evento->fecha->format('d \d\e F \d\e Y') }}</div>
+                        </div>
+                    </div>
 
-                @if($evento->precio > 0)
-                <form action="{{ route('cart.add') }}" method="POST" style="margin-bottom:.75rem;">
-                    @csrf
-                    <input type="hidden" name="id" value="{{ $evento->id }}">
-                    <input type="hidden" name="tipo" value="evento">
-                    <input type="hidden" name="nombre" value="{{ $evento->nombre }}">
-                    <input type="hidden" name="precio" value="{{ $evento->precio }}">
-                    <input type="hidden" name="imagen" value="{{ $evento->imagen }}">
-                    <input type="hidden" name="cantidad" value="1">
-                    <input type="hidden" name="opciones[fecha]" value="{{ $evento->fecha->format('Y-m-d') }}">
-                    <button type="submit" class="btn btn-block btn-lg" style="background-color:#f59e0b;color:white;width:100%;">
-                        <i class="fa-solid fa-cart-plus"></i> Añadir al carrito
-                    </button>
-                </form>
-                @endif
+                    {{-- Hora --}}
+                    @if($evento->hora)
+                    <div style="display:flex;align-items:center;gap:.75rem;">
+                        <div style="width:38px;height:38px;background:#f0fdf4;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-clock" style="color:var(--green-700);font-size:.9rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;font-weight:600;letter-spacing:.06em;">Hora</div>
+                            <div style="font-weight:600;color:var(--gray-800);font-size:.9rem;">{{ \Carbon\Carbon::parse($evento->hora)->format('H:i') }} hrs</div>
+                        </div>
+                    </div>
+                    @endif
 
-                <a href="{{ route('eventos') }}" class="btn btn-outline btn-block">
-                    <i class="fa-solid fa-arrow-left"></i> Ver todos los eventos
-                </a>
+                    {{-- Ubicación --}}
+                    @if($evento->ubicacion)
+                    <div style="display:flex;align-items:center;gap:.75rem;">
+                        <div style="width:38px;height:38px;background:#f0fdf4;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-location-dot" style="color:var(--green-700);font-size:.9rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;font-weight:600;letter-spacing:.06em;">Lugar</div>
+                            <div style="font-weight:600;color:var(--gray-800);font-size:.9rem;">{{ $evento->ubicacion }}</div>
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Precio --}}
+                    <div style="display:flex;align-items:center;gap:.75rem;">
+                        <div style="width:38px;height:38px;background:{{ $evento->precio > 0 ? '#fef9c3' : '#f0fdf4' }};border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-ticket" style="color:{{ $evento->precio > 0 ? '#ca8a04' : 'var(--green-700)' }};font-size:.9rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;font-weight:600;letter-spacing:.06em;">Entrada</div>
+                            @if($evento->precio > 0)
+                            <div style="font-weight:700;color:#ca8a04;font-size:1rem;">${{ number_format($evento->precio, 0, ',', '.') }} COP</div>
+                            @else
+                            <div style="font-weight:700;color:var(--green-700);font-size:.9rem;"><i class="fa-solid fa-circle-check fa-xs"></i> Gratuita</div>
+                            @endif
+                        </div>
+                    </div>
+
+                    {{-- Contacto --}}
+                    @if($evento->contacto)
+                    <div style="display:flex;align-items:center;gap:.75rem;">
+                        <div style="width:38px;height:38px;background:#f0fdf4;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                            <i class="fa-solid fa-phone" style="color:var(--green-700);font-size:.9rem;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;font-weight:600;letter-spacing:.06em;">Contacto</div>
+                            <div style="font-weight:600;color:var(--gray-800);font-size:.9rem;">{{ $evento->contacto }}</div>
+                        </div>
+                    </div>
+                    @endif
+
+                </div>
+
+                <div style="padding:0 1.5rem 1.5rem;">
+                    <a href="{{ route('eventos') }}" class="btn btn-outline btn-sm" style="width:100%;text-align:center;display:block;">
+                        <i class="fa-solid fa-arrow-left fa-xs"></i> Ver todos los eventos
+                    </a>
+                </div>
             </div>
         </div>
 
     </div>
 </section>
 
+</main>
 @endsection

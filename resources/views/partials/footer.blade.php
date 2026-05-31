@@ -50,7 +50,7 @@
 
         <div class="footer-bottom">
             <p>&copy; {{ date('Y') }} FlowZone. Todos los derechos reservados.</p>
-            <p>Hecho con <i class="fa-solid fa-heart" style="color:#ef4444;"></i> en Ortega, Tolima</p>
+         <p>Hecho en Ortega, Tolima</p>
         </div>
     </div>
 </footer>

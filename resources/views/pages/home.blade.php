@@ -5,9 +5,7 @@
 @section('content')
 
 @php
-    $heroImgs          = \App\Models\HeroImage::where('activa', true)->where('seccion', 'hero')->where(function ($q) {
-        $q->whereNull('empresa_id')->orWhereHas('empresa', fn($e) => $e->where('aprobado', true));
-    })->orderBy('orden')->get();
+    $heroImgs          = \App\Models\HeroImage::where('activa', true)->where('seccion', 'hero')->orderBy('orden')->get();
     $categoriasLugares = \App\Models\Lugar::distinct()->pluck('categoria')->filter()->sort()->values();
     $categoriasEventos = \App\Models\Evento::distinct()->pluck('categoria')->filter()->sort()->values();
 @endphp
@@ -69,20 +67,30 @@
 </section>
 
 {{-- STATS --}}
-<div class="container">
-    <div class="stats-strip">
-        <div class="stats-strip-item"><h3>{{ $totalLugares ?? '20+' }}</h3><p>Lugares turísticos</p></div>
-        <div class="stats-strip-item"><h3>{{ $totalHoteles ?? '10+' }}</h3><p>Hoteles y hospedajes</p></div>
-        <div class="stats-strip-item"><h3>{{ $totalEventos ?? '15+' }}</h3><p>Eventos al año</p></div>
-        <div class="stats-strip-item"><h3>500+</h3><p>Visitantes felices</p></div>
+<div style="background:var(--green-900);">
+    <div class="container">
+        <div class="stats-strip" style="border-radius:0;background:transparent;box-shadow:none;">
+            <div class="stats-strip-item"><h3 style="color:#4ade80;">{{ $totalLugares ?? '20+' }}</h3><p style="color:rgba(255,255,255,.6);">Lugares turísticos</p></div>
+            <div class="stats-strip-item"><h3 style="color:#4ade80;">{{ $totalHoteles ?? '10+' }}</h3><p style="color:rgba(255,255,255,.6);">Hoteles y hospedajes</p></div>
+            <div class="stats-strip-item"><h3 style="color:#4ade80;">{{ $totalEventos ?? '15+' }}</h3><p style="color:rgba(255,255,255,.6);">Eventos al año</p></div>
+            <div class="stats-strip-item"><h3 style="color:#4ade80;">500+</h3><p style="color:rgba(255,255,255,.6);">Visitantes felices</p></div>
+        </div>
     </div>
 </div>
 
 {{-- DESTINOS --}}
-<section class="section" style="background: var(--white);">
+<section class="section" style="background:#fff;">
     <div class="container">
         <div class="section-header">
-            <div><p class="section-label"><i class="fa-solid fa-map-pin"></i> Destinos</p><h2 class="section-title">Lugares que Debes Visitar</h2></div>
+            <div>
+                <p class="section-label" style="color:var(--green-700);font-weight:700;">
+                    <i class="fa-solid fa-map-pin"></i> Destinos
+                </p>
+                <h2 class="section-title" style="font-size:2rem;">
+                    Lugares que <span style="color:var(--green-700);">Debes Visitar</span>
+                </h2>
+                <p style="color:var(--gray-500);font-size:.92rem;margin-top:.3rem;">Los rincones más especiales de Ortega, Tolima</p>
+            </div>
             <a href="{{ route('lugares') }}" class="btn btn-outline">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
         </div>
         <div class="grid">
@@ -92,16 +100,14 @@
                     @if($lugar->imagen)
                         @php $imgSrc = str_starts_with($lugar->imagen,'http') ? $lugar->imagen : asset('storage/'.$lugar->imagen); @endphp
                         <img src="{{ $imgSrc }}" alt="{{ $lugar->nombre }}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-mountain-sun\'></i></div>'">
-                    @else
-                        <div class="card-img-fallback"><i class="fa-solid fa-mountain-sun"></i></div>
-                    @endif
+                    @else<div class="card-img-fallback"><i class="fa-solid fa-mountain-sun"></i></div>@endif
                     @if($lugar->categoria)<span class="card-badge">{{ $lugar->categoria }}</span>@endif
                     <div class="card-img-overlay"></div>
                 </div>
                 <div class="card-content">
                     <h3>{{ $lugar->nombre }}</h3>
                     <p class="card-meta"><i class="fa-solid fa-location-dot"></i> {{ $lugar->ubicacion ?? 'Ortega, Tolima' }}</p>
-                    <p class="card-desc" style="font-size:.875rem;color:var(--gray-600);line-height:1.5;">{{ Str::limit($lugar->descripcion, 80) }}</p>
+                    <p class="card-desc">{{ Str::limit($lugar->descripcion, 80) }}</p>
                     <div class="card-actions">
                         <a href="{{ route('lugares.detalle', $lugar) }}" class="btn btn-outline btn-sm">Ver más</a>
                         @auth<a href="{{ route('reservar') }}" class="btn btn-primary btn-sm">Reservar</a>
@@ -116,11 +122,54 @@
     </div>
 </section>
 
+{{-- BANNER INTERMEDIO --}}
+<div style="background:linear-gradient(135deg,#0f3320 0%,#1a5c35 50%,#0f3320 100%);padding:4rem 0;text-align:center;position:relative;overflow:hidden;">
+    <div style="position:absolute;inset:0;opacity:.05;background-image:repeating-linear-gradient(45deg,#fff 0,#fff 1px,transparent 0,transparent 50%);background-size:20px 20px;"></div>
+    <div class="container" style="position:relative;z-index:1;">
+        <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);border-radius:2rem;padding:.4rem 1.2rem;margin-bottom:1rem;">
+            <i class="fa-solid fa-compass" style="color:#4ade80;font-size:.8rem;"></i>
+            <span style="color:#4ade80;font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;">Experiencias únicas</span>
+        </div>
+        <h2 style="color:#fff;font-size:2.2rem;font-weight:800;margin-bottom:.75rem;line-height:1.2;">
+            Ortega, Tolima <span style="color:#4ade80;">te espera</span>
+        </h2>
+        <p style="color:rgba(255,255,255,.65);max-width:520px;margin:0 auto 2rem;font-size:.95rem;line-height:1.7;">
+            Naturaleza, cultura y gastronomía en el corazón del Tolima. Una aventura que no olvidarás.
+        </p>
+        <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;">
+            <div style="text-align:center;">
+                <i class="fa-solid fa-tree" style="color:#4ade80;font-size:1.5rem;display:block;margin-bottom:.4rem;"></i>
+                <span style="color:rgba(255,255,255,.7);font-size:.82rem;">Ecoturismo</span>
+            </div>
+            <div style="text-align:center;">
+                <i class="fa-solid fa-utensils" style="color:#4ade80;font-size:1.5rem;display:block;margin-bottom:.4rem;"></i>
+                <span style="color:rgba(255,255,255,.7);font-size:.82rem;">Gastronomía</span>
+            </div>
+            <div style="text-align:center;">
+                <i class="fa-solid fa-guitar" style="color:#4ade80;font-size:1.5rem;display:block;margin-bottom:.4rem;"></i>
+                <span style="color:rgba(255,255,255,.7);font-size:.82rem;">Cultura</span>
+            </div>
+            <div style="text-align:center;">
+                <i class="fa-solid fa-water" style="color:#4ade80;font-size:1.5rem;display:block;margin-bottom:.4rem;"></i>
+                <span style="color:rgba(255,255,255,.7);font-size:.82rem;">Ríos y cascadas</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- EVENTOS --}}
-<section class="section" style="background: var(--gray-50);">
+<section class="section" style="background:#f8fafc;">
     <div class="container">
         <div class="section-header">
-            <div><p class="section-label"><i class="fa-solid fa-compass"></i> Experiencias</p><h2 class="section-title">Vive Ortega al Máximo</h2></div>
+            <div>
+                <p class="section-label" style="color:#6366f1;font-weight:700;">
+                    <i class="fa-solid fa-compass"></i> Experiencias
+                </p>
+                <h2 class="section-title" style="font-size:2rem;">
+                    Vive Ortega <span style="color:#6366f1;">al Máximo</span>
+                </h2>
+                <p style="color:var(--gray-500);font-size:.92rem;margin-top:.3rem;">Eventos y actividades para todos los gustos</p>
+            </div>
             <a href="{{ route('eventos') }}" class="btn btn-outline">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
         </div>
         <div class="grid">
@@ -155,27 +204,27 @@
 </section>
 
 {{-- HOTELES --}}
-<section class="section" style="background: var(--white);">
+<section class="section" style="background:#fff;">
     <div class="container">
         <div class="section-header">
-            <div><p class="section-label"><i class="fa-solid fa-hotel"></i> Alojamiento</p><h2 class="section-title">Hoteles Recomendados</h2></div>
+            <div>
+                <p class="section-label" style="color:#f59e0b;font-weight:700;">
+                    <i class="fa-solid fa-hotel"></i> Alojamiento
+                </p>
+                <h2 class="section-title" style="font-size:2rem;">
+                    Hoteles <span style="color:#f59e0b;">Recomendados</span>
+                </h2>
+                <p style="color:var(--gray-500);font-size:.92rem;margin-top:.3rem;">Descansa y disfruta con la mejor comodidad</p>
+            </div>
             <a href="{{ route('hoteles') }}" class="btn btn-outline">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
         </div>
         <div class="grid">
             @forelse($hoteles_destacados ?? [] as $hotel)
             <div class="card animate-on-scroll">
                 <div class="card-img-wrap">
-                    @php
-                        $hImgSrc = null;
-                        if ($hotel->imagen) {
-                            $hImgSrc = str_starts_with($hotel->imagen,'http') ? $hotel->imagen : asset('storage/'.$hotel->imagen);
-                        } elseif ($hotel->empresa_id) {
-                            $hFallback = \App\Models\EmpresaImagen::where('empresa_id', $hotel->empresa_id)->where('activa', true)->orderBy('orden')->first();
-                            if ($hFallback) { $hImgSrc = str_starts_with($hFallback->ruta,'http') ? $hFallback->ruta : asset('storage/'.$hFallback->ruta); }
-                        }
-                    @endphp
-                    @if($hImgSrc)
-                        <img src="{{ $hImgSrc }}" alt="{{ $hotel->nombre }}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-hotel\'></i></div>'">
+                    @if($hotel->imagen)
+                        @php $imgSrc = str_starts_with($hotel->imagen,'http') ? $hotel->imagen : asset('storage/'.$hotel->imagen); @endphp
+                        <img src="{{ $imgSrc }}" alt="{{ $hotel->nombre }}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-hotel\'></i></div>'">
                     @else<div class="card-img-fallback"><i class="fa-solid fa-hotel"></i></div>@endif
                     <span class="card-badge card-badge-accent"><i class="fa-solid fa-star fa-xs"></i> Destacado</span>
                     <div class="card-img-overlay"></div>
@@ -203,10 +252,18 @@
 {{-- PLANES TURÍSTICOS --}}
 @php $planes_home = \App\Models\PlanTuristico::where('publicado', true)->latest()->take(3)->get(); @endphp
 @if($planes_home->count() > 0)
-<section class="section" style="background:var(--gray-50);">
+<section class="section" style="background:linear-gradient(135deg,#f0fdf4 0%,#dcfce7 100%);border-top:3px solid #86efac;">
     <div class="container">
         <div class="section-header">
-            <div><p class="section-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Planes</p><h2 class="section-title">Planes Turísticos</h2></div>
+            <div>
+                <p class="section-label" style="color:var(--green-700);font-weight:700;">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Planes especiales
+                </p>
+                <h2 class="section-title" style="font-size:2rem;">
+                    Planes Turísticos <span style="color:var(--green-700);">con Descuento</span>
+                </h2>
+                <p style="color:var(--gray-500);font-size:.92rem;margin-top:.3rem;">Combos exclusivos con 20% de ahorro garantizado</p>
+            </div>
             <a href="{{ route('planes.publico') }}" class="btn btn-outline">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
         </div>
         <div class="grid">
@@ -216,17 +273,13 @@
                     @if($plan->imagen ?? null)
                         @php $imgSrc = str_starts_with($plan->imagen,'http') ? $plan->imagen : asset('storage/'.$plan->imagen); @endphp
                         <img src="{{ $imgSrc }}" alt="{{ $plan->titulo }}" loading="lazy">
-                    @else
-                        <div class="card-img-fallback"><i class="fa-solid fa-map-location-dot"></i></div>
-                    @endif
-                    <span class="card-badge card-badge-accent">-20%</span>
+                    @else<div class="card-img-fallback"><i class="fa-solid fa-map-location-dot"></i></div>@endif
+                    <span class="card-badge" style="background:#ef4444;">-20% DCTO</span>
                     <div class="card-img-overlay"></div>
                 </div>
                 <div class="card-content">
                     <h3>{{ $plan->titulo }}</h3>
-                    @if($plan->descripcion ?? null)
-                    <p class="card-desc">{{ Str::limit($plan->descripcion, 80) }}</p>
-                    @endif
+                    @if($plan->descripcion ?? null)<p class="card-desc">{{ Str::limit($plan->descripcion, 80) }}</p>@endif
                     @if($plan->precio_total ?? null)
                     <p style="font-size:.9rem;color:var(--green-700);font-weight:700;margin-bottom:.5rem;">
                         <i class="fa-solid fa-tag"></i>
@@ -234,9 +287,7 @@
                         ${{ number_format($plan->precio_total * 0.8, 0, ',', '.') }} COP
                     </p>
                     @endif
-                    <div class="card-actions">
-                        <a href="{{ route('planes.publico') }}" class="btn btn-primary btn-sm">Ver plan</a>
-                    </div>
+                    <div class="card-actions"><a href="{{ route('planes.publico') }}" class="btn btn-primary btn-sm">Ver plan</a></div>
                 </div>
             </div>
             @endforeach
@@ -247,10 +298,18 @@
 
 {{-- BLOG --}}
 @if(isset($blog_recientes) && $blog_recientes->count() > 0)
-<section class="section" style="background: var(--white);">
+<section class="section" style="background:#f8fafc;">
     <div class="container">
         <div class="section-header">
-            <div><p class="section-label"><i class="fa-solid fa-newspaper"></i> Blog</p><h2 class="section-title">Últimas Noticias</h2></div>
+            <div>
+                <p class="section-label" style="color:#0ea5e9;font-weight:700;">
+                    <i class="fa-solid fa-newspaper"></i> Blog
+                </p>
+                <h2 class="section-title" style="font-size:2rem;">
+                    Últimas <span style="color:#0ea5e9;">Noticias</span>
+                </h2>
+                <p style="color:var(--gray-500);font-size:.92rem;margin-top:.3rem;">Historias, tips y novedades de Ortega</p>
+            </div>
             <a href="{{ route('blog') }}" class="btn btn-outline">Ver todos <i class="fa-solid fa-arrow-right"></i></a>
         </div>
         <div class="blog-grid">
@@ -260,9 +319,7 @@
                 <div class="card-img-wrap" style="width:240px;flex-shrink:0;height:auto;">
                     @if($postImg)
                         <img src="{{ $postImg }}" alt="{{ $post->titulo }}" loading="lazy" style="height:100%;min-height:180px;" onerror="this.parentElement.innerHTML='<div class=\'card-img-fallback\'><i class=\'fa-solid fa-newspaper\'></i></div>'">
-                    @else
-                        <div class="card-img-fallback" style="min-height:180px;"><i class="fa-solid fa-newspaper"></i></div>
-                    @endif
+                    @else<div class="card-img-fallback" style="min-height:180px;"><i class="fa-solid fa-newspaper"></i></div>@endif
                 </div>
                 <div class="card-content" style="flex:1;">
                     <p class="card-meta"><i class="fa-solid fa-calendar"></i> {{ $post->fecha_publicacion?->format('d M Y') ?? $post->created_at->format('d M Y') }}</p>
@@ -277,12 +334,50 @@
 </section>
 @endif
 
-{{-- CTA FINAL --}}
-<section class="section" style="background: linear-gradient(135deg, var(--green-900) 0%, var(--green-700) 100%); text-align: center;">
+{{-- GALERÍA DE CARDS --}}
+@php $cards = \App\Models\HeroImage::where('activa', true)->where('seccion', 'cards')->orderBy('orden')->get(); @endphp
+@if($cards->count() > 0)
+<section class="section" style="background:var(--green-900);">
     <div class="container">
-        <p class="section-label" style="color:var(--green-200);justify-content:center;"><i class="fa-solid fa-compass"></i> ¿Listo para explorar?</p>
-        <h2 class="section-title" style="color:var(--white);margin-bottom:1rem;">Planifica tu Visita a Ortega</h2>
-        <p style="color:rgba(255,255,255,.75);max-width:500px;margin:0 auto 2rem;line-height:1.7;">Descubre todo lo que Ortega, Tolima tiene para ofrecerte. Naturaleza, cultura, gastronomía y hospitalidad en un solo lugar.</p>
+        <div class="section-header">
+            <div>
+                <p class="section-label" style="color:#4ade80;font-weight:700;">
+                    <i class="fa-solid fa-camera"></i> Fotografías
+                </p>
+                <h2 class="section-title" style="color:#fff;font-size:2rem;">
+                    Galería de <span style="color:#4ade80;">Paisajes</span>
+                </h2>
+                <p style="color:rgba(255,255,255,.55);font-size:.92rem;margin-top:.3rem;">La belleza natural de Ortega en imágenes</p>
+            </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem;">
+            @foreach($cards as $card)
+            @php $imgSrc = str_starts_with($card->url,'http') ? $card->url : asset('storage/'.$card->url); @endphp
+            <div style="border-radius:var(--radius-lg);overflow:hidden;aspect-ratio:4/3;position:relative;box-shadow:0 4px 20px rgba(0,0,0,.3);">
+                <img src="{{ $imgSrc }}" alt="{{ $card->titulo ?? 'Ortega, Tolima' }}"
+                     style="width:100%;height:100%;object-fit:cover;transition:transform .4s ease;"
+                     onmouseover="this.style.transform='scale(1.05)'"
+                     onmouseout="this.style.transform='scale(1)'">
+                @if($card->titulo)
+                <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 100%);padding:1rem .85rem .75rem;">
+                    <p style="color:#fff;font-size:.85rem;font-weight:600;margin:0;">{{ $card->titulo }}</p>
+                </div>
+                @endif
+            </div>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
+
+{{-- CTA FINAL --}}
+<section class="section" style="background:linear-gradient(135deg,var(--green-900) 0%,var(--green-700) 100%);text-align:center;">
+    <div class="container">
+        <p class="section-label" style="color:#4ade80;justify-content:center;font-weight:700;"><i class="fa-solid fa-compass"></i> ¿Listo para explorar?</p>
+        <h2 class="section-title" style="color:#fff;font-size:2.2rem;margin-bottom:1rem;">
+            Planifica tu Visita<br><span style="color:#4ade80;">a Ortega</span>
+        </h2>
+        <p style="color:rgba(255,255,255,.7);max-width:500px;margin:0 auto 2rem;line-height:1.7;">Descubre todo lo que Ortega, Tolima tiene para ofrecerte. Naturaleza, cultura, gastronomía y hospitalidad en un solo lugar.</p>
         <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
             <a href="{{ route('lugares') }}" class="btn btn-white btn-lg"><i class="fa-solid fa-map-pin"></i> Explorar Lugares</a>
             <a href="{{ route('contacto') }}" class="btn btn-glass btn-lg"><i class="fa-solid fa-envelope"></i> Contáctanos</a>

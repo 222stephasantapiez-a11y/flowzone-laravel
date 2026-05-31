@@ -12,6 +12,7 @@ use App\Models\BlogPost;
 use App\Models\Calificacion;
 use App\Models\Favorito;
 use App\Models\HeroImage;
+use App\Models\Habitacion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -25,7 +26,6 @@ class PageController extends Controller
             'lugares_destacados' => Lugar::latest()->take(3)->get(),
             'eventos_proximos'   => Evento::where('fecha', '>=', now())->orderBy('fecha')->take(3)->get(),
             'blog_recientes'     => BlogPost::where('publicado', true)->latest('fecha_publicacion')->take(3)->get(),
-            // ── Imágenes hero: filtradas por empresa aprobada (se sobreescribe en la vista también)
             'heroImgs'           => HeroImage::where('activa', true)->where('seccion', 'hero')->where(function ($q) {
                 $q->whereNull('empresa_id')->orWhereHas('empresa', fn($e) => $e->where('aprobado', true));
             })->orderBy('orden')->get(),
@@ -273,7 +273,8 @@ class PageController extends Controller
                 'url'         => route('hoteles.detalle', $h),
                 'precio'      => '$' . number_format($h->precio, 0, ',', '.') . ' COP/noche',
             ]);
-$puntos = collect($lugares)->merge(collect($hoteles))->values();
+
+        $puntos = collect($lugares)->merge(collect($hoteles))->values();
         return view('pages.maps', compact('puntos'));
     }
 
@@ -340,7 +341,58 @@ $puntos = collect($lugares)->merge(collect($hoteles))->values();
             return redirect()->route('hoteles')->with('error', 'Hotel no disponible.');
         }
 
-        return view('pages.reserva', ['hotel' => $hotel, 'error' => null, 'success' => null]);
+        $fechaEntrada = $request->fecha_entrada ?? now()->format('Y-m-d');
+        $fechaSalida  = $request->fecha_salida  ?? now()->addDay()->format('Y-m-d');
+
+        $habitacionesOcupadas = Reserva::where('hotel_id', $hotel->id)
+            ->whereNotIn('estado', ['cancelada'])
+            ->whereNotNull('habitacion_id')
+            ->where('fecha_entrada', '<', $fechaSalida)
+            ->where('fecha_salida',  '>', $fechaEntrada)
+            ->pluck('habitacion_id');
+
+        $habitaciones = Habitacion::where('hotel_id', $hotel->id)
+            ->where('disponible', true)
+            ->orderBy('precio_noche')
+            ->get()
+            ->map(function ($hab) use ($habitacionesOcupadas) {
+                $hab->ocupada = $habitacionesOcupadas->contains($hab->id);
+                return $hab;
+            });
+
+        return view('pages.reserva', compact('hotel', 'habitaciones'));
+    }
+
+    public function habitacionesDisponibles(Request $request)
+    {
+        $hotel = Hotel::findOrFail($request->hotel_id);
+
+        $ocupadas = Reserva::where('hotel_id', $hotel->id)
+            ->whereNotIn('estado', ['cancelada'])
+            ->whereNotNull('habitacion_id')
+            ->where('fecha_entrada', '<', $request->fecha_salida)
+            ->where('fecha_salida',  '>', $request->fecha_entrada)
+            ->pluck('habitacion_id');
+
+        $habitaciones = Habitacion::where('hotel_id', $hotel->id)
+            ->where('disponible', true)
+            ->when($request->filled('num_personas'), fn($q) =>
+                $q->where('capacidad_personas', '>=', (int) $request->num_personas)
+            )
+            ->orderBy('precio_noche')
+            ->get()
+            ->map(fn($h) => [
+                'id'        => $h->id,
+                'nombre'    => $h->nombre,
+                'tipo'      => $h->tipo,
+                'tipo_cama' => $h->tipo_cama,
+                'capacidad' => (int) $h->capacidad_personas,
+                'precio'    => (float) $h->precio_noche,
+                'amenidades'=> $h->amenidades ?? [],
+                'ocupada'   => $ocupadas->contains($h->id),
+            ]);
+
+        return response()->json($habitaciones);
     }
 
     public function reservaStore(Request $request)
@@ -352,17 +404,39 @@ $puntos = collect($lugares)->merge(collect($hoteles))->values();
         }
 
         $request->validate([
-            'fecha_entrada' => ['required', 'date', 'after_or_equal:today'],
-            'fecha_salida'  => ['required', 'date', 'after:fecha_entrada'],
-            'num_personas'  => ['required', 'integer', 'min:1', 'max:' . ($hotel->capacidad ?? 9999)],
+            'fecha_entrada'  => ['required', 'date', 'after_or_equal:today'],
+            'fecha_salida'   => ['required', 'date', 'after:fecha_entrada'],
+            'num_personas'   => ['required', 'integer', 'min:1', 'max:' . ($hotel->capacidad ?? 9999)],
+            'habitacion_id'  => ['nullable', 'exists:habitaciones,id'],
         ], [
             'fecha_entrada.after_or_equal' => 'La fecha de entrada no puede ser anterior a hoy.',
             'fecha_salida.after'           => 'La fecha de salida debe ser posterior a la entrada.',
             'num_personas.max'             => 'Excede la capacidad del hotel (' . ($hotel->capacidad ?? 'sin límite') . ' personas).',
         ]);
 
-        $dias  = now()->parse($request->fecha_entrada)->diffInDays($request->fecha_salida);
-        $total = $dias * $hotel->precio;
+        $dias = now()->parse($request->fecha_entrada)->diffInDays($request->fecha_salida);
+
+        $habitacion = null;
+        if ($request->filled('habitacion_id')) {
+            $habitacion = Habitacion::where('id', $request->habitacion_id)
+                ->where('hotel_id', $hotel->id)
+                ->where('disponible', true)
+                ->firstOrFail();
+
+            $conflicto = Reserva::where('habitacion_id', $habitacion->id)
+                ->whereNotIn('estado', ['cancelada'])
+                ->where('fecha_entrada', '<', $request->fecha_salida)
+                ->where('fecha_salida',  '>', $request->fecha_entrada)
+                ->exists();
+
+            if ($conflicto) {
+                return back()->with('error', 'La habitación seleccionada no está disponible para esas fechas.')->withInput();
+            }
+
+            $total = $dias * $habitacion->precio_noche;
+        } else {
+            $total = $dias * $hotel->precio;
+        }
 
         if ($total <= 0) {
             return back()->with('error', 'Este hotel no tiene precio configurado. Contacta al administrador.');
@@ -373,6 +447,7 @@ $puntos = collect($lugares)->merge(collect($hoteles))->values();
         $reserva = Reserva::create([
             'usuario_id'      => Auth::id(),
             'hotel_id'        => $hotel->id,
+            'habitacion_id'   => $habitacion?->id,
             'fecha_entrada'   => $request->fecha_entrada,
             'fecha_salida'    => $request->fecha_salida,
             'num_personas'    => $request->num_personas,
@@ -401,25 +476,12 @@ $puntos = collect($lugares)->merge(collect($hoteles))->values();
         return redirect()->away($widgetUrl);
     }
 
-    public function misReservas(Request $request)
+    public function misReservas()
     {
         $reservas = Reserva::with('hotel')
             ->where('usuario_id', Auth::id())
             ->latest()
             ->get();
-
-        if ($request->filled('cancelar')) {
-            $reserva = Reserva::where('id', $request->cancelar)
-                ->where('usuario_id', Auth::id())
-                ->where('estado', 'pendiente')
-                ->first();
-
-            if ($reserva) {
-                $reserva->update(['estado' => 'cancelada']);
-                return redirect()->route('mis-reservas')->with('success', 'Reserva cancelada.');
-            }
-            return redirect()->route('mis-reservas')->with('error', 'No se pudo cancelar la reserva.');
-        }
 
         return view('pages.mis_reservas', [
             'reservas'      => $reservas,
@@ -428,6 +490,23 @@ $puntos = collect($lugares)->merge(collect($hoteles))->values();
             'canceladas'    => $reservas->where('estado', 'cancelada'),
             'total_gastado' => $reservas->whereNotIn('estado', ['cancelada'])->sum('precio_total'),
         ]);
+    }
+
+    public function cancelarReserva(Reserva $reserva)
+    {
+        // Solo el dueño puede cancelar
+        if ($reserva->usuario_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Solo se pueden cancelar reservas pendientes
+        if ($reserva->estado !== 'pendiente') {
+            return back()->with('error', 'Solo puedes cancelar reservas pendientes.');
+        }
+
+        $reserva->update(['estado' => 'cancelada']);
+
+        return back()->with('success', 'Reserva cancelada correctamente.');
     }
 
     // ── Favoritos (requiere auth) ─────────────────────────────

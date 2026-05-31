@@ -28,38 +28,29 @@
             padding: 3rem;
         }
 
-        .auth-panel-left::before {
-            content: '';
+        /* Carrusel slides */
+        .carousel-slide {
             position: absolute;
             inset: 0;
-            background: url('https://i.pinimg.com/736x/88/56/0e/88560eacc1be906f0925fc8dfc234d06.jpg') center/cover no-repeat;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out;
         }
+        .carousel-slide.active { opacity: 1; }
 
         .auth-panel-left::after {
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(to bottom, rgba(27,67,50,.55) 0%, rgba(27,67,50,.88) 100%);
+            background: linear-gradient(to bottom, rgba(27,67,50,.45) 0%, rgba(27,67,50,.88) 100%);
+            z-index: 1;
         }
 
         .auth-brand {
             position: relative;
             z-index: 2;
             margin-bottom: 2.5rem;
-        }
-
-        .auth-brand-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 52px;
-            height: 52px;
-            background: linear-gradient(135deg, var(--green-700), var(--green-600));
-            border-radius: var(--radius-md);
-            margin-bottom: 1.2rem;
-            font-size: 1.4rem;
-            color: var(--white);
-            box-shadow: 0 8px 24px rgba(64,145,108,.4);
         }
 
         .auth-brand h1 {
@@ -160,7 +151,6 @@
             color: var(--green-700);
         }
 
-        /* Tabs de rol */
         .auth-tabs {
             display: flex;
             gap: 3px;
@@ -214,7 +204,6 @@
             background: var(--green-600);
         }
 
-        /* Campos */
         .auth-field { margin-bottom: 1.1rem; }
 
         .auth-field label {
@@ -259,7 +248,6 @@
 
         .auth-field input::placeholder { color: var(--gray-400); }
 
-        /* Alerta */
         .auth-alert-error {
             background: #fef2f2;
             border: 1px solid #fecaca;
@@ -274,7 +262,7 @@
             align-items: center;
             gap: .5rem;
         }
-        /* Alerta éxito */
+
         .auth-alert-success {
             background: #f0fdf4;
             border: 1px solid #bbf7d0;
@@ -290,7 +278,6 @@
             gap: .5rem;
         }
 
-        /* Botón principal */
         .auth-submit {
             width: 100%;
             padding: .9rem 1rem;
@@ -313,9 +300,6 @@
             box-shadow: 0 5px 18px rgba(45,106,79,.3);
         }
 
-        .auth-submit:active { transform: translateY(0); }
-
-        /* Links */
         .auth-links {
             display: flex;
             justify-content: space-between;
@@ -333,7 +317,6 @@
 
         .auth-links a:hover { color: var(--green-800); text-decoration: underline; }
 
-        /* Divisor */
         .auth-divider {
             display: flex;
             align-items: center;
@@ -352,7 +335,6 @@
             background: var(--gray-200);
         }
 
-        /* Acceso rápido */
         .auth-quick {
             border: 1px solid var(--gray-200);
             border-radius: var(--radius-md);
@@ -400,6 +382,20 @@
         .icon-empresa { background: #3b82f6; }
         .icon-admin   { background: #8b5cf6; }
 
+        /* Botón volver */
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            color: var(--gray-500);
+            font-size: .82rem;
+            font-weight: 500;
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+            transition: color .2s;
+        }
+        .btn-back:hover { color: var(--green-700); }
+
         @media (max-width: 860px) {
             .auth-panel-left { display: none; }
             .auth-panel-right { width: 100%; padding: 2rem 1.5rem; }
@@ -408,12 +404,28 @@
 </head>
 <body>
 
-{{-- Panel izquierdo --}}
+{{-- Panel izquierdo con carrusel --}}
 <div class="auth-panel-left">
+
+    {{-- Slides del carrusel --}}
+    @php
+        $slides = \App\Models\HeroImage::where('activa', true)->where('seccion', 'hero')->orderBy('orden')->get();
+        if ($slides->isEmpty()) {
+            $slides = collect([
+                (object)['url' => 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200'],
+                (object)['url' => 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=1200'],
+                (object)['url' => 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200'],
+            ]);
+        }
+    @endphp
+
+    @foreach($slides as $i => $slide)
+    @php $imgUrl = str_starts_with($slide->url, 'http') ? $slide->url : asset('storage/' . $slide->url); @endphp
+    <div class="carousel-slide {{ $i === 0 ? 'active' : '' }}"
+         style="background-image:url('{{ $imgUrl }}');"></div>
+    @endforeach
+
     <div class="auth-brand">
-        <div class="">
-            <i ></i>
-        </div>
         <h1>Flow<span>Zone</span></h1>
         <p>Turismo · Ortega, Tolima</p>
     </div>
@@ -435,22 +447,21 @@
 
 {{-- Panel derecho --}}
 <div class="auth-panel-right">
+
+    {{-- Botón volver --}}
+    <a href="{{ route('home') }}" class="btn-back">
+        <i class="fa-solid fa-arrow-left fa-xs"></i> Volver al inicio
+    </a>
+
     <div class="auth-heading">
         <div class="auth-eyebrow">Bienvenido de vuelta</div>
         <h2>Ingresa a tu<br><em>cuenta</em></h2>
     </div>
 
-    {{-- Tabs de rol --}}
     <div class="auth-tabs">
-        <button type="button" class="auth-tab active" onclick="selRol(this,'usuario')" id="tab-usuario">
-            Visitante
-        </button>
-        <button type="button" class="auth-tab" onclick="selRol(this,'empresa')" id="tab-empresa">
-            Empresa
-        </button>
-        <button type="button" class="auth-tab" onclick="selRol(this,'admin')" id="tab-admin">
-            Administrador
-        </button>
+        <button type="button" class="auth-tab active" onclick="selRol(this,'usuario')" id="tab-usuario">Visitante</button>
+        <button type="button" class="auth-tab" onclick="selRol(this,'empresa')" id="tab-empresa">Empresa</button>
+        <button type="button" class="auth-tab" onclick="selRol(this,'admin')" id="tab-admin">Administrador</button>
     </div>
 
     <div class="auth-role-badge" id="rol-badge">Ingresando como Visitante</div>
@@ -494,9 +505,14 @@
         </button>
     </form>
 
-    <div class="auth-links">
-        <a href="{{ route('registro') }}">¿No tienes cuenta? Regístrate</a>
+    <div class="auth-links" style="justify-content:center;">
         <a href="{{ route('password.request') }}">¿Olvidaste tu contraseña?</a>
+    </div>
+    <div style="margin-top:1.25rem;text-align:center;">
+        <p style="font-size:.85rem;color:var(--gray-500);margin-bottom:.75rem;">¿Aún no tienes cuenta?</p>
+        <a href="{{ route('registro') }}" class="btn btn-outline" style="width:100%;display:block;text-align:center;">
+            <i class="fa-solid fa-user-plus fa-xs"></i> Crear cuenta gratis
+        </a>
     </div>
 
     <div class="auth-divider">acceso rápido</div>
@@ -528,6 +544,7 @@
 </div>
 
 <script>
+// ── Roles ──
 const badges = {
     usuario: 'Ingresando como Visitante',
     empresa: 'Ingresando como Empresa',
@@ -537,32 +554,48 @@ const badges = {
 function selRol(btn, rol) {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
-    document.getElementById('rol-badge').textContent  = badges[rol];
-    document.getElementById('campo-contexto').value   = rol;
+    document.getElementById('rol-badge').textContent = badges[rol];
+    document.getElementById('campo-contexto').value  = rol;
 }
 
 function llenar(correo, pass, rol) {
-    document.getElementById('campo-correo').value    = correo;
-    document.getElementById('campo-password').value  = pass;
-    document.getElementById('campo-contexto').value  = rol;
+    document.getElementById('campo-correo').value   = correo;
+    document.getElementById('campo-password').value = pass;
+    document.getElementById('campo-contexto').value = rol;
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + rol).classList.add('active');
     document.getElementById('rol-badge').textContent = badges[rol];
 }
 
-// Restaurar tab activo si hay old('correo') tras un error
 const correoActual = document.getElementById('campo-correo').value;
 if (correoActual.includes('admin@')) {
     document.getElementById('tab-admin').classList.add('active');
     document.getElementById('tab-usuario').classList.remove('active');
-    document.getElementById('rol-badge').textContent  = badges['admin'];
-    document.getElementById('campo-contexto').value   = 'admin';
+    document.getElementById('rol-badge').textContent = badges['admin'];
+    document.getElementById('campo-contexto').value  = 'admin';
 } else if (correoActual.includes('empresa')) {
     document.getElementById('tab-empresa').classList.add('active');
     document.getElementById('tab-usuario').classList.remove('active');
-    document.getElementById('rol-badge').textContent  = badges['empresa'];
-    document.getElementById('campo-contexto').value   = 'empresa';
+    document.getElementById('rol-badge').textContent = badges['empresa'];
+    document.getElementById('campo-contexto').value  = 'empresa';
 }
+
+// ── Carrusel ──
+const slides = document.querySelectorAll('.carousel-slide');
+let current  = 0;
+let timer    = null;
+
+function goToSlide(idx) {
+    slides[current].classList.remove('active');
+    current = (idx + slides.length) % slides.length;
+    slides[current].classList.add('active');
+}
+
+function startTimer() {
+    timer = setInterval(() => goToSlide(current + 1), 5000);
+}
+
+if (slides.length > 1) startTimer();
 </script>
 </body>
 </html>

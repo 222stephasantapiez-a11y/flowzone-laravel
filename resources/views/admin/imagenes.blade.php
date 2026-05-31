@@ -36,7 +36,7 @@
         <button class="img-manager-tab" onclick="showTab('cards',this)">
             <i class="fa-solid fa-th-large"></i> Cards ({{ $imagenes->where('seccion','cards')->count() }})
         </button>
-        <button class="img-manager-tab" onclick="abrirModalImagen()" style="margin-left:auto;color:var(--primary);">
+        <button class="img-manager-tab" onclick="abrirModalImagen(tabActual)" style="margin-left:auto;color:var(--primary);">
             <i class="fa-solid fa-plus"></i> Agregar imagen
         </button>
     </div>
@@ -60,7 +60,6 @@
             box-shadow: 0 20px 60px rgba(0,0,0,.25);
             overflow: hidden;
         ">
-            {{-- Header modal --}}
             <div style="
                 background: linear-gradient(135deg, var(--cyan-900), var(--cyan-700));
                 padding: 1.25rem 1.75rem;
@@ -91,7 +90,6 @@
                 </button>
             </div>
 
-            {{-- Body modal --}}
             <div style="padding: 1.75rem;max-height:calc(90vh - 120px);overflow-y:auto;">
                 <form method="POST" action="{{ route('admin.imagenes.store') }}" enctype="multipart/form-data" class="admin-form">
                     @csrf
@@ -102,7 +100,7 @@
                         </div>
                         <div class="form-group">
                             <label>Sección *</label>
-                            <select name="seccion" required>
+                            <select name="seccion" id="select-seccion" required>
                                 @foreach($secciones as $key => $label)
                                     <option value="{{ $key }}" {{ old('seccion') === $key ? 'selected' : '' }}>{{ $label }}</option>
                                 @endforeach
@@ -135,7 +133,6 @@
                             </div>
                         </div>
 
-                        {{-- Preview --}}
                         <div class="img-preview-wrap" id="img-preview-wrap" style="margin-top:.8rem;border-radius:var(--radius-md);overflow:hidden;max-height:220px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;min-height:100px;">
                             <div class="img-preview-placeholder" style="text-align:center;color:var(--gray-400);padding:1.5rem;">
                                 <i class="fa-solid fa-image" style="font-size:2rem;display:block;margin-bottom:.5rem;opacity:.4;"></i>
@@ -144,21 +141,14 @@
                         </div>
                     </div>
 
-                    {{-- Botones --}}
                     <div style="display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1.25rem;">
                         <button type="submit" class="btn btn-primary">
                             <i class="fa-solid fa-plus"></i> Agregar imagen
                         </button>
-                        <button type="button" onclick="cerrarModalImagen()" class="btn" style="
-                            background: var(--gray-100);
-                            color: var(--gray-600);
-                            border: 1px solid var(--gray-200);
-                            cursor: pointer;
-                        ">
+                        <button type="button" onclick="cerrarModalImagen()" class="btn" style="background:var(--gray-100);color:var(--gray-600);border:1px solid var(--gray-200);cursor:pointer;">
                             <i class="fa-solid fa-xmark"></i> Cancelar
                         </button>
                     </div>
-
                 </form>
             </div>
         </div>
@@ -184,9 +174,14 @@
 
 @push('scripts')
 <script>
-function abrirModalImagen() {
+let tabActual = 'hero';
+
+function abrirModalImagen(seccion) {
     document.getElementById('modal-imagen').style.display = 'block';
     document.body.style.overflow = 'hidden';
+    if (seccion) {
+        document.getElementById('select-seccion').value = seccion;
+    }
 }
 
 function cerrarModalImagen() {
@@ -203,6 +198,7 @@ document.addEventListener('keydown', function(e) {
 });
 
 function showTab(name, btn) {
+    tabActual = name;
     document.querySelectorAll('.img-tab-content').forEach(t => t.style.display = 'none');
     document.querySelectorAll('.img-manager-tab').forEach(t => t.classList.remove('active'));
     document.getElementById('tab-' + name).style.display = 'block';
@@ -222,11 +218,9 @@ function updatePreview() {
     const wrap = document.getElementById('img-preview-wrap');
     const tipo = document.getElementById('img-tipo').value;
     let src = '';
-
     if (tipo === 'url') {
         src = document.getElementById('imagen_url').value;
     }
-
     if (src) {
         wrap.innerHTML = '<img src="' + src + '" style="width:100%;max-height:220px;object-fit:cover;" onerror="this.parentElement.innerHTML=\'<div style=text-align:center;padding:1.5rem;color:var(--danger)><i class=fa-solid fa-triangle-exclamation></i><br><span style=font-size:.82rem>URL inválida o imagen no accesible</span></div>\'">';
     } else {
@@ -247,7 +241,6 @@ document.getElementById('imagen_file')?.addEventListener('change', function() {
     reader.readAsDataURL(file);
 });
 
-// Drag & drop order
 document.querySelectorAll('.gallery-grid[data-sortable]').forEach(grid => {
     let dragged = null;
     grid.querySelectorAll('.gallery-item').forEach(item => {
