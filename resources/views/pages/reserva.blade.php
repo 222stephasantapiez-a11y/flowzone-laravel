@@ -54,12 +54,10 @@
                 </div>
             </div>
 
-            {{-- Aviso selección de fechas --}}
             <div id="aviso-fechas" style="margin-top:1.25rem;padding:.85rem 1rem;background:#fef9c3;border:1px solid #fde047;border-radius:var(--radius-md);">
                 <p style="font-size:.82rem;color:#854d0e;margin:0;"><i class="fa-solid fa-calendar fa-xs"></i> Selecciona las fechas para ver disponibilidad de habitaciones.</p>
             </div>
 
-            {{-- Habitaciones (se renderizan dinámicamente) --}}
             <div id="habitaciones-container" style="margin-top:1.25rem;display:none;">
                 <h4 style="font-size:.82rem;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem;">
                     <i class="fa-solid fa-bed fa-xs"></i> Habitaciones
@@ -116,7 +114,6 @@
                            style="width:100%;padding:.7rem 1rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.95rem;font-family:var(--font-body);color:var(--gray-900);background:#fff;">
                 </div>
 
-                {{-- Habitación seleccionada --}}
                 <div class="form-group" style="margin-bottom:1.25rem;">
                     <label style="display:block;font-size:.85rem;font-weight:600;color:var(--gray-900);margin-bottom:.4rem;">
                         <i class="fa-solid fa-bed fa-xs" style="color:var(--green-600);"></i> Habitación seleccionada
@@ -162,13 +159,13 @@
 
 @push('scripts')
 <script>
-const HOTEL_ID        = {{ $hotel->id }};
-const PRECIO_BASE     = {{ $hotel->precio ?? 0 }};
+const HOTEL_ID         = {{ $hotel->id }};
+const PRECIO_BASE      = {{ $hotel->precio ?? 0 }};
 const URL_HABITACIONES = '{{ route("reservar.habitaciones") }}';
-const PLAN_HAB_ID     = {{ request('plan_hab_id', 0) }};
+const PLAN_HAB_ID      = {{ request('plan_hab_id', 0) }};
 
-let precioActual   = 0;
-let habNombre      = '';
+let precioActual     = 0;
+let habNombre        = '';
 let habitacionesData = [];
 
 const inputEntrada = document.getElementById('fecha_entrada');
@@ -203,7 +200,14 @@ function cargarHabitaciones() {
 
     fetch(`${URL_HABITACIONES}?hotel_id=${HOTEL_ID}&fecha_entrada=${entrada}&fecha_salida=${salida}&num_personas=${personas}`)
         .then(r => r.json())
-        .then(habs => {
+        .then(data => {
+            // Si el hotel no es válido, redirigir a hoteles
+            if (data.redirect) {
+                window.location.href = data.redirect;
+                return;
+            }
+
+            const habs = Array.isArray(data) ? data : [];
             habitacionesData = habs;
             lista.innerHTML  = '';
 
@@ -244,7 +248,6 @@ function cargarHabitaciones() {
                 }
                 lista.appendChild(div);
 
-                // Auto-seleccionar si viene de un plan
                 if (PLAN_HAB_ID && hab.id == PLAN_HAB_ID && !hab.ocupada) {
                     seleccionarHabitacion(hab.id, hab.precio, hab.nombre, hab.capacidad);
                 }
@@ -284,7 +287,6 @@ function calcular() {
     const salida  = inputSalida.value;
     const habId   = document.getElementById('campo-habitacion-id').value;
 
-    // Solo mostrar total si hay habitación seleccionada y fechas válidas
     if (entrada && salida && habId && precioActual > 0) {
         const dias = (new Date(salida) - new Date(entrada)) / 86400000;
         if (dias > 0) {

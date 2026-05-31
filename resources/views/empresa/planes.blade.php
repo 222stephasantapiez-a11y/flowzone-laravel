@@ -93,6 +93,14 @@
                 <i class="fa-solid fa-tag fa-xs"></i> ¡PLAN ESPECIAL CON 20% DE DESCUENTO!
             </div>
 
+            {{-- Fechas del plan generado --}}
+            <div id="planFechasWrap" style="display:none;background:#f0fdf4;padding:.6rem 1.25rem;border-bottom:1px solid #b7e4c7;">
+                <span style="font-size:.82rem;color:var(--green-700);font-weight:600;">
+                    <i class="fa-solid fa-calendar fa-xs"></i>
+                    <span id="planFechasTexto"></span>
+                </span>
+            </div>
+
             {{-- Cards dinámicas según tipo --}}
             <div id="planCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;padding:1.25rem;background:#fff;">
                 {{-- Se llenan por JS --}}
@@ -149,17 +157,35 @@
                 <input type="text" name="titulo" required maxlength="200"
                        placeholder="Ej: Fin de semana en Ortega" value="{{ old('titulo') }}">
             </div>
+
             <div class="form-group">
                 <label>Descripción</label>
                 <textarea name="descripcion" rows="3" maxlength="1000"
                           placeholder="Describe qué incluye este plan...">{{ old('descripcion') }}</textarea>
             </div>
+
+            {{-- ══ FECHAS DEL PLAN ══ --}}
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fecha inicio del plan</label>
+                    <input type="date" name="fecha_inicio" id="g_fecha_inicio"
+                           value="{{ old('fecha_inicio') }}">
+                </div>
+                <div class="form-group">
+                    <label>Fecha fin del plan</label>
+                    <input type="date" name="fecha_fin" id="g_fecha_fin"
+                           value="{{ old('fecha_fin') }}">
+                </div>
+            </div>
+            {{-- ═════════════════════ --}}
+
             <div class="form-group">
                 <label>Imagen del plan</label>
                 <input type="file" name="imagen_file" accept="image/*" style="margin-bottom:.4rem;">
                 <input type="url" name="imagen_url" placeholder="O pega una URL: https://..."
                        style="width:100%;padding:.6rem .9rem;border:1.5px solid var(--gray-200);border-radius:var(--radius-md);font-size:.88rem;outline:none;">
             </div>
+
             <div class="form-group" style="display:flex;align-items:center;gap:.5rem;">
                 <input type="checkbox" name="publicado" value="1" id="g_publicado"
                        style="accent-color:var(--green-700);width:16px;height:16px;">
@@ -167,6 +193,7 @@
                     Publicar en el sitio web ahora
                 </label>
             </div>
+
             <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:.5rem;">
                 <button type="button" onclick="cerrarModalGuardar()" class="btn btn-outline">Cancelar</button>
                 <button type="submit" class="btn btn-primary">
@@ -241,6 +268,18 @@
                     @endif
                 </div>
 
+                {{-- ══ FECHAS DEL PLAN GUARDADO ══ --}}
+                @if($p->fecha_inicio && $p->fecha_fin)
+                <div style="background:#f0fdf4;border-radius:.4rem;padding:.4rem .7rem;margin-bottom:.75rem;font-size:.8rem;color:var(--green-700);font-weight:600;">
+                    <i class="fa-solid fa-calendar fa-xs"></i>
+                    {{ $p->fecha_inicio->format('d/m/Y') }} → {{ $p->fecha_fin->format('d/m/Y') }}
+                    <span style="color:var(--gray-400);font-weight:400;">
+                        · {{ $p->fecha_inicio->diffInDays($p->fecha_fin) }} noches
+                    </span>
+                </div>
+                @endif
+                {{-- ═══════════════════════════════ --}}
+
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;">
                     <div>
                         <span style="text-decoration:line-through;color:#94a3b8;font-size:.78rem;">${{ number_format($p->subtotal, 0) }}</span>
@@ -274,19 +313,18 @@
 
 @push('scripts')
 <script>
-const GENERAR_URL = "{{ route('empresa.planes.generar') }}";
-const CSRF        = "{{ csrf_token() }}";
+const GENERAR_URL  = "{{ route('empresa.planes.generar') }}";
+const CSRF         = "{{ csrf_token() }}";
 const TIPO_EMPRESA = "{{ $tipo }}";
 
 let planActual = null;
 
-// Colores por tipo de componente
 const colores = {
-    habitacion: { bg:'#f0fdf4', border:'#22c55e', color:'#16a34a', emoji:'🛏' },
-    hotel:      { bg:'#f0fdf4', border:'#22c55e', color:'#16a34a', emoji:'🏨' },
-    gastronomia:{ bg:'#fff7ed', border:'#f97316', color:'#ea580c', emoji:'🍽' },
-    evento:     { bg:'#f5f3ff', border:'#6366f1', color:'#4f46e5', emoji:'🎭' },
-    lugar:      { bg:'#eff6ff', border:'#3b82f6', color:'#2563eb', emoji:'📍' },
+    habitacion:  { bg:'#f0fdf4', border:'#22c55e', color:'#16a34a', emoji:'🛏' },
+    hotel:       { bg:'#f0fdf4', border:'#22c55e', color:'#16a34a', emoji:'🏨' },
+    gastronomia: { bg:'#fff7ed', border:'#f97316', color:'#ea580c', emoji:'🍽' },
+    evento:      { bg:'#f5f3ff', border:'#6366f1', color:'#4f46e5', emoji:'🎭' },
+    lugar:       { bg:'#eff6ff', border:'#3b82f6', color:'#2563eb', emoji:'📍' },
 };
 
 function crearCard(tipo, nombre, precio) {
@@ -303,28 +341,25 @@ function generarPlan() {
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin fa-xs"></i> Generando...';
 
-    const body = {};
-    const fi = document.getElementById('f_fecha_inicio')?.value;
-    const ff = document.getElementById('f_fecha_fin')?.value;
-    const hi = document.getElementById('f_hora_inicio')?.value;
-    const hf = document.getElementById('f_hora_fin')?.value;
-    const lat = document.getElementById('f_lat')?.value;
-    const lng = document.getElementById('f_lng')?.value;
+    const body  = {};
+    const fi    = document.getElementById('f_fecha_inicio')?.value;
+    const ff    = document.getElementById('f_fecha_fin')?.value;
+    const hi    = document.getElementById('f_hora_inicio')?.value;
+    const hf    = document.getElementById('f_hora_fin')?.value;
+    const lat   = document.getElementById('f_lat')?.value;
+    const lng   = document.getElementById('f_lng')?.value;
     const radio = document.getElementById('f_radio')?.value;
+
     if (fi) body.fecha_inicio = fi;
-    if (ff) body.fecha_fin = ff;
-    if (hi) body.hora_inicio = hi;
-    if (hf) body.hora_fin = hf;
+    if (ff) body.fecha_fin    = ff;
+    if (hi) body.hora_inicio  = hi;
+    if (hf) body.hora_fin     = hf;
     if (lat && lng) { body.ubicacion_lat = lat; body.ubicacion_lng = lng; }
     if (radio) body.radio_km = radio;
 
     fetch(GENERAR_URL, {
         method: 'POST',
-        headers: {
-            'X-CSRF-TOKEN': CSRF,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-        },
+        headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
     })
     .then(r => r.json())
@@ -332,22 +367,30 @@ function generarPlan() {
         if (d.error) { alert(d.error); return; }
         planActual = d;
 
-        // Construir cards según tipo de empresa
         let cards = '';
-        if (d.habitacion) cards += crearCard('habitacion', d.habitacion.nombre, d.habitacion.precio);
-        else if (d.hotel) cards += crearCard('hotel', d.hotel.nombre, d.hotel.precio);
+        if (d.habitacion)  cards += crearCard('habitacion', d.habitacion.nombre, d.habitacion.precio);
+        else if (d.hotel)  cards += crearCard('hotel', d.hotel.nombre, d.hotel.precio);
         if (d.gastronomia) cards += crearCard('gastronomia', d.gastronomia.nombre, d.gastronomia.precio);
         if (d.evento)      cards += crearCard('evento', d.evento.nombre, d.evento.precio);
         if (d.lugar)       cards += crearCard('lugar', d.lugar.nombre, d.lugar.precio);
-        // Platos extra para restaurante
-        if (d.platos_extra) {
-            d.platos_extra.forEach(p => { cards += crearCard('gastronomia', p.nombre, p.precio); });
-        }
+        if (d.platos_extra) d.platos_extra.forEach(p => { cards += crearCard('gastronomia', p.nombre, p.precio); });
 
         document.getElementById('planCards').innerHTML = cards;
-        const subtotal = Number(d.subtotal ?? 0); const precioFinal = Number(d.precioFinal ?? 0);
+
+        const subtotal    = Number(d.subtotal    ?? 0);
+        const precioFinal = Number(d.precioFinal ?? 0);
         document.getElementById('planSubtotal').textContent    = 'Antes: $' + subtotal.toLocaleString('es-CO');
         document.getElementById('planPrecioFinal').textContent = '$' + precioFinal.toLocaleString('es-CO');
+
+        // Mostrar fechas si vienen en la respuesta
+        const fechasWrap = document.getElementById('planFechasWrap');
+        const fechasTexto = document.getElementById('planFechasTexto');
+        if (d.fecha_inicio && d.fecha_fin) {
+            fechasTexto.textContent = d.fecha_inicio + ' → ' + d.fecha_fin;
+            fechasWrap.style.display = 'block';
+        } else {
+            fechasWrap.style.display = 'none';
+        }
 
         document.getElementById('planVacio').style.display    = 'none';
         document.getElementById('planGenerado').style.display = 'block';
@@ -362,9 +405,10 @@ function generarPlan() {
 
 function limpiarPlan() {
     planActual = null;
-    document.getElementById('planGenerado').style.display = 'none';
-    document.getElementById('planVacio').style.display    = 'block';
-    document.getElementById('btnLimpiar').style.display   = 'none';
+    document.getElementById('planGenerado').style.display  = 'none';
+    document.getElementById('planVacio').style.display     = 'block';
+    document.getElementById('btnLimpiar').style.display    = 'none';
+    document.getElementById('planFechasWrap').style.display = 'none';
 }
 
 function toggleFiltros() {
@@ -388,15 +432,19 @@ function usarMiUbicacion() {
 
 function abrirModalGuardar() {
     if (!planActual) return;
-    // Poblar campos ocultos
-    document.getElementById('g_evento_id').value      = planActual.evento?.id || '';
+
+    document.getElementById('g_evento_id').value      = planActual.evento?.id      || '';
     document.getElementById('g_gastronomia_id').value = planActual.gastronomia?.id || '';
-    document.getElementById('g_hotel_id').value       = planActual.hotel?.id || '';
-    document.getElementById('g_lugar_id').value       = planActual.lugar?.id || '';
-    document.getElementById('g_habitacion_id').value  = planActual.habitacion?.id || '';
+    document.getElementById('g_hotel_id').value       = planActual.hotel?.id       || '';
+    document.getElementById('g_lugar_id').value       = planActual.lugar?.id       || '';
+    document.getElementById('g_habitacion_id').value  = planActual.habitacion?.id  || '';
     document.getElementById('g_subtotal').value       = planActual.subtotal;
     document.getElementById('g_descuento').value      = planActual.descuento;
     document.getElementById('g_precio_final').value   = planActual.precioFinal;
+
+    // Pre-llenar fechas desde los filtros aplicados
+    document.getElementById('g_fecha_inicio').value = planActual.fecha_inicio || document.getElementById('f_fecha_inicio')?.value || '';
+    document.getElementById('g_fecha_fin').value    = planActual.fecha_fin    || document.getElementById('f_fecha_fin')?.value    || '';
 
     document.getElementById('modalGuardar').style.display = 'block';
     document.body.style.overflow = 'hidden';

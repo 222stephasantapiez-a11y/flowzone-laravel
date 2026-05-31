@@ -15,11 +15,11 @@ use Maatwebsite\Excel\Facades\Excel;
 class EventoController extends Controller
 {
     use HandlesImport;
+
     public function index(Request $request)
     {
         $query = Evento::query();
 
-        // Filtros
         if ($request->filled('nombre')) {
             $query->where('nombre', 'like', '%' . $request->nombre . '%');
         }
@@ -36,10 +36,7 @@ class EventoController extends Controller
             $query->where('precio', '<=', $request->precio);
         }
 
-        // Paginación
-        $perPage = $request->get('per_page', 10);
-
-        // Ordenamiento
+        $perPage   = $request->get('per_page', 10);
         $sort      = $request->get('sort', 'fecha');
         $direction = $request->get('direction', 'asc');
 
@@ -189,16 +186,11 @@ class EventoController extends Controller
     }
 
     public function importExcel(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|mimes:xlsx,xls,csv'
-    ]);
-
-    Excel::import(new EventosImport, $request->file('archivo'));
-
-    return back()->with(
-        'success',
-        'Importación completada. Los eventos duplicados fueron omitidos.'
-    );
-}
+    {
+        return $this->runImport(
+            $request,
+            new EventosImport,
+            'admin.eventos.index'
+        );
+    }
 }

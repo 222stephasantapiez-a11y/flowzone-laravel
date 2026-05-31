@@ -367,7 +367,14 @@ class PageController extends Controller
 
     public function habitacionesDisponibles(Request $request)
     {
-        $hotel = Hotel::findOrFail($request->hotel_id);
+        $hotel = Hotel::where('id', $request->hotel_id)
+            ->where('disponibilidad', true)
+            ->whereHas('empresa', fn($q) => $q->where('aprobado', true))
+            ->first();
+
+        if (!$hotel) {
+            return response()->json(['redirect' => route('hoteles')]);
+        }
 
         $ocupadas = Reserva::where('hotel_id', $hotel->id)
             ->whereNotIn('estado', ['cancelada'])
@@ -508,21 +515,6 @@ class PageController extends Controller
             'total_gastado' => $reservas->whereNotIn('estado', ['cancelada'])->sum('precio_total'),
         ]);
     }
-
-    public function cancelarReserva(Reserva $reserva)
-{
-    if ($reserva->usuario_id !== Auth::id()) {
-        abort(403);
-    }
-
-    if ($reserva->estado !== 'pendiente') {
-        return back()->with('error', 'Solo puedes cancelar reservas pendientes.');
-    }
-
-    $reserva->update(['estado' => 'cancelada']);
-
-    return back()->with('success', 'Reserva cancelada correctamente.');
-}
 
     // ── Favoritos (requiere auth) ─────────────────────────────
     public function favoritos()
