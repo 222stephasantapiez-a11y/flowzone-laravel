@@ -11,18 +11,12 @@ use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
 use Maatwebsite\Excel\Concerns\SkipsEmptyRows;
 use Maatwebsite\Excel\Validators\Failure;
-<<<<<<< HEAD
-=======
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use Carbon\Carbon;
->>>>>>> 1a3a4057dae477d49d36c00212e9fa551781a89b
 use Throwable;
 
 class EventosImport implements ToModel, WithHeadingRow, WithStartRow, WithValidation, SkipsOnError, SkipsOnFailure, SkipsEmptyRows
 {
-<<<<<<< HEAD
-    public int $imported = 0;
-=======
     private int $imported = 0;
     private array $errors = [];
 
@@ -37,7 +31,6 @@ class EventosImport implements ToModel, WithHeadingRow, WithStartRow, WithValida
     {
         return 3;
     }
->>>>>>> 1a3a4057dae477d49d36c00212e9fa551781a89b
 
     public function model(array $row): ?Evento
     {
@@ -182,24 +175,13 @@ class EventosImport implements ToModel, WithHeadingRow, WithStartRow, WithValida
 
     public function onError(Throwable $e): void
     {
-<<<<<<< HEAD
-        \Log::error('Error en importación de eventos: ' . $e->getMessage());
-=======
         $this->errors[] = $e->getMessage();
->>>>>>> 1a3a4057dae477d49d36c00212e9fa551781a89b
     }
 
     public function onFailure(Failure ...$failures): void
     {
         foreach ($failures as $failure) {
-<<<<<<< HEAD
-            \Log::warning('Fila ' . $failure->row() . ' falló: ' . implode(', ', $failure->errors()));
-        }
-    }
-}
-=======
             $this->errors[] = 'Fila ' . $failure->row() . ': ' . implode(', ', $failure->errors());
         }
     }
 }
->>>>>>> 1a3a4057dae477d49d36c00212e9fa551781a89b

@@ -217,17 +217,7 @@
             <a href="{{ route('admin.empresas.export.pdf') }}" class="btn btn-danger btn-sm">
                 <i class="fa-solid fa-file-pdf"></i> PDF
             </a>
-            @include('partials.import_modal', [
-                'importRoute' => 'admin.empresas.import.excel',
-                'sampleFile'  => 'ejemplo_usuarios.xlsx',
-                'modalId'     => 'importEmpresas',
-                'columns'     => [
-                    'nombre'    => 'Nombre de la empresa (requerido)',
-                    'correo'    => 'Correo electrónico del responsable (requerido)',
-                    'telefono'  => 'Teléfono de contacto',
-                    'direccion' => 'Dirección de la empresa',
-                ],
-            ])
+       
         </div>
     </div>
 
