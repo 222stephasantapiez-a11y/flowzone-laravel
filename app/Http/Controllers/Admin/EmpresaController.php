@@ -19,22 +19,19 @@ class EmpresaController extends Controller
     use HandlesImport;
 
     // ==========================
-    // LISTAR + GENERADOR + PAGINACIÓN
+    // LISTAR + PAGINACIÓN
     // ==========================
     public function index(Request $request)
     {
         $perPage = (int) $request->get('per_page', 10);
 
-        // Ordenamiento
         $sort      = $request->get('sort', 'aprobado');
         $direction = $request->get('direction', 'asc');
 
         $allowedSorts = ['id', 'nombre', 'aprobado', 'created_at'];
-
         if (!in_array($sort, $allowedSorts)) {
             $sort = 'aprobado';
         }
-
         $direction = $direction === 'desc' ? 'desc' : 'asc';
 
         $empresas = Empresa::with('usuario')
@@ -55,8 +52,10 @@ class EmpresaController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
+        // Solo mostrar solicitudes de empresas, no las respuestas del admin
         $notificaciones = NotificacionAdmin::with('empresa')
             ->where('leido', false)
+            ->where('mensaje', 'not like', 'RESPUESTA DEL ADMIN:%')
             ->latest()
             ->get();
 
@@ -69,9 +68,7 @@ class EmpresaController extends Controller
             'perPage',
             'sort',
             'direction'
-
         ));
-                    
     }
 
     // ==========================
@@ -85,7 +82,6 @@ class EmpresaController extends Controller
             $empresa->usuario->update(['estado' => 'activo']);
         }
 
-        // Crear hotel automáticamente si es tipo hotel y aún no tiene ninguno
         if ($empresa->tipo_empresa === 'hotel' && $empresa->hoteles()->count() === 0) {
             \App\Models\Hotel::create([
                 'empresa_id'     => $empresa->id,
@@ -97,7 +93,6 @@ class EmpresaController extends Controller
             ]);
         }
 
-        // Notificar a la empresa
         NotificacionAdmin::create([
             'empresa_id' => $empresa->id,
             'mensaje'    => 'APROBACIÓN: Tu empresa ha sido aprobada. Ya apareces en el sitio público.',
@@ -137,8 +132,10 @@ class EmpresaController extends Controller
             ->orderBy('id', 'desc')
             ->paginate($perPage);
 
+        // Solo mostrar solicitudes de empresas, no las respuestas del admin
         $notificaciones = NotificacionAdmin::with('empresa')
             ->where('leido', false)
+            ->where('mensaje', 'not like', 'RESPUESTA DEL ADMIN:%')
             ->latest()
             ->get();
 
@@ -201,11 +198,14 @@ class EmpresaController extends Controller
             'respuesta' => 'required|string|min:5|max:1000',
         ]);
 
+        // Crear respuesta para que la empresa la vea en su historial
         NotificacionAdmin::create([
             'empresa_id' => $notificacion->empresa_id,
             'mensaje'    => 'RESPUESTA DEL ADMIN: ' . $request->respuesta,
+            'leido'      => false,
         ]);
 
+        // Marcar la solicitud original como leída — desaparece del panel admin
         $notificacion->update(['leido' => true]);
 
         return back()->with('success', 'Respuesta enviada a la empresa.');
@@ -214,7 +214,6 @@ class EmpresaController extends Controller
     public function marcarLeida(NotificacionAdmin $notificacion)
     {
         $notificacion->update(['leido' => true]);
-
         return back()->with('success', 'Notificación marcada como leída.');
     }
 
@@ -222,7 +221,6 @@ class EmpresaController extends Controller
     {
         NotificacionAdmin::where('leido', false)
             ->update(['leido' => true]);
-
         return back()->with('success', 'Todas las notificaciones marcadas como leídas.');
     }
 
@@ -248,9 +246,7 @@ class EmpresaController extends Controller
     public function exportPdf()
     {
         $empresas = User::where('rol', 'empresa')->get();
-
         $pdf = Pdf::loadView('admin.pdf.empresa', compact('empresas'));
-
         return $pdf->download('empresas.pdf');
     }
 }

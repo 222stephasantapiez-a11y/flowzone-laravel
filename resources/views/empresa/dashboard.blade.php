@@ -18,9 +18,70 @@
     $totalBlog      = \App\Models\BlogPost::where('empresa_id', $empresa->id)->count();
     $blogPublicados = \App\Models\BlogPost::where('empresa_id', $empresa->id)->where('publicado', true)->count();
     $totalPlatos    = \App\Models\Gastronomia::where('empresa_id', $empresa->id)->count();
+
+    // Separar respuestas del admin de solicitudes enviadas
+    $esDelAdmin = fn($n) =>
+        str_starts_with($n->mensaje, 'RESPUESTA DEL ADMIN:') ||
+        str_starts_with($n->mensaje, 'APROBACIÓN:') ||
+        str_starts_with($n->mensaje, 'TU PUBLICACIÓN FUE APROBADA') ||
+        str_starts_with($n->mensaje, 'PUBLICACIÓN') ||
+        str_starts_with($n->mensaje, 'RECHAZ');
+    $respuestasAdmin    = $historial->filter($esDelAdmin);
+    $solicitudesEnviadas = $historial->reject($esDelAdmin);
 @endphp
 
-{{-- Stats --}}
+{{-- Notificaciones del admin --}}
+@if($respuestasAdmin->count() > 0)
+<div class="admin-section" style="border-left:4px solid var(--green-600);margin-bottom:1.5rem;background:#f0fdf4;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
+        <h2 style="font-size:1rem;font-weight:700;color:var(--green-800);display:flex;align-items:center;gap:.5rem;margin:0;">
+            <i class="fa-solid fa-bell" style="color:var(--green-600);"></i>
+            Respuestas del administrador
+            <span style="background:var(--green-600);color:#fff;border-radius:2rem;padding:.1rem .55rem;font-size:.75rem;font-weight:700;">{{ $respuestasAdmin->count() }}</span>
+        </h2>
+        <form method="POST" action="{{ route('empresa.notificaciones.leer-todas') }}" style="margin:0;">
+            @csrf
+            <button type="submit" class="btn btn-outline btn-sm" style="font-size:.75rem;">
+                <i class="fa-solid fa-check-double fa-xs"></i> Marcar todas leídas
+            </button>
+        </form>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:.75rem;">
+        @foreach($respuestasAdmin as $resp)
+        <div style="background:#fff;border:1px solid #bbf7d0;border-radius:var(--radius-md);padding:1rem 1.25rem;display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;">
+            <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;">
+                    <i class="fa-solid fa-comment-dots" style="color:var(--green-600);font-size:.85rem;"></i>
+                    <span style="font-size:.75rem;font-weight:700;color:var(--green-700);text-transform:uppercase;letter-spacing:.05em;">Admin respondió</span>
+                    <span style="font-size:.72rem;color:var(--gray-400);">{{ $resp->created_at->format('d/m/Y H:i') }}</span>
+                </div>
+                <p style="font-size:.9rem;color:var(--gray-800);margin:0;">
+                    @if(str_starts_with($resp->mensaje, 'APROBACIÓN:'))
+                        <i class="fa-solid fa-circle-check fa-xs" style="color:var(--green-600);"></i>
+                        {{ Str::after($resp->mensaje, 'APROBACIÓN: ') }}
+                    @elseif(str_starts_with($resp->mensaje, 'TU PUBLICACIÓN FUE APROBADA') || str_starts_with($resp->mensaje, 'PUBLICACIÓN'))
+                        <i class="fa-solid fa-newspaper fa-xs" style="color:var(--green-600);"></i>
+                        {{ $resp->mensaje }}
+                    @elseif(str_starts_with($resp->mensaje, 'RECHAZ'))
+                        <i class="fa-solid fa-circle-xmark fa-xs" style="color:#dc2626;"></i>
+                        {{ $resp->mensaje }}
+                    @else
+                        {{ Str::after($resp->mensaje, 'RESPUESTA DEL ADMIN: ') }}
+                    @endif
+                </p>
+            </div>
+            <form method="POST" action="{{ route('empresa.notificaciones.leer', $resp->id) }}" style="flex-shrink:0;">
+                @csrf @method('PATCH')
+                <button type="submit" class="btn btn-outline btn-sm" style="font-size:.75rem;white-space:nowrap;">
+                    <i class="fa-solid fa-check fa-xs"></i> Marcar leída
+                </button>
+            </form>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
+
 {{-- Stats --}}
 <div class="stats-grid" style="margin-bottom:1.5rem;">
 
@@ -48,7 +109,6 @@
         </div>
     </a>
 
-    {{-- Gastronomía: solo restaurantes y hoteles con restaurante propio --}}
     @php
         $tieneGastronomia = in_array($empresa->tipo_empresa, ['restaurante'])
             || ($empresa->tipo_empresa === 'hotel' && in_array('Restaurante propio', $empresa->servicios ?? []));
@@ -75,7 +135,7 @@
             </div>
             <div class="stat-info">
                 <h3>{{ $historial->count() }}</h3>
-                <p>Solicitudes enviadas</p>
+                <p>Notificaciones</p>
             </div>
         </div>
     </a>
@@ -132,6 +192,7 @@
     </a>
 
 </div>
+
 {{-- Calificaciones por servicio --}}
 @if($statsCalificaciones->isNotEmpty())
 <div class="admin-section" style="margin-bottom:1.5rem;">
@@ -148,11 +209,7 @@
                 <tr>
                     <td>{{ $s->nombre }}</td>
                     <td><span class="badge badge-info">{{ $s->tipo_label }}</span></td>
-                    <td>
-                        <span style="color:var(--gold-500);font-weight:700;">
-                            <i class="fa-solid fa-star fa-xs"></i> {{ $s->promedio }}
-                        </span>
-                    </td>
+                    <td><span style="color:var(--gold-500);font-weight:700;"><i class="fa-solid fa-star fa-xs"></i> {{ $s->promedio }}</span></td>
                     <td>{{ $s->total }}</td>
                 </tr>
                 @endforeach
@@ -171,7 +228,6 @@
     <div style="display:flex;flex-direction:column;gap:1rem;">
         @foreach($resenasDetalladas as $resena)
         <div style="border:1px solid var(--gray-100);border-radius:var(--radius-md);padding:1rem 1.25rem;background:#fff;">
-            {{-- Cabecera: usuario + ítem + estrellas --}}
             <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem;">
                 <div style="display:flex;align-items:center;gap:.5rem;">
                     <span style="font-weight:700;color:var(--gray-900);">{{ $resena->usuario->name ?? 'Usuario' }}</span>
@@ -185,9 +241,7 @@
                     <span style="font-size:.82rem;color:var(--gray-600);margin-left:.3rem;">{{ $resena->calificacion }}/5</span>
                 </div>
             </div>
-            {{-- Comentario del usuario --}}
             <p style="font-size:.9rem;color:var(--gray-700);margin:0 0 .75rem;">"{{ $resena->comentario }}"</p>
-            {{-- Respuesta o formulario --}}
             @if($resena->respuesta_empresa)
             <div style="background:#f0fdf4;border-left:3px solid var(--green-500);border-radius:var(--radius-sm);padding:.6rem 1rem;">
                 <span style="font-size:.75rem;font-weight:700;color:var(--green-700);text-transform:uppercase;letter-spacing:.05em;">Tu respuesta</span>
@@ -196,8 +250,7 @@
             @else
             <form method="POST" action="{{ route('empresa.resenas.responder', $resena) }}">
                 @csrf @method('PATCH')
-                <textarea name="respuesta_empresa" rows="2"
-                          placeholder="Escribe tu respuesta a esta reseña..."
+                <textarea name="respuesta_empresa" rows="2" placeholder="Escribe tu respuesta a esta reseña..."
                           style="width:100%;resize:vertical;padding:.5rem .75rem;border:1px solid var(--gray-200);border-radius:var(--radius-sm);font-size:.88rem;margin-bottom:.5rem;"
                           required></textarea>
                 <button type="submit" class="btn btn-primary btn-sm">
@@ -226,9 +279,7 @@
         <div style="background:var(--gray-50);border-radius:var(--radius-md);padding:.9rem 1rem;">
             <div style="font-size:.72rem;color:var(--gray-400);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;">Tipo</div>
             <div style="font-weight:600;color:var(--gray-900);">
-                @php
-                    $tipoLabels = ['hotel'=>'🏨 Hotel/Hospedaje','restaurante'=>'🍽️ Restaurante','agencia_turismo'=>'🧭 Agencia de turismo','transporte'=>'🚌 Transporte','artesanias'=>'🎨 Artesanías','otro'=>'📦 Otro'];
-                @endphp
+                @php $tipoLabels = ['hotel'=>'🏨 Hotel/Hospedaje','restaurante'=>'🍽️ Restaurante','agencia_turismo'=>'🧭 Agencia de turismo','transporte'=>'🚌 Transporte','artesanias'=>'🎨 Artesanías','otro'=>'📦 Otro']; @endphp
                 {{ $tipoLabels[$empresa->tipo_empresa] ?? '—' }}
             </div>
         </div>
@@ -276,28 +327,19 @@
         </div>
         @endif
     </div>
-
-    {{-- Links externos --}}
     @if($empresa->sitio_web || $empresa->instagram || $empresa->facebook)
     <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1rem;">
         @if($empresa->sitio_web)
-            <a href="{{ $empresa->sitio_web }}" target="_blank" class="btn btn-outline btn-sm">
-                <i class="fa-solid fa-globe fa-xs"></i> Sitio web
-            </a>
+            <a href="{{ $empresa->sitio_web }}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-solid fa-globe fa-xs"></i> Sitio web</a>
         @endif
         @if($empresa->instagram)
-            <a href="https://instagram.com/{{ ltrim($empresa->instagram,'@') }}" target="_blank" class="btn btn-outline btn-sm">
-                <i class="fa-brands fa-instagram fa-xs"></i> Instagram
-            </a>
+            <a href="https://instagram.com/{{ ltrim($empresa->instagram,'@') }}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-brands fa-instagram fa-xs"></i> Instagram</a>
         @endif
         @if($empresa->facebook)
-            <a href="{{ Str::startsWith($empresa->facebook,'http') ? $empresa->facebook : 'https://'.$empresa->facebook }}" target="_blank" class="btn btn-outline btn-sm">
-                <i class="fa-brands fa-facebook fa-xs"></i> Facebook
-            </a>
+            <a href="{{ Str::startsWith($empresa->facebook,'http') ? $empresa->facebook : 'https://'.$empresa->facebook }}" target="_blank" class="btn btn-outline btn-sm"><i class="fa-brands fa-facebook fa-xs"></i> Facebook</a>
         @endif
     </div>
     @endif
-
     <div style="margin-top:1.2rem;">
         <a href="{{ route('empresa.perfil.edit') }}" class="btn btn-primary">
             <i class="fa-solid fa-pen-to-square fa-xs"></i> Editar perfil
@@ -310,10 +352,7 @@
     <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);margin-bottom:.4rem;display:flex;align-items:center;gap:.5rem;">
         <i class="fa-solid fa-paper-plane" style="color:var(--green-600);"></i> Enviar solicitud al administrador
     </h2>
-    <p style="color:var(--gray-400);font-size:.875rem;margin-bottom:1.5rem;">
-        Solicita agregar un nuevo servicio, actualiza tus datos o reporta una novedad.
-    </p>
-
+    <p style="color:var(--gray-400);font-size:.875rem;margin-bottom:1.5rem;">Solicita agregar un nuevo servicio, actualiza tus datos o reporta una novedad.</p>
     <form method="POST" action="{{ route('empresa.solicitud') }}" class="admin-form">
         @csrf
         <div class="form-row">
@@ -338,19 +377,19 @@
     </form>
 </div>
 
-{{-- Historial --}}
-<div class="admin-section">
+{{-- Historial de solicitudes enviadas --}}
+<div class="admin-section" id="historial">
     <div class="admin-section-header">
         <h2 style="font-size:1.1rem;font-weight:700;color:var(--gray-900);display:flex;align-items:center;gap:.5rem;">
-            <i class="fa-solid fa-clock-rotate-left" style="color:var(--green-600);"></i> Historial de solicitudes
+            <i class="fa-solid fa-clock-rotate-left" style="color:var(--green-600);"></i> Mis solicitudes pendientes
         </h2>
-        <span class="badge badge-info">{{ $historial->count() }}</span>
+        <span class="badge badge-info">{{ $solicitudesEnviadas->count() }}</span>
     </div>
 
-    @if($historial->isEmpty())
+    @if($solicitudesEnviadas->isEmpty())
         <div class="empty-state">
             <i class="fa-solid fa-inbox"></i>
-            <p>No has enviado solicitudes aún.</p>
+            <p>No tienes solicitudes pendientes.</p>
         </div>
     @else
         <div class="table-responsive">
@@ -363,16 +402,12 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($historial as $notif)
+                    @foreach($solicitudesEnviadas as $notif)
                     <tr>
                         <td style="max-width:500px;white-space:pre-wrap;font-size:.875rem;">{{ $notif->mensaje }}</td>
                         <td style="white-space:nowrap;color:var(--gray-400);font-size:.82rem;">{{ $notif->created_at->format('d/m/Y H:i') }}</td>
                         <td>
-                            @if($notif->leido)
-                                <span class="badge badge-success"><i class="fa-solid fa-circle-check fa-xs"></i> Revisada</span>
-                            @else
-                                <span class="badge badge-warning"><i class="fa-solid fa-clock fa-xs"></i> Pendiente</span>
-                            @endif
+                            <span class="badge badge-warning"><i class="fa-solid fa-clock fa-xs"></i> Pendiente</span>
                         </td>
                     </tr>
                     @endforeach
@@ -382,6 +417,6 @@
     @endif
 </div>
 
-@endif {{-- fin @if($empresa) --}}
+@endif
 
 @endsection
