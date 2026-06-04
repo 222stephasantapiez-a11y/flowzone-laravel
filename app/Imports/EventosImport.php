@@ -5,7 +5,6 @@ namespace App\Imports;
 use App\Models\Evento;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithStartRow;
 use Maatwebsite\Excel\Concerns\WithValidation;
 use Maatwebsite\Excel\Concerns\SkipsOnError;
 use Maatwebsite\Excel\Concerns\SkipsOnFailure;
@@ -15,51 +14,49 @@ use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
 use Carbon\Carbon;
 use Throwable;
 
-class EventosImport implements ToModel, WithHeadingRow, WithStartRow, WithValidation, SkipsOnError, SkipsOnFailure, SkipsEmptyRows
+class EventosImport implements ToModel, WithHeadingRow, WithValidation, SkipsOnError, SkipsOnFailure, SkipsEmptyRows
 {
     private int $imported = 0;
+    private int $updated  = 0;
     private array $errors = [];
 
-    // Los encabezados están en la fila 2
     public function headingRow(): int
     {
-        return 2;
-    }
-
-    // Los datos empiezan en la fila 3
-    public function startRow(): int
-    {
-        return 3;
+        return 1;
     }
 
     public function model(array $row): ?Evento
     {
+        $row    = $this->normalizeRow($row);
         $nombre = trim($row['nombre'] ?? '');
 
         if (empty($nombre)) {
             return null;
         }
 
-        if (Evento::where('nombre', $nombre)->exists()) {
-            return null;
-        }
-
-        $fecha = $this->parseFecha($row['fecha'] ?? null);
-        $hora  = $this->parseHora($row['hora'] ?? null);
-
-        $this->imported++;
-
-        return new Evento([
-            'nombre'      => $nombre,
+        $datos = [
             'descripcion' => $row['descripcion'] ?? null,
-            'fecha'       => $fecha,
-            'hora'        => $hora,
+            'fecha'       => $this->parseFecha($row['fecha'] ?? null),
+            'hora'        => $this->parseHora($row['hora'] ?? null),
             'ubicacion'   => $row['ubicacion'] ?? null,
             'categoria'   => $row['categoria'] ?? null,
             'precio'      => $this->parsePrecio($row['precio'] ?? null),
             'organizador' => $row['organizador'] ?? null,
             'contacto'    => $row['contacto'] ?? null,
-        ]);
+        ];
+
+        $evento = Evento::where('nombre', $nombre)->first();
+
+        if ($evento) {
+            // Ya existe → actualiza
+            $evento->update($datos);
+            $this->updated++;
+            return null; // null porque ya lo guardamos manualmente
+        }
+
+        // No existe → crea
+        $this->imported++;
+        return new Evento(array_merge(['nombre' => $nombre], $datos));
     }
 
     public function getImportedCount(): int
@@ -67,56 +64,108 @@ class EventosImport implements ToModel, WithHeadingRow, WithStartRow, WithValida
         return $this->imported;
     }
 
+    public function getUpdatedCount(): int
+    {
+        return $this->updated;
+    }
+
     public function getErrors(): array
     {
         return $this->errors;
+    }
+
+    private function normalizeRow(array $row): array
+    {
+        $normalized = [];
+
+        foreach ($row as $key => $value) {
+            $normalized[$this->normalizeKey((string) $key)] = $value;
+        }
+
+        $aliases = [
+            'nombre'      => ['name', 'evento', 'titulo', 'title'],
+            'fecha'       => ['date', 'fecha_evento', 'dia', 'fecha_inicio'],
+            'hora'        => ['time', 'hora_inicio', 'horario'],
+            'descripcion' => ['description', 'detalle', 'desc'],
+            'ubicacion'   => ['location', 'lugar', 'direccion', 'address'],
+            'categoria'   => ['category', 'tipo', 'type'],
+            'precio'      => ['price', 'costo', 'valor', 'cost'],
+            'organizador' => ['organizer', 'organizado_por'],
+            'contacto'    => ['contact', 'telefono', 'email'],
+        ];
+
+        foreach ($aliases as $canonical => $variants) {
+            if (!isset($normalized[$canonical])) {
+                foreach ($variants as $variant) {
+                    if (isset($normalized[$variant])) {
+                        $normalized[$canonical] = $normalized[$variant];
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $normalized;
+    }
+
+    private function normalizeKey(string $key): string
+    {
+        $key = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $key);
+        return strtolower(trim($key));
     }
 
     private function parseFecha(mixed $value): ?string
     {
         if (empty($value)) return null;
 
-        // Serial numérico de Excel
         if (is_numeric($value)) {
             try {
-                return ExcelDate::excelToDateTimeObject($value)->format('Y-m-d');
+                return ExcelDate::excelToDateTimeObject((float) $value)->format('Y-m-d');
             } catch (\Exception $e) {
                 return null;
             }
         }
 
-        $value = trim($value);
+        $value = trim((string) $value);
 
-        // Mapa de meses en español
+        // DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
+        if (preg_match('/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/', $value, $m)) {
+            $anio = strlen($m[3]) === 2 ? '20' . $m[3] : $m[3];
+            return sprintf('%s-%02d-%02d', $anio, (int)$m[2], (int)$m[1]);
+        }
+
+        // ISO YYYY-MM-DD
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return $value;
+        }
+
+        // Meses en español
         $meses = [
-            'enero'      => '01', 'febrero'    => '02', 'marzo'      => '03',
-            'abril'      => '04', 'mayo'        => '05', 'junio'      => '06',
-            'julio'      => '07', 'agosto'      => '08', 'septiembre' => '09',
-            'octubre'    => '10', 'noviembre'   => '11', 'diciembre'  => '12',
+            'enero' => '01', 'ene' => '01',
+            'febrero' => '02', 'feb' => '02',
+            'marzo' => '03', 'mar' => '03',
+            'abril' => '04', 'abr' => '04',
+            'mayo' => '05',
+            'junio' => '06', 'jun' => '06',
+            'julio' => '07', 'jul' => '07',
+            'agosto' => '08', 'ago' => '08',
+            'septiembre' => '09', 'sep' => '09', 'sept' => '09',
+            'octubre' => '10', 'oct' => '10',
+            'noviembre' => '11', 'nov' => '11',
+            'diciembre' => '12', 'dic' => '12',
         ];
 
-        $texto = strtolower($value);
+        $texto = strtolower(iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value));
 
         foreach ($meses as $nombreMes => $numMes) {
-            // Patrón: "N de mes de YYYY" o "N de mes" o "Sábado N de mes de YYYY"
             if (preg_match('/(\d{1,2})\s+(?:de\s+)?' . $nombreMes . '(?:\s+de\s+(\d{4}))?/', $texto, $m)) {
-                $dia  = str_pad($m[1], 2, '0', STR_PAD_LEFT);
-                $anio = $m[2] ?? '2026';
-                return "{$anio}-{$numMes}-{$dia}";
+                return sprintf('%s-%s-%s', $m[2] ?? date('Y'), $numMes, str_pad($m[1], 2, '0', STR_PAD_LEFT));
             }
-
-            // Patrón: "mes YYYY" → primer día del mes
             if (preg_match('/' . $nombreMes . '\s+(\d{4})/', $texto, $m)) {
                 return "{$m[1]}-{$numMes}-01";
             }
-
-            // Patrón: solo mes mencionado sin año → primer día, año 2026
-            if (str_contains($texto, $nombreMes)) {
-                return "2026-{$numMes}-01";
-            }
         }
 
-        // Fallback: Carbon para fechas ISO o en inglés
         try {
             return Carbon::parse($value)->format('Y-m-d');
         } catch (\Exception $e) {
@@ -130,7 +179,7 @@ class EventosImport implements ToModel, WithHeadingRow, WithStartRow, WithValida
 
         if (is_numeric($value)) {
             try {
-                return ExcelDate::excelToDateTimeObject($value)->format('H:i:s');
+                return ExcelDate::excelToDateTimeObject((float) $value)->format('H:i:s');
             } catch (\Exception $e) {
                 return null;
             }
@@ -145,23 +194,24 @@ class EventosImport implements ToModel, WithHeadingRow, WithStartRow, WithValida
 
     private function parsePrecio(mixed $value): float
     {
-        if (empty($value)) return 0;
+        if (empty($value)) return 0.0;
 
         if (is_numeric($value)) return (float) $value;
 
-        $lower = strtolower(trim($value));
-        if (in_array($lower, ['gratuito', 'gratis', 'free', '-', ''])) return 0;
+        $lower = strtolower(trim((string) $value));
+        if (in_array($lower, ['gratuito', 'gratis', 'free', '-', ''])) return 0.0;
 
-        // Intenta extraer número si hay texto mezclado
-        preg_match('/[\d]+/', $value, $matches);
-        return isset($matches[0]) ? (float) $matches[0] : 0;
+        $clean = preg_replace('/[^0-9.,]/', '', (string) $value);
+        $clean = str_replace(',', '.', $clean);
+
+        return is_numeric($clean) ? (float) $clean : 0.0;
     }
 
     public function rules(): array
     {
         return [
-            'nombre' => 'required|string|max:150',
-            'fecha'  => 'required',
+            'nombre' => ['required', 'string', 'max:150'],
+            'fecha'  => ['required'],
         ];
     }
 

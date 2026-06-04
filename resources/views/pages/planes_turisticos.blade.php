@@ -93,16 +93,16 @@
                         @if($plan->hotel) — {{ $plan->hotel->nombre }}@endif
                     </div>
                     @elseif($plan->hotel)
-                    <div><span style="color:var(--green-700);">🏨</span> {{ $plan->hotel->nombre }}</div>
+                    <div><span style="color:var(--green-700);"></span> {{ $plan->hotel->nombre }}</div>
                     @endif
                     @if($plan->gastronomia)
-                    <div><span style="color:#f97316;">🍽</span> {{ $plan->gastronomia->nombre }}</div>
+                    <div><span style="color:#f97316;"></span> {{ $plan->gastronomia->nombre }}</div>
                     @endif
                     @if($plan->evento)
-                    <div><span style="color:#6366f1;">🎭</span> {{ $plan->evento->nombre }}</div>
+                    <div><span style="color:#6366f1;"></span> {{ $plan->evento->nombre }}</div>
                     @endif
                     @if($plan->lugar)
-                    <div><span style="color:#3b82f6;">📍</span> {{ $plan->lugar->nombre }}</div>
+                    <div><span style="color:#3b82f6;"></span> {{ $plan->lugar->nombre }}</div>
                     @endif
                 </div>
 
