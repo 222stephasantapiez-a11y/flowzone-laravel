@@ -42,6 +42,7 @@ Route::get('/planes-turisticos', [PageController::class, 'planesTuristicos'])->n
 Route::get('/blog', [PageController::class, 'blog'])->name('blog');
 Route::get('/blog/{post:slug}', [PageController::class, 'blogPost'])->name('blog.post');
 Route::get('/contacto', [PageController::class, 'contacto'])->name('contacto');
+Route::post('/contacto', [PageController::class, 'contactoEnviar'])->name('contacto.enviar');
 Route::get('/maps', [PageController::class, 'maps'])->name('maps');
 Route::get('/maps/buscar', [PageController::class, 'mapsBuscar'])->name('maps.buscar');
 
@@ -60,7 +61,7 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// ── Webhook Wompi (fuera de auth — Wompi llama desde sus servidores) ──
+// ── Webhook Wompi ──
 Route::post('/wompi/webhook', [WompiController::class, 'webhook'])->name('wompi.webhook');
 
 // ── Área de usuario autenticado ──────────────────────────────
@@ -79,11 +80,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/mi-cuenta/perfil',  [UserDashboardController::class, 'actualizarPerfil'])->name('usuario.perfil.update');
     Route::delete('/mi-cuenta/resenas/{calificacion}', [UserDashboardController::class, 'eliminarResena'])->name('usuario.resenas.destroy');
 
-    // ── Wompi ────────────────────────────────────────────────
     Route::get('/wompi/pagar',   [WompiController::class, 'iniciarPago'])->name('wompi.pagar');
     Route::get('/wompi/retorno', [WompiController::class, 'retorno'])->name('wompi.retorno');
 
-    // ── Notificaciones usuario ────────────────────────────────
     Route::patch('/mis-notificaciones/{id}/leer', function(string $id) {
         auth()->user()->notifications()->findOrFail($id)->markAsRead();
         return back();
@@ -101,6 +100,23 @@ Route::middleware(['auth', 'es_empresa'])->prefix('empresa')->name('empresa.')->
     Route::post('/solicitud', [EmpresaDashboardController::class, 'enviarSolicitud'])->name('solicitud');
     Route::get('/perfil/editar', [EmpresaDashboardController::class, 'editarPerfil'])->name('perfil.edit');
     Route::put('/perfil/editar', [EmpresaDashboardController::class, 'actualizarPerfil'])->name('perfil.update');
+
+    // ── Notificaciones empresa ────────────────────────────────
+    Route::post('/notificaciones/leer-todas', function() {
+        $empresa = \App\Models\Empresa::where('usuario_id', auth()->id())->firstOrFail();
+        \App\Models\NotificacionAdmin::where('empresa_id', $empresa->id)
+            ->where('leido', false)
+            ->update(['leido' => true]);
+        return back()->with('success', 'Todas las notificaciones marcadas como leídas.');
+    })->name('notificaciones.leer-todas');
+
+    Route::patch('/notificaciones/{id}/leer', function(string $id) {
+        $empresa = \App\Models\Empresa::where('usuario_id', auth()->id())->firstOrFail();
+        \App\Models\NotificacionAdmin::where('id', $id)
+            ->where('empresa_id', $empresa->id)
+            ->update(['leido' => true]);
+        return back()->with('success', 'Notificación marcada como leída.');
+    })->name('notificaciones.leer');
 
     // ── Imagen principal hero ────────────────────────────────
     Route::post('/hero',                     [EmpresaDashboardController::class, 'heroStore'])->name('hero.store');

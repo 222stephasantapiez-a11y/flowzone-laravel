@@ -240,6 +240,30 @@ class PageController extends Controller
         return view('pages.contacto');
     }
 
+    public function contactoEnviar(Request $request)
+    {
+        $request->validate([
+            'nombre'  => ['required', 'string', 'max:100'],
+            'email'   => ['required', 'email'],
+            'asunto'  => ['required', 'string', 'max:200'],
+            'mensaje' => ['required', 'string', 'max:1000'],
+        ], [
+            'nombre.required'  => 'El nombre es obligatorio.',
+            'email.required'   => 'El correo es obligatorio.',
+            'email.email'      => 'Ingresa un correo válido.',
+            'asunto.required'  => 'El asunto es obligatorio.',
+            'mensaje.required' => 'El mensaje es obligatorio.',
+        ]);
+
+        \App\Models\NotificacionAdmin::create([
+            'empresa_id' => null,
+            'mensaje'    => 'CONTACTO WEB' . "\n" . 'Nombre: ' . $request->nombre . "\n" . 'Email: ' . $request->email . "\n" . 'Asunto: ' . $request->asunto . "\n" . 'Mensaje: ' . $request->mensaje,
+            'leido'      => false,
+        ]);
+
+        return redirect()->route('contacto')->with('success', '¡Mensaje enviado! Te contactaremos pronto.');
+    }
+
     // ── Maps ─────────────────────────────────────────────────
     public function maps()
     {
@@ -514,6 +538,20 @@ class PageController extends Controller
             'canceladas'    => $reservas->where('estado', 'cancelada'),
             'total_gastado' => $reservas->whereNotIn('estado', ['cancelada'])->sum('precio_total'),
         ]);
+    }
+
+    public function cancelarReserva(Reserva $reserva)
+    {
+        if ($reserva->usuario_id !== Auth::id()) {
+            abort(403);
+        }
+
+        if ($reserva->estado !== 'pendiente') {
+            return back()->with('error', 'Solo puedes cancelar reservas pendientes.');
+        }
+
+        $reserva->update(['estado' => 'cancelada']);
+        return back()->with('success', 'Reserva cancelada correctamente.');
     }
 
     // ── Favoritos (requiere auth) ─────────────────────────────

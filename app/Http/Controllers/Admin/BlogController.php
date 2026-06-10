@@ -17,6 +17,7 @@ use App\Imports\BlogsImport;
 class BlogController extends Controller
 {
     use HandlesImport;
+
     // ==========================
     // LISTAR + FILTROS
     // ==========================
@@ -24,44 +25,32 @@ class BlogController extends Controller
     {
         $query = BlogPost::with(['empresa', 'usuario']);
 
-        // Filtros
         if ($request->filled('titulo')) {
             $query->where('titulo', 'like', '%' . $request->titulo . '%');
         }
-
         if ($request->filled('fecha')) {
             $query->whereDate('fecha_publicacion', $request->fecha);
         }
-
         if ($request->filled('autor')) {
             $query->where('autor', 'like', '%' . $request->autor . '%');
         }
-
         if ($request->filled('tipo')) {
             $query->where('tipo', $request->tipo);
         }
 
-        $perPage = $request->get('per_page', 10);
-
-        // Ordenamiento
+        $perPage   = $request->get('per_page', 10);
         $sort      = $request->get('sort', 'id');
         $direction = $request->get('direction', 'desc');
 
         $allowedSorts = ['id', 'titulo', 'tipo', 'autor', 'fecha_publicacion', 'publicado'];
-
-        if (!in_array($sort, $allowedSorts)) {
-            $sort = 'id';
-        }
-
+        if (!in_array($sort, $allowedSorts)) $sort = 'id';
         $direction = $direction === 'desc' ? 'desc' : 'asc';
 
         $posts = $query->orderBy($sort, $direction)
                        ->paginate($perPage)
                        ->withQueryString();
 
-        $empresas = Empresa::where('aprobado', true)
-                           ->orderBy('nombre')
-                           ->get();
+        $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
 
         return view('admin.blog', compact('posts', 'empresas', 'perPage', 'sort', 'direction'));
     }
@@ -72,23 +61,17 @@ class BlogController extends Controller
     private function handleImage(Request $request, ?string $current = null): ?string
     {
         if ($request->hasFile('imagen_file')) {
-
             if ($current && !str_starts_with($current, 'http')) {
                 Storage::disk('public')->delete($current);
             }
-
             return $request->file('imagen_file')->store('uploads/blog', 'public');
         }
-
         if ($request->filled('imagen_url')) {
-
             if ($current && !str_starts_with($current, 'http')) {
                 Storage::disk('public')->delete($current);
             }
-
             return $request->imagen_url;
         }
-
         return $current;
     }
 
@@ -133,9 +116,7 @@ class BlogController extends Controller
                          ->paginate($perPage)
                          ->withQueryString();
 
-        $empresas = Empresa::where('aprobado', true)
-                           ->orderBy('nombre')
-                           ->get();
+        $empresas = Empresa::where('aprobado', true)->orderBy('nombre')->get();
 
         return view('admin.blog', compact('posts', 'empresas', 'blog', 'perPage'));
     }
@@ -176,9 +157,7 @@ class BlogController extends Controller
         if ($blog->imagen && !str_starts_with($blog->imagen, 'http')) {
             Storage::disk('public')->delete($blog->imagen);
         }
-
         $blog->delete();
-
         return redirect()->route('admin.blog.index')
                          ->with('success', 'Publicación eliminada.');
     }
@@ -190,12 +169,20 @@ class BlogController extends Controller
     {
         $blog->update(['publicado' => !$blog->publicado]);
 
-        if ($blog->publicado && $blog->empresa_id) {
-            NotificacionAdmin::create([
-                'empresa_id' => $blog->empresa_id,
-                'mensaje'    => 'TU PUBLICACIÓN FUE APROBADA Y PUBLICADA: ' . $blog->titulo,
-                'leido'      => false,
-            ]);
+        if ($blog->empresa_id) {
+            if ($blog->publicado) {
+                NotificacionAdmin::create([
+                    'empresa_id' => $blog->empresa_id,
+                    'mensaje'    => 'TU PUBLICACIÓN FUE APROBADA Y PUBLICADA: ' . $blog->titulo,
+                    'leido'      => false,
+                ]);
+            } else {
+                NotificacionAdmin::create([
+                    'empresa_id' => $blog->empresa_id,
+                    'mensaje'    => 'TU PUBLICACIÓN FUE RECHAZADA: ' . $blog->titulo,
+                    'leido'      => false,
+                ]);
+            }
         }
 
         return back()->with(
@@ -205,42 +192,28 @@ class BlogController extends Controller
     }
 
     // ==========================
-    // EXPORTAR EXCEL
+    // EXPORTAR / IMPORTAR
     // ==========================
+    public function exportExcel()
+    {
+        return Excel::download(new BlogsExport, 'blogs.xlsx');
+    }
 
+    public function importExcel(Request $request)
+    {
+        $request->validate([
+            'archivo' => 'required|mimes:xlsx,xls,csv'
+        ]);
 
-    // ==========================
-    // EXPORTAR PDF
-    // ==========================
+        Excel::import(new BlogsImport, $request->file('archivo'));
 
-      public function exportExcel()
-{
-    return Excel::download(new BlogsExport, 'blogs.xlsx');
-}
+        return back()->with('success', 'Importación completada. Los blogs duplicados fueron omitidos.');
+    }
 
-public function importExcel(Request $request)
-{
-    $request->validate([
-        'archivo' => 'required|mimes:xlsx,xls,csv'
-    ]);
-
-    Excel::import(new BlogsImport, $request->file('archivo'));
-
-    return back()->with(
-        'success',
-        'Importación completada. Los blogs duplicados fueron omitidos.'
-    );
-}
-
-public function exportPdf()
-{
-    $blogs = BlogPost::all();
-
-    $pdf = Pdf::loadView('admin.pdf.blog', compact('blogs'));
-
-    return $pdf->download('blogs.pdf');
-}
-
-
-
+    public function exportPdf()
+    {
+        $blogs = BlogPost::all();
+        $pdf   = Pdf::loadView('admin.pdf.blog', compact('blogs'));
+        return $pdf->download('blogs.pdf');
+    }
 }

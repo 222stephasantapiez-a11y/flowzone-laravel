@@ -6,7 +6,47 @@
 
 @section('content')
 
-{{-- Notificaciones --}}
+{{-- Mensajes de contacto web --}}
+@if(isset($contactos) && $contactos->count() > 0)
+<div class="dash-card" style="border-left:4px solid #3b82f6;margin-bottom:1.5rem;background:#eff6ff;">
+    <div class="dash-card-header">
+        <h2 style="color:#1e40af;">
+            <i class="fa-solid fa-envelope" style="color:#3b82f6;margin-right:6px"></i>
+            Mensajes de contacto web
+            <span class="badge badge-info">{{ $contactos->count() }}</span>
+        </h2>
+    </div>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Mensaje</th>
+                    <th>Fecha</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($contactos as $c)
+                <tr>
+                    <td style="max-width:500px;white-space:pre-wrap;font-size:.85rem;">{{ $c->mensaje }}</td>
+                    <td style="white-space:nowrap;color:var(--gray-400);font-size:.82rem;">{{ $c->created_at->format('d/m/Y H:i') }}</td>
+                    <td>
+                        <form method="POST" action="{{ route('admin.notificaciones.leer', $c) }}">
+                            @csrf @method('PATCH')
+                            <button type="submit" class="btn-small btn-success">
+                                <i class="fa-solid fa-check fa-xs"></i> Marcar leído
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+@endif
+
+{{-- Notificaciones de empresas --}}
 @if($notifCount > 0)
 <div class="dash-card" style="border-left:4px solid var(--warning);margin-bottom:1.5rem;">
     <div class="dash-card-header">
@@ -70,55 +110,22 @@
 </div>
 @endif
 
-{{-- ===================== MODAL EDITAR ===================== --}}
-<div id="modal-empresa" style="
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(4px);
-    z-index: 999;
-    overflow-y: auto;
-    padding: 2rem 1rem;
-">
-    <div style="
-        background: #fff;
-        border-radius: 1rem;
-        max-width: 720px;
-        margin: 0 auto;
-        box-shadow: 0 20px 60px rgba(0,0,0,.25);
-        overflow: hidden;
-    ">
-        <div style="
-            background: linear-gradient(135deg, var(--red-900), var(--red-700));
-            padding: 1.25rem 1.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        ">
+{{-- MODAL EDITAR --}}
+<div id="modal-empresa" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:999;overflow-y:auto;padding:2rem 1rem;">
+    <div style="background:#fff;border-radius:1rem;max-width:720px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,var(--red-900),var(--red-700));padding:1.25rem 1.75rem;display:flex;align-items:center;justify-content:space-between;">
             <h3 style="color:#fff;font-size:1.05rem;font-weight:700;margin:0;display:flex;align-items:center;gap:.5rem;">
-                <i class="fa-solid fa-pen-to-square"></i>
-                Editar Empresa
+                <i class="fa-solid fa-pen-to-square"></i> Editar Empresa
             </h3>
-            <button onclick="cerrarModal()" style="
-                background: rgba(255,255,255,.15);
-                border: none; color: #fff;
-                width: 32px; height: 32px;
-                border-radius: 50%; cursor: pointer;
-                font-size: 1rem; display: flex;
-                align-items: center; justify-content: center;
-                transition: background .2s;
-            " onmouseover="this.style.background='rgba(255,255,255,.3)'"
-               onmouseout="this.style.background='rgba(255,255,255,.15)'">
+            <button onclick="cerrarModal()" style="background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;transition:background .2s;"
+                    onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
                 <i class="fa-solid fa-xmark"></i>
             </button>
         </div>
-
-        <div style="padding: 1.75rem;">
+        <div style="padding:1.75rem;">
             @isset($empresa)
-                <form method="POST" action="{{ route('admin.empresas.update', $empresa) }}" class="admin-form" enctype="multipart/form-data">
+            <form method="POST" action="{{ route('admin.empresas.update', $empresa) }}" class="admin-form" enctype="multipart/form-data">
                 @csrf @method('PUT')
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Nombre</label>
@@ -129,12 +136,10 @@
                         <input type="text" name="telefono" value="{{ old('telefono', $empresa->telefono) }}">
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Dirección</label>
                     <input type="text" name="direccion" value="{{ old('direccion', $empresa->direccion) }}">
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Tipo de empresa</label>
@@ -150,27 +155,22 @@
                         <input type="text" name="nit" value="{{ old('nit', $empresa->nit) }}" maxlength="20">
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Descripción</label>
                     <textarea name="descripcion" rows="3" maxlength="1000">{{ old('descripcion', $empresa->descripcion) }}</textarea>
                 </div>
-
                 <div class="form-group">
                     <label>Servicios</label>
                     <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
                         @php $serviciosActuales = old('servicios', $empresa->servicios ?? []); @endphp
                         @foreach(['WiFi','Parqueadero','Restaurante propio','Piscina','Eventos','Guía turístico','Reservas online','Domicilios','Sala de conferencias','Pet friendly'] as $srv)
                         <label style="display:flex;align-items:center;gap:.3rem;background:var(--gray-50);border:1.5px solid var(--gray-200);border-radius:2rem;padding:.3rem .65rem;font-size:.82rem;cursor:pointer;">
-                            <input type="checkbox" name="servicios[]" value="{{ $srv }}"
-                                   {{ in_array($srv, $serviciosActuales) ? 'checked' : '' }}
-                                   style="accent-color:var(--green-700);">
+                            <input type="checkbox" name="servicios[]" value="{{ $srv }}" {{ in_array($srv, $serviciosActuales) ? 'checked' : '' }} style="accent-color:var(--green-700);">
                             {{ $srv }}
                         </label>
                         @endforeach
                     </div>
                 </div>
-
                 <div class="form-row">
                     <div class="form-group">
                         <label>Sitio web</label>
@@ -181,32 +181,25 @@
                         <input type="text" name="instagram" value="{{ old('instagram', $empresa->instagram) }}" maxlength="200">
                     </div>
                 </div>
-
                 <div class="form-group">
                     <label>Facebook</label>
                     <input type="text" name="facebook" value="{{ old('facebook', $empresa->facebook) }}" maxlength="200">
                 </div>
-
                 <div style="display:flex;gap:.8rem;flex-wrap:wrap;">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fa-solid fa-floppy-disk"></i> Actualizar Empresa
-                    </button>
-                    <a href="{{ route('admin.empresas.index') }}" class="btn btn-outline">
-                        <i class="fa-solid fa-xmark"></i> Cancelar
-                    </a>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Actualizar Empresa</button>
+                    <a href="{{ route('admin.empresas.index') }}" class="btn btn-outline"><i class="fa-solid fa-xmark"></i> Cancelar</a>
                 </div>
-                </form>
+            </form>
             @endisset
         </div>
     </div>
 </div>
 
-{{-- TABLA --}}
+{{-- TABLA EMPRESAS --}}
 <div class="admin-section">
-
     <div class="admin-section-header">
         <h2>Empresas Registradas</h2>
-        <div style="display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;">
+        <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;">
             <span class="badge badge-info">{{ $empresas->total() }} total</span>
             <button type="button" onclick="toggleFiltrosEmpresas()" class="btn btn-success btn-sm">
                 <i class="fa-solid fa-filter"></i> Filtro
@@ -221,7 +214,7 @@
         </div>
     </div>
 
-    <div id="filtrosEmpresas" style="display:none; padding: 1rem 0 .5rem;">
+    <div id="filtrosEmpresas" style="display:none;padding:1rem 0 .5rem;">
         <div style="background:#fff;border-radius:.75rem;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:1rem 1.25rem;margin-bottom:1rem;">
             <form method="GET" action="{{ route('admin.empresas.index') }}"
                   style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;align-items:end;">
@@ -298,9 +291,7 @@
                     <td>{{ $e->telefono ?? '—' }}</td>
                     <td>{{ $e->direccion ?? '—' }}</td>
                     <td>
-                        @php
-                            $tl = ['hotel'=>'🏨 Hotel','restaurante'=>'🍽️ Restaurante','agencia_turismo'=>'🧭 Agencia','transporte'=>'🚌 Transporte','artesanias'=>'🎨 Artesanías','otro'=>'📦 Otro'];
-                        @endphp
+                        @php $tl = ['hotel'=>'🏨 Hotel','restaurante'=>'🍽️ Restaurante','agencia_turismo'=>'🧭 Agencia','transporte'=>'🚌 Transporte','artesanias'=>'🎨 Artesanías','otro'=>'📦 Otro']; @endphp
                         @if($e->tipo_empresa)
                             <span class="badge badge-info">{{ $tl[$e->tipo_empresa] ?? $e->tipo_empresa }}</span>
                         @else
@@ -339,8 +330,7 @@
                                 <i class="fa-solid fa-trash fa-xs"></i> Eliminar
                             </button>
                             <form id="form-delete-empresa-{{ $e->id }}" method="POST"
-                                  action="{{ route('admin.empresas.destroy', $e) }}"
-                                  style="display:none;">
+                                  action="{{ route('admin.empresas.destroy', $e) }}" style="display:none;">
                                 @csrf @method('DELETE')
                             </form>
                         </div>
@@ -348,9 +338,7 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" style="text-align:center;">
-                        No hay empresas registradas.
-                    </td>
+                    <td colspan="9" style="text-align:center;">No hay empresas registradas.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -358,7 +346,6 @@
     </div>
 
     @include('partials.pagination', ['paginator' => $empresas, 'perPage' => $perPage])
-
 </div>
 
 {{-- MODAL CONFIRMACIÓN ELIMINAR --}}
@@ -394,26 +381,18 @@ function cerrarModal() {
     document.getElementById('modal-empresa').style.display = 'none';
     document.body.style.overflow = '';
 }
-
 document.getElementById('modal-empresa').addEventListener('click', function(e) {
     if (e.target === this) cerrarModal();
 });
-
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        cerrarModal();
-        cerrarConfirmEmpresa();
-    }
+    if (e.key === 'Escape') { cerrarModal(); cerrarConfirmEmpresa(); }
 });
-
 @isset($empresa)
     document.getElementById('modal-empresa').style.display = 'block';
     document.body.style.overflow = 'hidden';
 @endisset
 
-// ── Confirmar eliminar empresa ──
 let deleteEmpresaId = null;
-
 function abrirConfirmEmpresa(id, nombre) {
     deleteEmpresaId = id;
     document.getElementById('confirm-nombre-empresa').textContent = 'Vas a eliminar: ' + nombre;
@@ -424,32 +403,26 @@ function abrirConfirmEmpresa(id, nombre) {
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
 }
-
 function cerrarConfirmEmpresa() {
     deleteEmpresaId = null;
     document.getElementById('modal-confirm-empresa').style.display = 'none';
     document.body.style.overflow = '';
 }
-
 function ejecutarDeleteEmpresa() {
     if (deleteEmpresaId) document.getElementById('form-delete-empresa-' + deleteEmpresaId).submit();
 }
-
 document.getElementById('confirm-check-empresa').addEventListener('change', function () {
     const btn = document.getElementById('btn-confirmar-delete-empresa');
     btn.disabled = !this.checked;
     btn.style.opacity = this.checked ? '1' : '.5';
 });
-
 document.getElementById('modal-confirm-empresa').addEventListener('click', function (e) {
     if (e.target === this) cerrarConfirmEmpresa();
 });
-
 function toggleFiltrosEmpresas() {
     const box = document.getElementById('filtrosEmpresas');
     box.style.display = (box.style.display === 'none' || box.style.display === '') ? 'block' : 'none';
 }
-
 window.addEventListener('load', function () {
     if ("{{ request('busqueda') }}" || "{{ request('responsable') }}" || "{{ request('estado') }}") {
         document.getElementById('filtrosEmpresas').style.display = 'block';

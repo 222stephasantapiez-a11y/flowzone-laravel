@@ -9,14 +9,6 @@ use Throwable;
 
 trait HandlesImport
 {
-    /**
-     * Ejecuta la importación y devuelve una redirección con mensajes claros.
-     *
-     * @param  Request  $request
-     * @param  object   $import   Instancia del Import (debe usar BaseImport trait)
-     * @param  string   $redirectRoute
-     * @return RedirectResponse
-     */
     protected function runImport(Request $request, object $import, string $redirectRoute): RedirectResponse
     {
         $request->validate([
@@ -35,15 +27,37 @@ trait HandlesImport
         }
 
         $imported = $import->getImportedCount();
+        $updated  = method_exists($import, 'getUpdatedCount') ? $import->getUpdatedCount() : 0;
         $errors   = $import->getErrors();
 
-        if ($imported === 0 && !empty($errors)) {
+        // Sin resultados
+        if ($imported === 0 && $updated === 0) {
+            if (!empty($errors)) {
+                return redirect()->route($redirectRoute)
+                    ->with('error', 'No se importó ningún registro. Revisa los errores:')
+                    ->with('import_errors', $errors);
+            }
+
             return redirect()->route($redirectRoute)
-                ->with('error', 'No se importó ningún registro. Revisa los errores:')
-                ->with('import_errors', $errors);
+                ->with('warning', 'No se encontraron registros nuevos para importar.');
         }
 
-        $msg = "Se importaron {$imported} registro(s) correctamente.";
+        // Construir mensaje legible
+        $partes = [];
+
+        if ($imported === 1) {
+            $partes[] = '1 registro nuevo creado';
+        } elseif ($imported > 1) {
+            $partes[] = "{$imported} registros nuevos creados";
+        }
+
+        if ($updated === 1) {
+            $partes[] = '1 registro actualizado';
+        } elseif ($updated > 1) {
+            $partes[] = "{$updated} registros actualizados";
+        }
+
+        $msg = implode(' y ', $partes) . '.';
 
         if (!empty($errors)) {
             return redirect()->route($redirectRoute)
@@ -51,6 +65,7 @@ trait HandlesImport
                 ->with('import_errors', $errors);
         }
 
-        return redirect()->route($redirectRoute)->with('success', $msg);
+        return redirect()->route($redirectRoute)
+            ->with('success', $msg);
     }
 }
